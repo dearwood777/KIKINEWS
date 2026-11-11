@@ -9,8 +9,8 @@ on:
       provider:
         description: "用哪个大模型跑（需先在仓库 Secrets 里配好对应 key）"
         type: choice
-        options: [gemini, groq]
-        default: gemini
+        options: [groq, gemini]
+        default: groq
       hours:
         description: "抓取时间窗口（小时）"
         type: string
@@ -56,7 +56,7 @@ jobs:
       - name: Select AI config
         run: |
           P="${{ inputs.provider }}"
-          if [ -z "$P" ]; then P="gemini"; fi
+          if [ -z "$P" ]; then P="groq"; fi
           echo "Using provider: $P"
           cp "configs/config.actions.${P}.json" data/config.json
 
