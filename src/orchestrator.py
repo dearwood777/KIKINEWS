@@ -313,9 +313,11 @@ class HorizonOrchestrator:
             # 6. Search related stories + enrich with background knowledge (2nd AI pass)
             enrichment_result = await self.enrich_items(important_items)
             if enrichment_result.status == "failure":
-                raise RuntimeError(
-                    f"Enrichment failed for all {len(important_items)} selected items: "
-                    + ", ".join(enrichment_result.failed_ids)
+                # 降级：模型额度/限流导致全部充实失败时不再中断整条流水线，
+                # 直接改用分析阶段的摘要发布，保证当天的日报有内容。
+                self.console.print(
+                    "   [yellow]Enrichment unavailable for all selected items; "
+                    "publishing analysis summaries instead.[/yellow]\n"
                 )
 
             # 7. Generate and save daily summaries for each configured language
@@ -323,7 +325,11 @@ class HorizonOrchestrator:
             for lang in self.config.ai.languages:
                 language_items = [
                     item for item in important_items
-                    if item.processing and lang in item.processing.artifacts
+                    if item.processing
+                    and (
+                        lang in item.processing.artifacts
+                        or item.processing.analysis is not None
+                    )
                 ]
                 summarizer = DailySummarizer(
                     profile_names=self.profiles.names,
