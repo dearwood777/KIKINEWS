@@ -340,18 +340,39 @@ def parse_post(path: str) -> dict:
     return {"day": day.group(1) if day else "", "summary": summary, "toc": toc, "items": items}
 
 
+def clean_text(text: str) -> str:
+    """原文里偶尔出现 &\\#x27; 这类被反斜杠挡住的实体，先还原再按 HTML 转义输出。"""
+    return html.escape(html.unescape(text.replace("&\\#", "&#")))
+
+
+def inline_md(text: str) -> str:
+    """把 [文字](链接) 转成真链接，其余文本转义，避免实体和裸 markdown 漏到页面上。"""
+    text = html.unescape(text)
+    parts = re.split(r"\[([^\]]+)\]\((https?://[^)]+)\)", text)
+    out: list[str] = []
+    for i, chunk in enumerate(parts):
+        m = i % 3
+        if m == 0:
+            out.append(html.escape(chunk))
+        elif m == 1:
+            href = html.escape(parts[i + 1])
+            out.append(f'<a href="{href}" target="_blank" rel="noopener">{html.escape(chunk)}</a>')
+    return "".join(out)
+
+
 def render_lang(data: dict, lang: str) -> str:
     card_html = []
     for it in data["items"]:
         score = (
             f'<span class="score">▍{html.escape(it["score"])}/10</span>' if it["score"] else ""
         )
+        plain_title = clean_text(it["title"])
         title_html = (
-            f'<a href="{html.escape(it["url"])}" target="_blank" rel="noopener">{html.escape(it["title"])}</a>'
+            f'<a href="{html.escape(it["url"])}" target="_blank" rel="noopener">{plain_title}</a>'
             if it["url"]
-            else html.escape(it["title"])
+            else plain_title
         )
-        src = f'<div class="src">{html.escape(it["src"])}</div>' if it["src"] else ""
+        src = f'<div class="src">{inline_md(it["src"])}</div>' if it["src"] else ""
         body = "".join(it["paras"])
         notes = ""
         for n in it["notes"]:
@@ -375,7 +396,7 @@ def render_lang(data: dict, lang: str) -> str:
 
     if data["toc"]:
         nav = "".join(
-            f'<a href="#{i["anchor"]}">{html.escape(i["title"])}</a>'
+            f'<a href="#{i["anchor"]}">{clean_text(i["title"])}</a>'
             for g in data["toc"] for i in g["items"] if i["anchor"] in anchor_to_card
         )
         if nav:
