@@ -35,9 +35,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prefs: SharedPreferences
 
     companion object {
-        /** 第一次启动用的默认地址。部署完 Pages 后改成你自己的。 */
+        /** 第一次启动用的默认地址：本仓库的 GitHub Pages。 */
         private const val DEFAULT_URL =
-            "https://your-name.github.io/your-repo/latest.html"
+            "https://dearwood777.github.io/KIKINEWS/latest.html"
 
         private const val PREF = "horizon"
         private const val KEY_URL = "digest_url"
