@@ -55,20 +55,58 @@ footer{margin-top:40px;color:var(--muted);font-size:13px;text-align:center}
 <div class="wrap">
   <header>
     <h1 class="page">每日速递 · 2026-11-11</h1>
-    <div class="meta">更新于 2026-11-11 16:47 UTC · Horizon 自动生成</div>
+    <div class="meta">更新于 2026-11-11 17:18 UTC · Horizon 自动生成</div>
   </header>
   <article>
 <blockquote>
-<p>已分析 17 条内容，但没有达到重要性阈值的条目。</p>
+<p>从 19 条内容中筛选出 3 条重要资讯。</p>
 </blockquote>
-<p>今日暂无重要动态，可能原因：<br>
-- 今天关注的信息源较平静<br>
-- AI 评分阈值设置过高<br>
-- 信息源种类有待扩充</p>
-<p>建议：<br>
-1. 降低当前 Profile 的过滤阈值<br>
-2. 添加更多多样化的信息源<br>
-3. 检查 AI 模型是否正常工作</p>
+<hr>
+<p><strong>科技新闻</strong><br>
+1. <a href="#item-tech-news-1">Anthropic IPO 路演视频披露多芯片计算策略</a> ⭐️ 7.0/10<br>
+2. <a href="#item-tech-news-2">WorkflowArena 基准显示最强模型不一定是最佳协调者</a> ⭐️ 7.0/10</p>
+<p><strong>财经新闻</strong><br>
+1. <a href="#item-finance-news-1">美联储沃勒尔官员称 12 月可能加息 0.5 个百分点</a> ⭐️ 8.0/10</p>
+<hr>
+<h2>科技新闻</h2>
+<p><a id="item-tech-news-1"></a></p>
+<h3><a href="https://simonwillison.net/2026/Nov/11/anthropic-ipo-roadshow/">Anthropic IPO 路演视频披露多芯片计算策略</a> ⭐️ 7.0/10</h3>
+<p>Anthropic 在 IPO 路演视频中透露，已在 AWS Trainium、Google TPU、NVIDIA GPU 和 AMD GPU 四大芯片平台上训练并部署 Claude，得益于其早期坚持的多芯片策略。该策略克服了不同芯片需要独立软件栈的高成本，且通过内部系统 Mythos，首次在三天内实现了对 AMD GPU 的几乎全自动迁移。视频还介绍了他们通过发现“计算乘数”来提升有效算力的做法，声称未来模型可自行发现更多乘数，实现算力提升的递归自我改进。</p>
+<p>rss · Simon Willison · 11月11日 15:11</p>
+<p><strong>「背景」</strong> 多芯片计算策略指在不同硬件平台上同时运行同一模型，以提升算力弹性和成本效益。Anthropic 早在去年 9 月的内部故障回顾中已提及仅在 TPU 上出现的部署问题，暗示其已在探索跨平台部署。</p>
+<p><strong>「影响」</strong> 该多芯片实现展示了快速适配新硬件的可能性，可能促使其他 AI 初创公司加速构建跨平台软件栈，以在竞争中获得算力优势。</p>
+<p><strong>标签</strong>: <code>#AI</code>, <code>#Hardware</code>, <code>#Cloud Computing</code>, <code>#Startup</code></p>
+<hr>
+<p><a id="item-tech-news-2"></a></p>
+<h3><a href="https://www.reddit.com/r/MachineLearning/comments/1xt9hbe/would_you_pick_your_strongest_model_to_coordinate/">WorkflowArena 基准显示最强模型不一定是最佳协调者</a> ⭐️ 7.0/10</h3>
+<p>WorkflowArena 是 Einsia 团队推出的一个新基准，覆盖 145 项跨八个领域的长时任务，评估模型在团队中分配工作并检查最终交付是否满足要求。实验中，使用 Opus 5.5 和 GPT‑6 Astra 为四个执行模型生成静态工作流，结果 Opus 的工作流使四个执行模型的连续得分平均提升 6.41 分，而更强的 Astra 的工作流则使平均得分下降 2.53 分。该结果表明，仅凭模型自身的任务表现挑选协调者可能忽略其组织工作方式的有效性。</p>
+<p>reddit · r/MachineLearning · /u/OliviaYii · 11月11日 05:25</p>
+<p><strong>「背景」</strong> WorkflowArena 是由 Einsia 推出的长时任务基准，覆盖 145 项跨八个领域的任务，专门评估多模型团队在工作分配和执行过程中的协作效果。传统的 LLM 基准通常只测单模型完成任务的得分，而不考察模型之间的工作流组织能力，因此缺乏对协调模型（即调度者）实际帮助程度的检验。该基准提供了检验调度模型是否能生成有益工作流的实验平台。</p>
+<p><strong>「影响」</strong> 对构建混合模型团队的开发者而言，需要在选取协调模型时单独评估其工作流生成能力，而不是仅依据其单模型性能。</p>
+<details><summary>参考链接</summary>
+<ul>
+<li><a href="https://einsia.ai/">Einsia ：Where AI Learns How Experts Work</a></li>
+
+</ul>
+</details>
+
+<p><strong>标签</strong>: <code>#AI coordination</code>, <code>#benchmarks</code>, <code>#large language models</code>, <code>#agentic AI</code></p>
+<hr>
+<h2>财经新闻</h2>
+<p><a id="item-finance-news-1"></a></p>
+<h3><a href="https://www.cnbc.com/2026/11/10/fed-governor-waller-sees-december-hike-likely.html">美联储沃勒尔官员称 12 月可能加息 0.5 个百分点</a> ⭐️ 8.0/10</h3>
+<p>美联储理事克里斯托弗·沃勒尔表示，12 月会议上可能将政策利率上调 50 个基点（0.5%），并称仅加息 25 个基点会危及美联储的可信度。</p>
+<p>rss · CNBC Finance · 11月10日 17:13</p>
+<p><strong>「背景说明」</strong> 美联储理事克里斯托弗·沃勒（自 2020 年起任职的联邦储备委员会成员）在 10 月会议决定暂缓加息、9 月已加息 0.25 个百分点后，强调若不继续加息将损害美联储的可信度。</p>
+<details><summary>参考链接</summary>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Christopher_Waller">Christopher Waller - Wikipedia</a></li>
+
+</ul>
+</details>
+
+<p><strong>标签</strong>: <code>#monetary policy</code>, <code>#Federal Reserve</code>, <code>#interest rates</code></p>
+<hr>
   </article>
   <footer>内容由 AI 筛选与撰写，可能有误，请以原文为准。</footer>
 </div>

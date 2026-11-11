@@ -55,20 +55,58 @@ footer{margin-top:40px;color:var(--muted);font-size:13px;text-align:center}
 <div class="wrap">
   <header>
     <h1 class="page">Daily Digest · 2026-11-11</h1>
-    <div class="meta">更新于 2026-11-11 16:47 UTC · Horizon 自动生成</div>
+    <div class="meta">更新于 2026-11-11 17:18 UTC · Horizon 自动生成</div>
   </header>
   <article>
 <blockquote>
-<p>Analyzed 17 items, but none met the importance threshold.</p>
+<p>From 19 items, 3 important content pieces were selected</p>
 </blockquote>
-<p>No significant developments today. This might indicate:<br>
-- A quiet day in your tracked sources<br>
-- The AI score threshold is too high<br>
-- Your information sources need expansion</p>
-<p>Consider:<br>
-1. Lowering the configured profile threshold<br>
-2. Adding more diverse information sources<br>
-3. Checking if the AI model is working correctly</p>
+<hr>
+<p><strong>Technology News</strong><br>
+1. <a href="#item-tech-news-1">Anthropic Reveals Multi‑Chip Strategy for Training and Serving Claude</a> ⭐️ 7.0/10<br>
+2. <a href="#item-tech-news-2">WorkflowArena Shows Strongest Model May Not Be Best Coordinator</a> ⭐️ 7.0/10</p>
+<p><strong>Financial News</strong><br>
+1. <a href="#item-finance-news-1">Fed Governor Waller Signals Likely 50‑bp Rate Hike in December</a> ⭐️ 8.0/10</p>
+<hr>
+<h2>Technology News</h2>
+<p><a id="item-tech-news-1"></a></p>
+<h3><a href="https://simonwillison.net/2026/Nov/11/anthropic-ipo-roadshow/">Anthropic Reveals Multi‑Chip Strategy for Training and Serving Claude</a> ⭐️ 7.0/10</h3>
+<p>Anthropic disclosed in its IPO roadshow video that it trains and serves its Claude models on all four major hardware families—AWS Trainium, Google TPUs, NVIDIA GPUs, and AMD GPUs—using a long‑standing multi‑chip approach. The company highlighted that its internal Mythos system enabled Claude to run on AMD GPUs within three days with minimal human effort, a dramatic speed‑up from the months‑long effort required previously. It also introduced the concept of &quot;compute multipliers,&quot; claiming that each discovered multiplier reduces the physical compute needed for a given model, and that future models could discover such multipliers autonomously. This information is presented as a competitive advantage for Anthropic’s AI development and deployment pipeline.</p>
+<p>rss · Simon Willison · Nov 11, 15:11</p>
+<p><strong>「Background」</strong> Running large language models on multiple chip architectures traditionally requires separate software and inference stacks, a complexity many firms avoid. Anthropic first hinted at this multi‑chip ambition in a September post‑mortem that discussed TPU‑specific bugs, indicating they had already been engineering cross‑platform support before the IPO announcement.</p>
+<p><strong>「Impact」</strong> If Anthropic’s rapid multi‑chip deployment and compute‑multiplier methodology deliver the promised efficiency gains, other AI developers may need to invest in similar cross‑hardware tooling to stay competitive, and cloud providers could see increased demand for diverse accelerator offerings.</p>
+<p><strong>Tags</strong>: <code>#AI</code>, <code>#Hardware</code>, <code>#Cloud Computing</code>, <code>#Startup</code></p>
+<hr>
+<p><a id="item-tech-news-2"></a></p>
+<h3><a href="https://www.reddit.com/r/MachineLearning/comments/1xt9hbe/would_you_pick_your_strongest_model_to_coordinate/">WorkflowArena Shows Strongest Model May Not Be Best Coordinator</a> ⭐️ 7.0/10</h3>
+<p>The new WorkflowArena benchmark (145 long‑horizon tasks in eight domains) evaluated whether the strongest language model makes the best coordinator for mixed‑model teams. In a test on 32 challenging tasks, Opus 5.5’s static workflows raised the continuous scores of four executor models by an average of 6.41 points, while the stronger GPT‑6 Astra’s workflows reduced the average score by 2.53 points. The results indicate that a model’s own task performance does not guarantee that its workflow design will benefit other agents. Practitioners should therefore assess coordinator models separately from overall system output rather than selecting them solely on individual benchmark scores.</p>
+<p>reddit · r/MachineLearning · /u/OliviaYii · Nov 11, 05:25</p>
+<p><strong>「Prerequisite: Multi‑agent coordination benchmarks」</strong> WorkflowArena is a new benchmark released by the AI research team at Einsia that evaluates how effectively a language model can serve as a coordinator for other agents. Unlike most multi‑agent evaluations that score only the final output of the whole team, WorkflowArena records the delegation decisions, the static workflows produced by the coordinator, and checks whether the final deliverable meets task requirements across 145 long‑horizon tasks in eight domains. This background helps readers understand why the experiment comparing Opus 5.5 and GPT‑6 Astra’s coordination abilities is significant.</p>
+<p><strong>「Impact」</strong> Teams building multi‑model pipelines may need to benchmark coordinator models on workflow effectiveness, adding a dedicated evaluation step before deployment to avoid performance drops caused by unsuitable coordination strategies.</p>
+<details><summary>References</summary>
+<ul>
+<li><a href="https://einsia.ai/">Einsia ：Where AI Learns How Experts Work</a></li>
+
+</ul>
+</details>
+
+<p><strong>Tags</strong>: <code>#AI coordination</code>, <code>#benchmarks</code>, <code>#large language models</code>, <code>#agentic AI</code></p>
+<hr>
+<h2>Financial News</h2>
+<p><a id="item-finance-news-1"></a></p>
+<h3><a href="https://www.cnbc.com/2026/11/10/fed-governor-waller-sees-december-hike-likely.html">Fed Governor Waller Signals Likely 50‑bp Rate Hike in December</a> ⭐️ 8.0/10</h3>
+<p>Fed Governor Christopher Waller said a 50‑basis‑point increase in the policy rate is likely at the December meeting.</p>
+<p>rss · CNBC Finance · Nov 10, 17:13</p>
+<p><strong>「Context」</strong> Governor Christopher Waller, a Fed board member since 2020, is speaking after the Federal Open Market Committee left rates unchanged in October following a 25‑basis‑point hike in September.</p>
+<details><summary>References</summary>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Christopher_Waller">Christopher Waller - Wikipedia</a></li>
+
+</ul>
+</details>
+
+<p><strong>Tags</strong>: <code>#monetary policy</code>, <code>#Federal Reserve</code>, <code>#interest rates</code></p>
+<hr>
   </article>
   <footer>内容由 AI 筛选与撰写，可能有误，请以原文为准。</footer>
 </div>
