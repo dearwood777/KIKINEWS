@@ -86,6 +86,12 @@ jobs:
           curl -s -m 30 -o gr.json -w "groq_http=%{http_code}\n" "https://api.groq.com/openai/v1/models" \
             -H "Authorization: Bearer ${GROQ_API_KEY}" || echo "groq_curl_exit=$?"
           python3 -c "import json;d=json.load(open('gr.json'));print('\n'.join(sorted(m['id'] for m in d.get('data',[]))))" 2>/dev/null | head -40 || head -c 300 gr.json
+          echo "=== groq chat test ==="
+          curl -s -m 60 -o gc.json -w "groq_chat_http=%{http_code}\n" \
+            -X POST "https://api.groq.com/openai/v1/chat/completions" \
+            -H 'Content-Type: application/json' -H "Authorization: Bearer ${GROQ_API_KEY}" \
+            -d '{"model":"openai/gpt-oss-120b","messages":[{"role":"user","content":"Say OK"}],"max_tokens":20}' || echo "groq_chat_exit=$?"
+          head -c 500 gc.json; echo
           exit 0
 
       - name: Run Horizon
