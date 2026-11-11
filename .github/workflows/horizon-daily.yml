@@ -72,7 +72,9 @@ jobs:
         if: ${{ inputs.probe == 'yes' }}
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
+          set +e
           M="${{ inputs.model }}"
           echo "probing model: $M  key_len=${#GOOGLE_API_KEY}"
           curl -s -m 30 -o resp.json -w "HTTP=%{http_code} t=%{time_total}\n" \
@@ -80,6 +82,11 @@ jobs:
             -H 'Content-Type: application/json' -H "X-goog-api-key: ${GOOGLE_API_KEY}" \
             -d '{"contents":[{"parts":[{"text":"Say OK"}]}]}' || echo "curl_exit=$?"
           head -c 700 resp.json; echo
+          echo "=== groq models ==="
+          curl -s -m 30 -o gr.json -w "groq_http=%{http_code}\n" "https://api.groq.com/openai/v1/models" \
+            -H "Authorization: Bearer ${GROQ_API_KEY}" || echo "groq_curl_exit=$?"
+          python3 -c "import json;d=json.load(open('gr.json'));print('\n'.join(sorted(m['id'] for m in d.get('data',[]))))" 2>/dev/null | head -40 || head -c 300 gr.json
+          exit 0
 
       - name: Run Horizon
         if: ${{ inputs.probe != 'yes' }}
