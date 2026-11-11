@@ -5,13 +5,13 @@
     "api_key_env": "GROQ_API_KEY",
     "temperature": 0.3,
     "max_tokens": 4096,
-    "throttle_sec": 3,
+    "throttle_sec": 2,
     "languages": [
       "zh",
       "en"
     ],
     "analysis_concurrency": 3,
-    "enrichment_concurrency": 1,
+    "enrichment_concurrency": 2,
     "base_url": "https://api.groq.com/openai/v1"
   },
   "processing": {
@@ -19,15 +19,15 @@
     "default_profile": "tech-news",
     "profile_settings": {
       "tech-news": {
-        "threshold": 7.0,
+        "threshold": 6.0,
         "topic_dedup": true
       },
       "tech-blog": {
-        "threshold": 4.0,
+        "threshold": 3.5,
         "topic_dedup": false
       },
       "finance-news": {
-        "threshold": 7.0,
+        "threshold": 6.0,
         "topic_dedup": true
       }
     }
@@ -187,7 +187,7 @@
     "time_window_hours": 24
   },
   "digest": {
-    "max_items": 12,
+    "max_items": 16,
     "profile_order": [
       "tech-news",
       "tech-blog",
