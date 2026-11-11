@@ -429,6 +429,9 @@ def main() -> None:
 
     day = next(iter(posts.values()))[1]["day"]
     count = max(len(d["items"]) for _, d in posts.values())
+    if count == 0:
+        print("[skip] this run produced 0 items; keeping the previous page online")
+        return
     src_count = ""
     for _, d in posts.values():
         m = re.search(r"从\s*(\d+)\s*条", d["summary"])
