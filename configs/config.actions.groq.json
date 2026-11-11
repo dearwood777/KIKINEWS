@@ -4,14 +4,14 @@
     "model": "openai/gpt-oss-120b",
     "api_key_env": "GROQ_API_KEY",
     "temperature": 0.3,
-    "max_tokens": 8192,
-    "throttle_sec": 1,
+    "max_tokens": 4096,
+    "throttle_sec": 3,
     "languages": [
       "zh",
       "en"
     ],
     "analysis_concurrency": 3,
-    "enrichment_concurrency": 2,
+    "enrichment_concurrency": 1,
     "base_url": "https://api.groq.com/openai/v1"
   },
   "processing": {
