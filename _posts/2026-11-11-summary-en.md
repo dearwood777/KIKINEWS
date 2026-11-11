@@ -5,76 +5,119 @@ date: 2026-11-11
 lang: en
 ---
 
-> From 19 items, 3 important content pieces were selected
+> From 70 items, 5 important content pieces were selected
 
 ---
 
 **Technology News**
-1. [Anthropic Reveals Multi‑Chip Strategy for Training and Serving Claude](#item-tech-news-1) ⭐️ 7.0/10
-2. [WorkflowArena Shows Strongest Model May Not Be Best Coordinator](#item-tech-news-2) ⭐️ 7.0/10
+1. [Anthropic Reveals Multi‑Chip Strategy for Claude in IPO Video](#item-tech-news-1) ⭐️ 8.0/10
+2. [Databricks launches Genie AI agent with multi‑step, ontology‑driven capabilities](#item-tech-news-2) ⭐️ 8.0/10
+3. [New York&\#x27;s RAISE Act Requires Registration and Incident Reporting from Large AI Labs](#item-tech-news-3) ⭐️ 8.0/10
+4. [DeepMind uses AI to formally verify key parts of Signal protocol](#item-tech-news-4) ⭐️ 8.0/10
 
 **Financial News**
-1. [Fed Governor Waller Signals Likely 50‑bp Rate Hike in December](#item-finance-news-1) ⭐️ 8.0/10
+1. [Fed&\#x27;s Goolsbee calls inflation report &quot;borderline disturbing&quot;](#item-finance-news-1) ⭐️ 8.0/10
 
 ---
 
 ## Technology News
 
 <a id="item-tech-news-1"></a>
-### [Anthropic Reveals Multi‑Chip Strategy for Training and Serving Claude](https://simonwillison.net/2026/Nov/11/anthropic-ipo-roadshow/) ⭐️ 7.0/10
+### [Anthropic Reveals Multi‑Chip Strategy for Claude in IPO Video](https://simonwillison.net/2026/Nov/11/anthropic-ipo-roadshow/) ⭐️ 8.0/10
 
-Anthropic disclosed in its IPO roadshow video that it trains and serves its Claude models on all four major hardware families—AWS Trainium, Google TPUs, NVIDIA GPUs, and AMD GPUs—using a long‑standing multi‑chip approach. The company highlighted that its internal Mythos system enabled Claude to run on AMD GPUs within three days with minimal human effort, a dramatic speed‑up from the months‑long effort required previously. It also introduced the concept of &quot;compute multipliers,&quot; claiming that each discovered multiplier reduces the physical compute needed for a given model, and that future models could discover such multipliers autonomously. This information is presented as a competitive advantage for Anthropic’s AI development and deployment pipeline.
+Anthropic’s IPO roadshow video confirms that the company trains and serves its Claude models on four major chip families—AWS Trainium, Google TPUs, NVIDIA GPUs, and AMD GPUs—by using a long‑standing multi‑chip strategy. The video explains that Anthropic’s internal Mythos system can port Claude to a new hardware platform \(e.g., AMD GPUs\) in just three days with virtually no human intervention, demonstrating a highly automated software stack. It also introduces the concept of &quot;compute multipliers,&quot; where discovered efficiencies multiply effective compute capacity, and suggests future self‑discovery of such multipliers by the model itself. This operational detail is new public information for AI engineers, cloud providers, and hardware vendors.
 
 rss · Simon Willison · Nov 11, 15:11
 
-**「Background」** Running large language models on multiple chip architectures traditionally requires separate software and inference stacks, a complexity many firms avoid. Anthropic first hinted at this multi‑chip ambition in a September post‑mortem that discussed TPU‑specific bugs, indicating they had already been engineering cross‑platform support before the IPO announcement.
+**「Prerequisite: Multi‑chip compute strategy」** Anthropic’s multi‑chip approach builds on the industry practice of running large language models on different hardware families to maximize compute capacity and cost efficiency. The company first hinted at this strategy in a September post‑mortem that described bugs affecting only its TPU deployments, indicating early experimentation with heterogeneous hardware before expanding to AWS Trainium, NVIDIA and AMD GPUs as disclosed in the IPO roadshow video.
 
-**「Impact」** If Anthropic’s rapid multi‑chip deployment and compute‑multiplier methodology deliver the promised efficiency gains, other AI developers may need to invest in similar cross‑hardware tooling to stay competitive, and cloud providers could see increased demand for diverse accelerator offerings.
+**「Impact」** AI teams that rely on a single hardware vendor may need to reconsider multi‑chip approaches to achieve similar flexibility and cost efficiency, and cloud providers could see increased demand for supporting diverse accelerator ecosystems as Anthropic’s model demonstrates viable cross‑chip deployment at scale.
 
-**Tags**: `#AI`, `#Hardware`, `#Cloud Computing`, `#Startup`
+**Tags**: `#AI`, `#Compute`, `#Hardware`, `#Cloud`
 
 ---
 
 <a id="item-tech-news-2"></a>
-### [WorkflowArena Shows Strongest Model May Not Be Best Coordinator](https://www.reddit.com/r/MachineLearning/comments/1xt9hbe/would_you_pick_your_strongest_model_to_coordinate/) ⭐️ 7.0/10
+### [Databricks launches Genie AI agent with multi‑step, ontology‑driven capabilities](https://techcrunch.com/2026/11/11/databricks-new-ai-agent-tells-ceo-ali-ghodsi-the-unvarnished-truth/) ⭐️ 8.0/10
 
-The new WorkflowArena benchmark \(145 long‑horizon tasks in eight domains\) evaluated whether the strongest language model makes the best coordinator for mixed‑model teams. In a test on 32 challenging tasks, Opus 5.5’s static workflows raised the continuous scores of four executor models by an average of 6.41 points, while the stronger GPT‑6 Astra’s workflows reduced the average score by 2.53 points. The results indicate that a model’s own task performance does not guarantee that its workflow design will benefit other agents. Practitioners should therefore assess coordinator models separately from overall system output rather than selecting them solely on individual benchmark scores.
+Databricks unveiled an updated Genie AI agent that can execute multi‑step jobs by using an internal ontology to provide contextual understanding of the data customers store on the Databricks platform. The agent is positioned as an always‑on assistant for corporate leaders, allowing them to assign a wide range of tasks that it completes unsupervised, such as analyzing employee‑satisfaction surveys, summarizing sales pitches, and preparing interview briefings. Databricks also highlighted that usage costs can be managed through its Unity Gateway product, which lets organizations set limits and swap in cheaper open‑weight models.
 
-reddit · r/MachineLearning · /u/OliviaYii · Nov 11, 05:25
+rss · TechCrunch · Nov 11, 15:00
 
-**「Prerequisite: Multi‑agent coordination benchmarks」** WorkflowArena is a new benchmark released by the AI research team at Einsia that evaluates how effectively a language model can serve as a coordinator for other agents. Unlike most multi‑agent evaluations that score only the final output of the whole team, WorkflowArena records the delegation decisions, the static workflows produced by the coordinator, and checks whether the final deliverable meets task requirements across 145 long‑horizon tasks in eight domains. This background helps readers understand why the experiment comparing Opus 5.5 and GPT‑6 Astra’s coordination abilities is significant.
+**「Background」** Genie is Databricks’ AI‑agent product that lets users issue natural‑language commands to run data‑engineering and analytics tasks on the Databricks platform. The new version adds an ontology—a structured knowledge graph of the customer’s stored data and metadata—so the agent can maintain context across multi‑step workflows. Databricks also bundles the agent with Unity Gateway, its enterprise AI gateway that lets organizations set usage limits and switch to lower‑cost open‑weight models to control spending on AI agents.
 
-**「Impact」** Teams building multi‑model pipelines may need to benchmark coordinator models on workflow effectiveness, adding a dedicated evaluation step before deployment to avoid performance drops caused by unsuitable coordination strategies.
+**「Impact」** Business leaders can now rely on Genie to surface unfiltered insights from internal data—such as low‑scoring survey areas or failed sales calls—without needing to solicit feedback directly, while the Unity Gateway controls help prevent runaway AI‑driven expenses.
 
 <details><summary>References</summary>
 <ul>
-<li><a href="https://einsia.ai/">Einsia ：Where AI Learns How Experts Work</a></li>
+<li><a href="https://www.databricks.com/product/artificial-intelligence/unity-gateway">Unity Gateway: Databricks AI gateway for cost and security</a></li>
 
 </ul>
 </details>
 
-**Tags**: `#AI coordination`, `#benchmarks`, `#large language models`, `#agentic AI`
+**Tags**: `#Databricks`, `#AI agents`, `#Data engineering`, `#Enterprise AI`
+
+---
+
+<a id="item-tech-news-3"></a>
+### [New York&\#x27;s RAISE Act Requires Registration and Incident Reporting from Large AI Labs](https://techcrunch.com/2026/11/10/openai-anthropic-face-new-oversight-as-new-yorks-ai-safety-law-takes-effect/) ⭐️ 8.0/10
+
+New York has opened a registration portal for the RAISE Act, obligating large frontier AI developers—defined as companies with over $500 million in annual revenue such as OpenAI and Anthropic—to register by January 1, 2027. The law also mandates publishing safety frameworks on their websites, issuing public model‑transparency reports, and reporting critical safety incidents within 72 hours. Enforcement will be handled by the newly created Office of Digital Innovation, Governance, Integrity, and Trust \(DIGIT\), with penalties of up to $1 million for a first violation and $3 million for subsequent violations. The state simultaneously launched the New York Center for AI Responsibility and Research to evaluate AI safety independently.
+
+rss · TechCrunch · Nov 10, 20:52
+
+**「Prerequisite AI safety regulations in New York」** The RAISE Act builds on earlier New York AI safety legislation, such as the 2025 law that required AI chatbots to disclose they are non‑human and to monitor for suicidal ideation, and the 2026 chatbot‑for‑minors law that restricts deceptive or harmful interactions. Those prior statutes created the state’s enforcement framework and the Office of Digital Innovation, Governance, Integrity, and Trust \(DIGIT\), which now administers the new registration and reporting requirements for frontier AI developers.
+
+**「Impact」** Affected companies must build compliance pipelines to publish frameworks, monitor incidents in real time, and submit reports within the tight 72‑hour window, or risk multi‑million‑dollar fines and enforcement actions.
+
+<details><summary>References</summary>
+<ul>
+<li><a href="https://techcrunch.com/2026/11/10/openai-anthropic-face-new-oversight-as-new-yorks-ai-safety-law-takes-effect/">OpenAI, Anthropic face new oversight as New York’s AI safety ...</a></li>
+<li><a href="https://casrai.org/guides/new-york-raise-act-explained">New York RAISE Act: What It Requires — CASRAI</a></li>
+
+</ul>
+</details>
+
+**Tags**: `#AI regulation`, `#AI safety`, `#Industry policy`
+
+---
+
+<a id="item-tech-news-4"></a>
+### [DeepMind uses AI to formally verify key parts of Signal protocol](https://arstechnica.com/ai/2026/11/signals-encryption-just-passed-an-ai-powered-mathematical-checkup/) ⭐️ 8.0/10
+
+Google DeepMind researchers applied their new AI framework AlphaProof Code to formally verify several core cryptographic guarantees of the Signal protocol, completing the proof‑of‑concept in about four weeks. The AI‑assisted analysis proved the targeted properties, found no new vulnerabilities, and correctly identified known, already‑fixed flaws in older protocol versions. The verification covers only selected components of the protocol—not the entire Signal mobile app—and the team released the specification and proof for reuse by other formal‑verification efforts.
+
+rss · Ars Technica · Nov 11, 14:08
+
+**「Formal verification and AI assistance」** Formal verification uses mathematical proofs—often written in proof assistants such as Lean—to guarantee that software behaves as specified, a process that traditionally required extensive manual modeling of code and properties. Recent AI‑driven frameworks, like DeepMind’s AlphaProof Code, automate the translation of live code into Lean theorems using agentic AI, enabling much faster verification of larger codebases such as the Signal protocol. This capability builds on earlier manual efforts to verify cryptographic primitives but had not been applied at the scale of a widely deployed messaging protocol before.
+
+**「Impact」** By releasing the verified specification and proof, DeepMind provides a concrete artifact that other cryptographers and security engineers can build on, potentially accelerating AI‑aided formal verification of similar communication protocols.
+
+<details><summary>References</summary>
+<ul>
+<li><a href="https://explainx.ai/blog/google-deepmind-alphaproof-code-signal-protocol-formal-verification-2026">AlphaProof Code: Signal Protocol Verified in 4 Weeks ...</a></li>
+<li><a href="https://deepmind.google/blog/introducing-alphaproof-code/">Formal Verification of Signal’s Protocol with Gemini</a></li>
+
+</ul>
+</details>
+
+**Tags**: `#AI`, `#formal verification`, `#cryptography`, `#software security`, `#Signal`
 
 ---
 
 ## Financial News
 
 <a id="item-finance-news-1"></a>
-### [Fed Governor Waller Signals Likely 50‑bp Rate Hike in December](https://www.cnbc.com/2026/11/10/fed-governor-waller-sees-december-hike-likely.html) ⭐️ 8.0/10
+### [Fed&\#x27;s Goolsbee calls inflation report &quot;borderline disturbing&quot;](https://www.cnbc.com/2026/11/11/goolsbee-october-inflation-fed-rates-disturbing-distressing.html) ⭐️ 8.0/10
 
-Fed Governor Christopher Waller said a 50‑basis‑point increase in the policy rate is likely at the December meeting.
+Chicago Fed President Austan Goolsbee said the October consumer price index rose 0.4% seasonally adjusted, calling the result &quot;borderline disturbing.&quot;
 
-rss · CNBC Finance · Nov 10, 17:13
+rss · CNBC Finance · Nov 11, 16:49
 
-**「Context」** Governor Christopher Waller, a Fed board member since 2020, is speaking after the Federal Open Market Committee left rates unchanged in October following a 25‑basis‑point hike in September.
+**「Background」** The Fed had lifted its policy rate to a 3.75‑4% range in September and held it steady in October as inflation remained above target.
 
-<details><summary>References</summary>
-<ul>
-<li><a href="https://en.wikipedia.org/wiki/Christopher_Waller">Christopher Waller - Wikipedia</a></li>
+**「Impact」** Fed funds futures now price a 15% chance of a half‑point rate hike in December and a 60% chance of rates reaching 4.25‑4.5% by January, affecting borrowing costs for households and businesses.
 
-</ul>
-</details>
-
-**Tags**: `#monetary policy`, `#Federal Reserve`, `#interest rates`
+**Tags**: `#inflation`, `#Federal Reserve`, `#monetary policy`, `#CPI`
 
 ---
