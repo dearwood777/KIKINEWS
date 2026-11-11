@@ -7,30 +7,41 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe
+      - name: List models
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           set +e
-          echo "gemini_len=${#GOOGLE_API_KEY} groq_len=${#GROQ_API_KEY}"
-          echo "--- dns ---"
-          getent hosts generativelanguage.googleapis.com || echo "dns_fail_gemini"
-          getent hosts api.groq.com || echo "dns_fail_groq"
-          echo "--- google.com ---"
-          curl -s -o /dev/null -m 15 -w "google.com HTTP=%{http_code} t=%{time_total}\n" https://www.google.com || echo "google_fail=$?"
-          echo "--- gemini ---"
-          for M in gemini-flash-latest gemini-2.5-flash; do
-            curl -s -m 25 -o resp.json -w "gemini[$M] HTTP=%{http_code} t=%{time_total}\n" \
-              -X POST "https://generativelanguage.googleapis.com/v1beta/models/${M}:generateContent" \
-              -H 'Content-Type: application/json' -H "X-goog-api-key: ${GOOGLE_API_KEY}" \
-              -d '{"contents":[{"parts":[{"text":"Say OK"}]}]}' || echo "gemini_exit=$?"
-            head -c 400 resp.json 2>/dev/null; echo
-          done
-          echo "--- groq ---"
-          curl -s -m 25 -o g.json -w "groq HTTP=%{http_code} t=%{time_total}\n" \
-            -X POST "https://api.groq.com/openai/v1/chat/completions" \
-            -H "Authorization: Bearer ${GROQ_API_KEY}" -H 'Content-Type: application/json' \
-            -d '{"model":"llama-3.3-70b-versatile","messages":[{"role":"user","content":"Say OK"}]}' || echo "groq_exit=$?"
-          head -c 400 g.json 2>/dev/null; echo
+          echo "=== gemini models ==="
+          curl -s -m 30 "https://generativelanguage.googleapis.com/v1beta/models" \
+            -H "X-goog-api-key: ${GOOGLE_API_KEY}" -o gm.json -w "HTTP=%{http_code}\n"
+          python3 - <<'PY'
+import json
+try:
+    d = json.load(open('gm.json'))
+    names = [m.get('name') for m in d.get('models', [])]
+    print("count=", len(names))
+    ok = [n for n in names if ('flash' in n or 'pro' in n)]
+    for n in sorted(ok)[:60]:
+        print(" ", n)
+except Exception as e:
+    print("parse_fail", e)
+    print(open('gm.json').read()[:500])
+PY
+          echo "=== groq models ==="
+          curl -s -m 30 "https://api.groq.com/openai/v1/models" \
+            -H "Authorization: Bearer ${GROQ_API_KEY}" -o gr.json -w "HTTP=%{http_code}\n"
+          python3 - <<'PY'
+import json
+try:
+    d = json.load(open('gr.json'))
+    ids = [m.get('id') for m in d.get('data', [])]
+    print("count=", len(ids))
+    for i in sorted(ids)[:60]:
+        print(" ", i)
+except Exception as e:
+    print("parse_fail", e)
+    print(open('gr.json').read()[:500])
+PY
           exit 0
