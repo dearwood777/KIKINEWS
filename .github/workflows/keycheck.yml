@@ -1,0 +1,30 @@
+name: Key Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Gemini
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          echo "gemini_key_len=${#GOOGLE_API_KEY}"
+          echo "groq_key_len=${#GROQ_API_KEY}"
+          for M in gemini-flash-latest gemini-2.5-flash; do
+            echo "--- model: $M ---"
+            curl -s -m 30 -o resp.json -w "HTTP=%{http_code}\n" \
+              -X POST "https://generativelanguage.googleapis.com/v1beta/models/${M}:generateContent" \
+              -H 'Content-Type: application/json' -H "X-goog-api-key: ${GOOGLE_API_KEY}" \
+              -d '{"contents":[{"parts":[{"text":"Say OK"}]}]}'
+            head -c 600 resp.json; echo
+          done
+          echo "--- groq ---"
+          curl -s -m 30 -o g.json -w "HTTP=%{http_code}\n" \
+            -X POST "https://api.groq.com/openai/v1/chat/completions" \
+            -H "Authorization: Bearer ${GROQ_API_KEY}" -H 'Content-Type: application/json' \
+            -d '{"model":"llama-3.3-70b-versatile","messages":[{"role":"user","content":"Say OK"}]}'
+          head -c 600 g.json; echo
