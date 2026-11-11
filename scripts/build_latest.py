@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-把 Horizon 生成的最新一期日报转成手机友好的单页 HTML。
+把 Horizon 生成的最新一期日报转成手机友好的单页 HTML（中英双语同页）。
 
 输入：docs/_posts/YYYY-MM-DD-summary-<lang>.md（Horizon 自动写入）
-输出：docs/latest.html / docs/latest-en.html   —— APK 直接加载这个地址
-      docs/latest.json                          —— 版本信息，App 用来判断是否更新
+输出：docs/latest.html      —— 中英双语，页面顶部可切换；APK 默认加载这个
+      docs/latest-en.html   —— 纯英文版（兼容/备用）
+      docs/latest.json      —— 版本信息，App 用来判断是否更新
 
-只依赖 markdown 库，在 GitHub Actions 上 pip 安装即可。
+只依赖 markdown 库。
 """
 from __future__ import annotations
 
 import glob
+import html
 import json
 import os
 import re
@@ -22,77 +24,185 @@ import markdown
 DOCS = "docs"
 POSTS = os.path.join(DOCS, "_posts")
 
+MD_EXTENSIONS = ["extra", "tables", "sane_lists", "fenced_code", "nl2br"]
+
+FRONT_MATTER = re.compile(r"^---\s*\n.*?\n---\s*\n", re.S)
+SUMMARY_LINE = re.compile(r"^>\s*(.+)$", re.M)
+GROUP_LINE = re.compile(r"^\*\*(.+?)\*\*$")
+TOC_LINE = re.compile(
+    r"^\d+\.\s*\[(.+?)\]\(#(item-[^)]+)\)\s*(?:⭐️\s*(\d+(?:\.\d+)?)\s*/\s*10)?"
+)
+ITEM_MARK = re.compile(r'<a id="(item-[^"]+)"></a>')
+TITLE_LINE = re.compile(
+    r"^###\s*\[(.+?)\]\((.+?)\)\s*(?:⭐️\s*(\d+(?:\.\d+)?)\s*/\s*10)?"
+)
+SCORE_TAIL = re.compile(r"⭐️?\s*(\d+(?:\.\d+)?)\s*/\s*10")
+SRC_LINE = re.compile(r"^([^\s·]+)\s·\s.*")  # e.g. "rss · Simon Willison · 11月11日 15:11"
+TAG_LINE = re.compile(r"^\*\*标签\*\*")
+CODE_CHIP = re.compile(r"<code>(.+?)</code>")
+
 TEMPLATE = """<!DOCTYPE html>
-<html lang="{lang}">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
 <title>{title}</title>
 <style>
 :root{{
-  --bg:#ffffff; --fg:#16181d; --muted:#6b7280; --line:#e6e8ee;
-  --card:#f7f8fa; --accent:#2f6bff;
+  --bg:#f5f7fb; --fg:#141821; --muted:#6d7789; --line:#e3e8f0;
+  --card:#ffffff; --soft:#f0f3f9; --accent:#2563eb; --accent2:#0ea5a4;
+  --score:#0f766e; --chip:#eef2f8; --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
 }}
 @media (prefers-color-scheme: dark){{
   :root{{
-    --bg:#111318; --fg:#e7e9ee; --muted:#9aa3b2; --line:#242a35;
-    --card:#171a21; --accent:#7aa2ff;
+    --bg:#0b1220; --fg:#e8edf6; --muted:#93a0b6; --line:#1d2738;
+    --card:#121a29; --soft:#16202f; --accent:#6ba4ff; --accent2:#2dd4bf;
+    --score:#2dd4bf; --chip:#1a2436; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
   }}
 }}
 *{{box-sizing:border-box}}
-html{{-webkit-text-size-adjust:100%}}
+html{{-webkit-text-size-adjust:100%;scroll-behavior:smooth;overflow-x:hidden}}
 body{{
-  margin:0; background:var(--bg); color:var(--fg);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
-              "Hiragino Sans GB","Microsoft YaHei",sans-serif;
-  font-size:17px; line-height:1.75;
+  margin:0;background:var(--bg);color:var(--fg);max-width:100vw;overflow-x:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:16.5px;line-height:1.78;-webkit-font-smoothing:antialiased;
+  overflow-wrap:break-word;
 }}
-.wrap{{max-width:760px;margin:0 auto;padding:0 18px 64px;
-      padding-bottom:calc(64px + env(safe-area-inset-bottom));}}
-header{{
-  padding:26px 18px 18px;border-bottom:1px solid var(--line);margin-bottom:22px;
+.wrap{{max-width:720px;margin:0 auto;padding:0 16px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom));}}
+
+/* ---------- header ---------- */
+.hero{{
+  margin:0 -16px 18px;padding:30px 22px 22px;color:#fff;
+  background:linear-gradient(135deg,#2563eb 0%,#0ea5a4 100%);
+  border-radius:0 0 22px 22px;
 }}
-h1.page{{font-size:20px;margin:0 0 6px;letter-spacing:.2px}}
-.meta{{color:var(--muted);font-size:13px}}
-article h1{{font-size:23px;line-height:1.4;margin:4px 0 14px}}
-article h2{{font-size:19px;margin:30px 0 10px;padding-left:10px;
-            border-left:3px solid var(--accent)}}
-article h3{{font-size:17px;margin:22px 0 8px;color:var(--fg)}}
-article p{{margin:0 0 14px}}
-article a{{color:var(--accent);text-decoration:none;word-break:break-word}}
-article ul,article ol{{padding-left:22px;margin:0 0 16px}}
-article li{{margin:0 0 8px}}
-article blockquote{{margin:0 0 16px;padding:10px 14px;background:var(--card);
-                   border-left:3px solid var(--line);color:var(--muted);font-size:15px}}
-article code{{background:var(--card);padding:2px 6px;border-radius:5px;font-size:14px}}
-article pre{{background:var(--card);padding:12px;border-radius:10px;overflow-x:auto}}
-article table{{width:100%;border-collapse:collapse;margin:0 0 16px;font-size:15px}}
-article th,article td{{border:1px solid var(--line);padding:8px 10px;text-align:left}}
-article img{{max-width:100%;height:auto;border-radius:10px}}
-article hr{{border:0;border-top:1px solid var(--line);margin:28px 0}}
-footer{{margin-top:40px;color:var(--muted);font-size:13px;text-align:center}}
+@media (prefers-color-scheme: dark){{
+  .hero{{background:linear-gradient(135deg,#1e40af 0%,#0f766e 100%)}}
+}}
+.hero .brand{{font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}}
+.hero h1{{margin:6px 0 8px;font-size:23px;line-height:1.35;font-weight:700;letter-spacing:.2px}}
+.hero .meta{{font-size:12.5px;opacity:.9}}
+.pillrow{{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}}
+.pill{{
+  font-size:12.5px;padding:5px 11px;border-radius:999px;
+  background:rgba(255,255,255,.18);backdrop-filter:blur(6px);white-space:nowrap;
+}}
+
+/* ---------- lang switch ---------- */
+.tabs{{display:flex;gap:6px;background:var(--soft);padding:4px;border-radius:12px;margin:0 0 18px}}
+.tabs button{{
+  flex:1;border:0;background:transparent;color:var(--muted);font-size:14.5px;font-weight:600;
+  padding:9px 0;border-radius:9px;cursor:pointer;font-family:inherit;transition:.18s;
+}}
+.tabs button.on{{background:var(--card);color:var(--fg);box-shadow:0 1px 3px rgba(16,24,40,.12)}}
+
+/* ---------- summary ---------- */
+.summary{{
+  display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:13px 15px;font-size:14.5px;color:var(--muted);margin-bottom:16px;box-shadow:var(--shadow);
+}}
+.summary b{{color:var(--fg)}}
+
+/* ---------- toc ---------- */
+.toc{{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}}
+.toc a{{
+  text-decoration:none;color:var(--fg);background:var(--chip);border:1px solid var(--line);
+  padding:6px 12px;border-radius:999px;font-size:13.5px;
+}}
+.toc a .n{{color:var(--muted);font-size:12px;margin-left:4px}}
+
+/* ---------- group heading ---------- */
+.group{{
+  display:flex;align-items:center;gap:10px;margin:26px 0 12px;
+  font-size:15px;font-weight:700;color:var(--fg);
+}}
+.group:before{{content:"";width:4px;height:16px;border-radius:2px;background:var(--accent)}}
+.group span{{color:var(--muted);font-weight:500;font-size:12.5px}}
+
+/* ---------- card ---------- */
+.card{{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:16px 16px 6px;margin:0 0 14px;box-shadow:var(--shadow);scroll-margin-top:16px;
+}}
+.card h3{{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700}}
+.card h3 a{{color:var(--fg);text-decoration:none}}
+.card h3 a:active{{color:var(--accent)}}
+.score{{
+  display:inline-flex;align-items:center;gap:3px;vertical-align:middle;
+  font-size:12px;font-weight:700;color:var(--score);background:var(--chip);
+  border-radius:999px;padding:2px 8px;margin-left:6px;
+}}
+.src{{font-size:12.5px;color:var(--muted);margin:-2px 0 10px}}
+.card p{{margin:0 0 12px;font-size:15.5px;color:var(--fg)}}
+.card a{{color:var(--accent);text-decoration:none;word-break:break-word}}
+.note{{
+  border-radius:12px;padding:10px 12px 2px;font-size:14.5px;background:var(--soft);
+  border-left:3px solid var(--accent2);margin:0 0 12px;color:var(--fg);
+}}
+.note .lbl{{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--accent2);margin-bottom:2px}}
+.note.bg{{border-left-color:var(--accent)}}
+.note.bg .lbl{{color:var(--accent)}}
+.tags{{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}}
+.chip{{font-size:12px;background:var(--chip);color:var(--muted);padding:3px 9px;border-radius:999px;border:1px solid var(--line)}}
+details{{margin:0 0 14px;font-size:13.5px}}
+details summary{{color:var(--muted);cursor:pointer}}
+details ul{{margin:8px 0 0;padding-left:18px}}
+.card ul,.card ol{{padding-left:20px;margin:0 0 12px}}
+.card li{{margin:0 0 6px}}
+.card blockquote{{margin:0 0 12px;padding:8px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:14px}}
+.card code{{background:var(--chip);padding:2px 6px;border-radius:5px;font-size:13px}}
+.card pre{{background:var(--soft);padding:12px;border-radius:10px;overflow-x:auto;font-size:13px}}
+.card img{{max-width:100%;height:auto;border-radius:10px}}
+.card table{{width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px}}
+.card th,.card td{{border:1px solid var(--line);padding:7px 9px;text-align:left}}
+
+footer{{margin-top:34px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.9}}
+footer .dot{{opacity:.45;margin:0 6px}}
+.top{{
+  position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:9;
+  width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);
+  color:var(--fg);font-size:18px;box-shadow:var(--shadow);cursor:pointer;display:none;align-items:center;justify-content:center;
+}}
+.top.show{{display:flex}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1 class="page">{header}</h1>
-    <div class="meta">更新于 {updated} · Horizon 自动生成</div>
-  </header>
-  <article>
-{body}
-  </article>
-  <footer>内容由 AI 筛选与撰写，可能有误，请以原文为准。</footer>
+  <div class="hero">
+    <div class="brand">KIKI DAILY · HORIZON</div>
+    <h1>{hero_title}</h1>
+    <div class="meta">{updated} · 自动生成</div>
+    <div class="pillrow">{pills}</div>
+  </div>
+
+  <div class="tabs">
+    <button id="tab-zh" class="on" onclick="sw('zh')">中文</button>
+    <button id="tab-en" onclick="sw('en')">English</button>
+  </div>
+
+{langs}
+
+  <footer>
+    <div>由 AI 筛选与撰写，可能存在偏差，请以原文为准。</div>
+    <div>Generated by Horizon<span class="dot">·</span>deployed on GitHub Pages<span class="dot">·</span>{updated_short}</div>
+  </footer>
 </div>
+<button class="top" id="totop" onclick="window.scrollTo({{top:0,behavior:'smooth'}})">↑</button>
+<script>
+function sw(l){{
+  document.querySelectorAll('[data-lang]').forEach(function(s){{s.style.display=(s.getAttribute('data-lang')===l)?'block':'none';}});
+  document.getElementById('tab-zh').classList.toggle('on',l==='zh');
+  document.getElementById('tab-en').classList.toggle('on',l==='en');
+}}
+window.addEventListener('scroll',function(){{
+  document.getElementById('totop').classList.toggle('show',window.scrollY>600);
+}});
+</script>
 </body>
 </html>
 """
-
-FRONT_MATTER = re.compile(r"^---\s*\n.*?\n---\s*\n", re.S)
-
-MD_EXTENSIONS = ["extra", "tables", "sane_lists", "fenced_code", "nl2br"]
 
 
 def newest_post(lang: str) -> str | None:
@@ -100,43 +210,269 @@ def newest_post(lang: str) -> str | None:
     return files[-1] if files else None
 
 
-def render(path: str, lang: str, out_name: str) -> dict | None:
+def md(text: str) -> str:
+    return markdown.markdown(text.strip(), extensions=MD_EXTENSIONS, output_format="html5")
+
+
+def parse_post(path: str) -> dict:
     raw = open(path, encoding="utf-8").read()
     raw = FRONT_MATTER.sub("", raw, count=1)
-    title_day = re.search(r"(\d{4}-\d{2}-\d{2})", os.path.basename(path))
-    day = title_day.group(1) if title_day else ""
+    day = re.search(r"(\d{4}-\d{2}-\d{2})", os.path.basename(path))
+    summary_m = SUMMARY_LINE.search(raw)
+    summary = summary_m.group(1).strip() if summary_m else ""
 
-    html = markdown.markdown(
-        raw, extensions=MD_EXTENSIONS, output_format="html5"
+    parts = ITEM_MARK.split(raw)
+    head, rest = parts[0], parts[1:]
+
+    toc: list[dict] = []
+    current_group = None
+    for line in head.splitlines():
+        g = GROUP_LINE.match(line.strip())
+        if g:
+            current_group = g.group(1).strip()
+            toc.append({"group": current_group, "items": []})
+            continue
+        t = TOC_LINE.match(line.strip())
+        if t and toc:
+            toc[-1]["items"].append(
+                {"title": t.group(1).strip(), "anchor": t.group(2), "score": t.group(3) or ""}
+            )
+
+    items = []
+    for i in range(0, len(rest), 2):
+        anchor = rest[i]
+        body = rest[i + 1] if i + 1 < len(rest) else ""
+        # 下一个分组标题（## xxx）会混进上一条的正文尾部，切掉
+        gm = re.search(r"\n##\s+\S", body)
+        if gm:
+            body = body[: gm.start()]
+        lines = body.splitlines()
+        if not lines:
+            continue
+        title, url, score = "", "", ""
+        idx = 0
+        for j, ln in enumerate(lines):
+            m = TITLE_LINE.match(ln.strip())
+            if m:
+                title, url, score = m.group(1).strip(), m.group(2).strip(), m.group(3) or ""
+                idx = j + 1
+                break
+        if not title:
+            continue
+        # 标题里可能残留星标
+        sm = SCORE_TAIL.search(title)
+        if sm:
+            score = score or sm.group(1)
+            title = SCORE_TAIL.sub("", title).strip()
+
+        src_text = ""
+        paras: list[str] = []
+        notes: list[dict] = []
+        tags: list[str] = []
+        extra_html = ""
+        buf: list[str] = []
+
+        def flush() -> None:
+            if buf:
+                paras.append("\n".join(buf).strip())
+                buf.clear()
+
+        body_lines = lines[idx:]
+        k = 0
+        while k < len(body_lines):
+            ln = body_lines[k]
+            s = ln.strip()
+            if s.startswith("<details"):
+                flush()
+                block = [ln]
+                while k + 1 < len(body_lines) and "</details>" not in body_lines[k]:
+                    k += 1
+                    block.append(body_lines[k])
+                extra_html += "\n".join(block)
+                k += 1
+                continue
+            if s in ("", "---"):
+                flush()
+                k += 1
+                continue
+            if SRC_LINE.match(s) and not src_text and not buf:
+                src_text = s
+                k += 1
+                continue
+            if TAG_LINE.match(s):
+                flush()
+                tags = [t.strip("` ") for t in re.findall(r"`([^`]+)`", s)]
+                if not tags:
+                    tags = [x.strip() for x in re.split("[,，]", s.split("：")[-1].split(":")[-1]) if x.strip()]
+                k += 1
+                continue
+            nm = re.match(r"^\*\*「(.+?)」\*\*\s*(.*)$", s)
+            if nm:
+                flush()
+                note_body = [nm.group(2)]
+                k += 1
+                while k < len(body_lines):
+                    nxt = body_lines[k].strip()
+                    if not nxt or nxt == "---" or nxt.startswith("**「") or nxt.startswith("**标签") or nxt.startswith("<details"):
+                        break
+                    note_body.append(nxt)
+                    k += 1
+                notes.append({"kind": nm.group(1), "text": "\n".join(note_body).strip()})
+                continue
+            buf.append(ln)
+            k += 1
+        flush()
+
+        items.append(
+            {
+                "anchor": anchor,
+                "title": title,
+                "url": url,
+                "score": score,
+                "src": src_text,
+                "paras": [md(p) for p in paras if p],
+                "notes": [{"kind": n["kind"], "html": md(n["text"])} for n in notes],
+                "tags": tags,
+                "extra": extra_html,
+            }
+        )
+
+    return {"day": day.group(1) if day else "", "summary": summary, "toc": toc, "items": items}
+
+
+def render_lang(data: dict, lang: str) -> str:
+    card_html = []
+    for it in data["items"]:
+        score = (
+            f'<span class="score">▍{html.escape(it["score"])}/10</span>' if it["score"] else ""
+        )
+        title_html = (
+            f'<a href="{html.escape(it["url"])}" target="_blank" rel="noopener">{html.escape(it["title"])}</a>'
+            if it["url"]
+            else html.escape(it["title"])
+        )
+        src = f'<div class="src">{html.escape(it["src"])}</div>' if it["src"] else ""
+        body = "".join(it["paras"])
+        notes = ""
+        for n in it["notes"]:
+            cls = "note bg" if n["kind"] in ("背景", "Background") else "note"
+            notes += f'<div class="{cls}"><span class="lbl">{html.escape(n["kind"])}</span>{n["html"]}</div>'
+        tags = ""
+        if it["tags"]:
+            chips = "".join(f'<span class="chip">{html.escape(t)}</span>' for t in it["tags"])
+            tags = f'<div class="tags">{chips}</div>'
+        card_html.append(
+            f'<article class="card" id="{it["anchor"]}">'
+            f'<h3>{title_html}{score}</h3>{src}{body}{notes}{tags}{it["extra"]}</article>'
+        )
+
+    anchor_to_card: dict[str, str] = {}
+    for idx, it in enumerate(data["items"]):
+        anchor_to_card[it["anchor"]] = card_html[idx]
+
+    blocks: list[str] = []
+    emitted: list[str] = []
+
+    if data["toc"]:
+        nav = "".join(
+            f'<a href="#{i["anchor"]}">{html.escape(i["title"])}</a>'
+            for g in data["toc"] for i in g["items"] if i["anchor"] in anchor_to_card
+        )
+        if nav:
+            blocks.append(f'<div class="toc">{nav}</div>')
+
+    for g in data["toc"]:
+        items = [i for i in g["items"] if i["anchor"] in anchor_to_card]
+        if not items:
+            continue
+        label = "条" if lang == "zh" else "items"
+        blocks.append(
+            f'<div class="group">{html.escape(g["group"])}<span>{len(items)} {label}</span></div>'
+        )
+        for i in items:
+            blocks.append(anchor_to_card[i["anchor"]])
+            emitted.append(i["anchor"])
+
+    # 目录里没列到的条目（结构异常时）也要输出，保证不漏
+    for it in data["items"]:
+        if it["anchor"] not in emitted:
+            blocks.append(anchor_to_card[it["anchor"]])
+
+    if not blocks:
+        blocks = card_html
+
+    summary = ""
+    if data["summary"]:
+        label = "本期" if lang == "zh" else "Summary"
+        summary = (
+            f'<div class="summary"><span>📌</span><div><b>{label}</b> · '
+            f'{html.escape(data["summary"])}</div></div>'
+        )
+
+    return (
+        f'<section data-lang="{lang}" style="display:{"block" if lang == "zh" else "none"}">'
+        f"{summary}{''.join(blocks)}</section>"
     )
-    header = "每日速递 · " + day if lang == "zh" else "Daily Digest · " + day
-    page = TEMPLATE.format(
-        lang="zh-CN" if lang == "zh" else "en",
-        title=("Horizon 每日速递 " + day) if lang == "zh" else ("Horizon Daily " + day),
-        header=header,
-        updated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-        body=html,
-    )
-    with open(os.path.join(DOCS, out_name), "w", encoding="utf-8") as f:
-        f.write(page)
-    return {"lang": lang, "date": day, "file": out_name,
-            "source": os.path.basename(path)}
 
 
 def main() -> None:
-    written = []
-    for lang, out_name in (("zh", "latest.html"), ("en", "latest-en.html")):
+    posts = {}
+    for lang in ("zh", "en"):
         p = newest_post(lang)
-        if not p:
-            print(f"[skip] no post for lang={lang}")
-            continue
-        info = render(p, lang, out_name)
-        written.append(info)
-        print(f"[ok] {out_name} <= {info['source']} ({info['date']})")
+        if p:
+            posts[lang] = (p, parse_post(p))
+            print(f"[ok] {lang} <= {os.path.basename(p)} ({len(posts[lang][1]['items'])} items)")
+
+    if not posts:
+        print("[skip] no posts")
+        return
+
+    day = next(iter(posts.values()))[1]["day"]
+    count = max(len(d["items"]) for _, d in posts.values())
+    src_count = ""
+    for _, d in posts.values():
+        m = re.search(r"从\s*(\d+)\s*条", d["summary"])
+        if m:
+            src_count = m.group(1)
+            break
+
+    langs_html = "".join(render_lang(d, l) for l, (_, d) in posts.items())
+    pills = f'<span class="pill">共 {count} 条精选</span>'
+    if src_count:
+        pills += f'<span class="pill">从 {src_count} 条内容中筛出</span>'
+    pills += '<span class="pill">中英双语</span>'
+
+    now = datetime.now(timezone.utc)
+    page = TEMPLATE.format(
+        title=f"KIKI 每日速递 {day}",
+        hero_title=f"{day} 科技与财经速递",
+        updated=now.strftime("%Y-%m-%d %H:%M UTC"),
+        updated_short=now.strftime("%Y-%m-%d"),
+        pills=pills,
+        langs=langs_html,
+    )
+    with open(os.path.join(DOCS, "latest.html"), "w", encoding="utf-8") as f:
+        f.write(page)
+    print("[ok] latest.html (zh+en)")
+
+    if "en" in posts:
+        en_page = TEMPLATE.replace('id="tab-zh" class="on"', 'id="tab-zh"')
+        en_page = en_page.replace('id="tab-en"', 'id="tab-en" class="on"')
+        en_page = en_page.replace('data-lang="en" style="display:none"', 'data-lang="en" style="display:block"')
+        en_page = en_page.replace('data-lang="zh" style="display:block"', 'data-lang="zh" style="display:none"')
+        with open(os.path.join(DOCS, "latest-en.html"), "w", encoding="utf-8") as f:
+            f.write(en_page)
+        print("[ok] latest-en.html")
 
     manifest = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "items": written,
+        "generated_at": now.isoformat(timespec="seconds"),
+        "date": day,
+        "item_count": count,
+        "items": [
+            {"lang": l, "date": d["day"], "file": "latest.html" if l == "zh" else "latest-en.html",
+             "source": os.path.basename(p)}
+            for l, (p, d) in posts.items()
+        ],
     }
     with open(os.path.join(DOCS, "latest.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)

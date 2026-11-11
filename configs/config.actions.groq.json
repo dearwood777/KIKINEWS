@@ -4,14 +4,14 @@
     "model": "openai/gpt-oss-120b",
     "api_key_env": "GROQ_API_KEY",
     "temperature": 0.3,
-    "max_tokens": 4096,
+    "max_tokens": 8192,
     "throttle_sec": 1,
     "languages": [
       "zh",
       "en"
     ],
     "analysis_concurrency": 3,
-    "enrichment_concurrency": 3,
+    "enrichment_concurrency": 2,
     "base_url": "https://api.groq.com/openai/v1"
   },
   "processing": {
@@ -64,8 +64,8 @@
     ],
     "hackernews": {
       "enabled": true,
-      "fetch_top_stories": 25,
-      "min_score": 150,
+      "fetch_top_stories": 40,
+      "min_score": 100,
       "profile": "tech-news"
     },
     "rss": [
@@ -117,9 +117,40 @@
       {
         "name": "LWN.net",
         "url": "https://lwn.net/headlines/full_text?key=${LWN_KEY}",
-        "enabled": true,
+        "enabled": false,
         "category": "linux-kernel",
         "profile": "tech-news"
+      },
+      {
+        "name": "TechCrunch",
+        "url": "https://techcrunch.com/feed/",
+        "enabled": true,
+        "category": "tech-industry",
+        "profile": "tech-news",
+        "content_extractor": "trafilatura"
+      },
+      {
+        "name": "Ars Technica",
+        "url": "https://feeds.arstechnica.com/arstechnica/index",
+        "enabled": true,
+        "category": "tech-industry",
+        "profile": "tech-news",
+        "content_extractor": "trafilatura"
+      },
+      {
+        "name": "The Verge",
+        "url": "https://www.theverge.com/rss/index.xml",
+        "enabled": true,
+        "category": "tech-industry",
+        "profile": "tech-news"
+      },
+      {
+        "name": "MIT Tech Review",
+        "url": "https://www.technologyreview.com/feed/",
+        "enabled": true,
+        "category": "ai-research",
+        "profile": "tech-news",
+        "content_extractor": "trafilatura"
       }
     ],
     "reddit": {
@@ -131,7 +162,7 @@
           "sort": "hot",
           "time_filter": "day",
           "fetch_limit": 10,
-          "min_score": 60,
+          "min_score": 40,
           "profile": "tech-news"
         },
         {
@@ -140,7 +171,7 @@
           "sort": "hot",
           "time_filter": "day",
           "fetch_limit": 10,
-          "min_score": 60,
+          "min_score": 40,
           "profile": "tech-news"
         }
       ],

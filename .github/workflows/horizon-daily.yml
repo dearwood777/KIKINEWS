@@ -102,6 +102,36 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: uv run horizon --hours ${{ inputs.hours || '24' }}
 
+      # ---- 判断这一期有没有真的抓到东西（空就换另一个 API 重跑一次）----
+      - name: Check digest result
+        if: ${{ inputs.probe != 'yes' }}
+        id: digest
+        run: |
+          set +e
+          COUNT=$(python scripts/count_digest.py 2>/dev/null || echo 0)
+          echo "items=$COUNT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" -ge 3 ]; then echo "empty=false" >> "$GITHUB_OUTPUT"
+          else echo "empty=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Fallback to the other AI provider
+        if: ${{ inputs.probe != 'yes' && steps.digest.outputs.empty == 'true' }}
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          P="${{ inputs.provider }}"
+          if [ -z "$P" ]; then P="groq"; fi
+          if [ "$P" = "groq" ]; then NEXT="gemini"; else NEXT="groq"; fi
+          echo "primary=$P produced nothing -> retry with $NEXT"
+          cp "configs/config.actions.${NEXT}.json" data/config.json
+          # 备用 provider 往往额度更小（Gemini 免费层 20 次/天），把单次消耗压到最低
+          python scripts/shrink_config.py
+          rm -f data/seen.json
+          uv run horizon --hours ${{ inputs.hours || '24' }} || echo "fallback run exit=$?"
+
       - name: Install markdown
         if: ${{ inputs.probe != 'yes' }}
         run: python -m pip install --quiet markdown
