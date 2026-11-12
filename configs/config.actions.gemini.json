@@ -4,7 +4,7 @@
     "model": "gemini-3.8-flash",
     "api_key_env": "GOOGLE_API_KEY",
     "temperature": 0.3,
-    "max_tokens": 1024,
+    "max_tokens": 768,
     "throttle_sec": 1,
     "languages": [
       "zh",
@@ -67,8 +67,8 @@
     ],
     "hackernews": {
       "enabled": true,
-      "fetch_top_stories": 8,
-      "min_score": 200,
+      "fetch_top_stories": 10,
+      "min_score": 150,
       "profile": "tech-news"
     },
     "rss": [
@@ -135,7 +135,7 @@
       {
         "name": "The Guardian World",
         "url": "https://www.theguardian.com/world/rss",
-        "enabled": false,
+        "enabled": true,
         "category": "world",
         "profile": "world-news",
         "content_extractor": "trafilatura"
@@ -188,7 +188,7 @@
         {
           "channel": "zaihuapd",
           "enabled": true,
-          "fetch_limit": 3,
+          "fetch_limit": 5,
           "category": "tech",
           "profile": "tech-news"
         }
@@ -199,7 +199,7 @@
       "query": "world news OR investigation OR breakthrough OR disaster OR verdict",
       "language": "en",
       "country": "US",
-      "max_results": 5,
+      "max_results": 10,
       "category": "world",
       "profile": "world-news"
     },
@@ -207,7 +207,7 @@
       "enabled": true,
       "query": "(crime OR earthquake OR election OR breakthrough OR verdict)",
       "mode": "ArtList",
-      "max_records": 5,
+      "max_records": 10,
       "timespan": "24h",
       "language": "english",
       "category": "world",
@@ -218,7 +218,7 @@
     "time_window_hours": 12
   },
   "digest": {
-    "max_items": 6,
+    "max_items": 12,
     "profile_order": [
       "tech-news",
       "world-news",

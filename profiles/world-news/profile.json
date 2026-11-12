@@ -34,8 +34,8 @@
     ]
   },
   "content": {
-    "analysis_max_chars": 1500,
-    "enrichment_max_chars": 4000,
+    "analysis_max_chars": 120,
+    "enrichment_max_chars": 700,
     "sampling": "prefix"
   }
 }
