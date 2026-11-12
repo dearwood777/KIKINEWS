@@ -19,19 +19,19 @@
     "default_profile": "tech-news",
     "profile_settings": {
       "tech-news": {
-        "threshold": 2.5,
+        "threshold": 2.0,
         "topic_dedup": true
       },
       "world-news": {
-        "threshold": 2.5,
+        "threshold": 2.0,
         "topic_dedup": true
       },
       "finance-news": {
-        "threshold": 2.5,
+        "threshold": 2.0,
         "topic_dedup": true
       },
       "tech-blog": {
-        "threshold": 2.5,
+        "threshold": 2.0,
         "topic_dedup": false
       }
     }
@@ -68,7 +68,7 @@
     ],
     "hackernews": {
       "enabled": true,
-      "fetch_top_stories": 15,
+      "fetch_top_stories": 12,
       "min_score": 200,
       "profile": "tech-news"
     },
@@ -190,7 +190,7 @@
       }
     ],
     "reddit": {
-      "enabled": true,
+      "enabled": false,
       "subreddits": [
         {
           "subreddit": "MachineLearning",
@@ -220,7 +220,7 @@
         {
           "channel": "zaihuapd",
           "enabled": true,
-          "fetch_limit": 15,
+          "fetch_limit": 5,
           "category": "tech",
           "profile": "tech-news"
         }
@@ -231,7 +231,7 @@
       "query": "world news OR investigation OR breakthrough OR disaster OR verdict",
       "language": "en",
       "country": "US",
-      "max_results": 10,
+      "max_results": 8,
       "category": "world",
       "profile": "world-news"
     },
@@ -239,7 +239,7 @@
       "enabled": true,
       "query": "(crime OR earthquake OR election OR breakthrough OR verdict)",
       "mode": "ArtList",
-      "max_records": 10,
+      "max_records": 8,
       "timespan": "24h",
       "language": "english",
       "category": "world",
