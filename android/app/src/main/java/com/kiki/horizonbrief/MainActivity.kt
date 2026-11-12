@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        enterImmersive()
 
         prefs = getSharedPreferences(PREF, Context.MODE_PRIVATE)
         web = findViewById(R.id.web)
@@ -63,6 +64,24 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.settingsButton).setOnClickListener { showMenu() }
 
         load(digestUrl())
+    }
+
+    /** 沉浸式全屏：隐藏状态栏和导航栏，滑动边缘可临时唤出，松手后自动收起。 */
+    @Suppress("DEPRECATION")
+    private fun enterImmersive() {
+        window.decorView.systemUiVisibility = (
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                or View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            )
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) enterImmersive()
     }
 
     private fun digestUrl(): String = prefs.getString(KEY_URL, DEFAULT_URL) ?: DEFAULT_URL
