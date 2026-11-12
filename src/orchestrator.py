@@ -300,6 +300,7 @@ class HorizonOrchestrator:
                 analyzed_items,
             )
             important_items = filtering_result.items
+            self._dump_candidates(analyzed_items)
 
             # Show per-sub-source selection breakdown
             selected_counts: Dict[str, int] = defaultdict(int)
@@ -1043,6 +1044,41 @@ class HorizonOrchestrator:
             group_limits=group_limits,
             duplicate_categories=sorted(set(duplicate_categories)),
         )
+
+    def _dump_candidates(self, items: List[ContentItem]) -> None:
+        """把所有候选的标题和原文链接写到 docs/candidates.json，
+        供页面上的「展开全部候选」按钮使用，不额外消耗任何模型 token。"""
+        try:
+            import json
+            from pathlib import Path
+
+            docs = Path("docs")
+            docs.mkdir(parents=True, exist_ok=True)
+            rows = []
+            for item in items:
+                analysis = item.processing.analysis if item.processing else None
+                profile = None
+                if item.processing and item.processing.classification:
+                    profile = item.processing.classification.profile
+                rows.append(
+                    {
+                        "title": item.title,
+                        "url": item.url or "",
+                        "score": round(analysis.score, 1) if analysis and analysis.score is not None else None,
+                        "profile": profile or "",
+                    }
+                )
+            rows.sort(key=lambda r: r["score"] if r["score"] is not None else -1, reverse=True)
+            payload = {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                       "count": len(rows), "items": rows}
+            (docs / "candidates.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8"
+            )
+            self.console.print(
+                f"{self.icons['save']} Saved {len(rows)} candidate links to docs/candidates.json\n"
+            )
+        except Exception as exc:
+            self.console.print(f"[yellow]candidates dump skipped: {exc}[/yellow]\n")
 
     async def _expand_twitter_discussion(self, items: List[ContentItem]) -> None:
         """Second-stage: fetch reply text for important Twitter items and re-analyze.

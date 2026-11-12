@@ -15,7 +15,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -41,6 +40,7 @@ class MainActivity : AppCompatActivity() {
 
         private const val PREF = "horizon"
         private const val KEY_URL = "digest_url"
+        private const val KEY_ZOOM = "text_zoom"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,6 +80,7 @@ class MainActivity : AppCompatActivity() {
             loadWithOverviewMode = true
             useWideViewPort = true
             builtInZoomControls = false
+            textZoom = prefs.getInt(KEY_ZOOM, 100)
         }
 
         web.webViewClient = object : WebViewClient() {
@@ -145,44 +146,50 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMenu() {
-        val items = arrayOf("修改日报地址", "重新加载", "在浏览器中打开")
+        val items = arrayOf("重新加载", "强制刷新（清缓存）", "回到顶部", "调整字号", "在浏览器中打开", "复制日报链接")
         AlertDialog.Builder(this)
-            .setTitle("Horizon 日报")
+            .setTitle("KIKINEWS 日报")
             .setItems(items) { _, which ->
                 when (which) {
-                    0 -> editUrl()
-                    1 -> load(digestUrl())
-                    2 -> runCatching {
+                    0 -> {
+                        web.clearCache(false)
+                        load(digestUrl())
+                    }
+                    1 -> {
+                        web.clearCache(true)
+                        load(digestUrl())
+                    }
+                    2 -> {
+                        web.scrollTo(0, 0)
+                        toast("已回到顶部")
+                    }
+                    3 -> pickTextZoom()
+                    4 -> runCatching {
                         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(digestUrl())))
+                    }
+                    5 -> {
+                        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        cm.setPrimaryClip(android.content.ClipData.newPlainText("KIKINEWS", digestUrl()))
+                        toast("链接已复制")
                     }
                 }
             }
             .show()
     }
 
-    private fun editUrl() {
-        val input = EditText(this).apply {
-            setText(digestUrl())
-            setSelection(text.length)
-            hint = "https://xxx.github.io/repo/latest.html"
-        }
-        val container = android.widget.FrameLayout(this).apply {
-            val pad = (16 * resources.displayMetrics.density).toInt()
-            setPadding(pad, pad / 2, pad, 0)
-            addView(input)
-        }
-
+    /** 网页缩放比例，手机上按需调大调小，设置会被记住。 */
+    private fun pickTextZoom() {
+        val steps = arrayOf("小 (85%)", "标准 (100%)", "大 (115%)", "特大 (130%)")
+        val values = intArrayOf(85, 100, 115, 130)
+        val current = prefs.getInt(KEY_ZOOM, 100)
+        val checked = values.indexOf(current).coerceAtLeast(1)
         AlertDialog.Builder(this)
-            .setTitle("日报地址")
-            .setView(container)
-            .setPositiveButton("保存") { _, _ ->
-                val raw = input.text.toString().trim()
-                if (!raw.startsWith("http")) {
-                    toast("地址需要以 http 或 https 开头")
-                    return@setPositiveButton
-                }
-                prefs.edit().putString(KEY_URL, raw).apply()
-                load(raw)
+            .setTitle("调整字号")
+            .setSingleChoiceItems(steps, checked) { dialog, which ->
+                val zoom = values[which]
+                web.settings.textZoom = zoom
+                prefs.edit().putInt(KEY_ZOOM, zoom).apply()
+                dialog.dismiss()
             }
             .setNegativeButton("取消", null)
             .show()

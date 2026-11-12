@@ -154,6 +154,17 @@ body{{
 .srcurl{{margin:0 0 14px;font-size:13px}}
 .srcurl a{{color:var(--accent);text-decoration:none;word-break:break-all}}
 .srcurl a:hover{{text-decoration:underline}}
+.cands{{margin:0 0 18px}}
+.cands summary{{list-style:none;cursor:pointer}}
+.cands summary::-webkit-details-marker{{display:none}}
+.cbtn{{display:inline-block;font-size:13px;padding:7px 14px;border-radius:999px;
+  border:1px solid var(--line);background:var(--card);color:var(--accent)}}
+.cands[open] .cbtn{{background:var(--chip)}}
+.clist{{margin:12px 0 0;padding-left:22px;font-size:13.5px;color:var(--muted)}}
+.clist li{{margin:0 0 7px}}
+.clist a{{color:var(--fg);text-decoration:none}}
+.clist a:hover{{text-decoration:underline}}
+.clist .cm{{margin-left:6px;opacity:.6;font-size:12px}}
 details{{margin:0 0 14px;font-size:13.5px}}
 details summary{{color:var(--muted);cursor:pointer}}
 details ul{{margin:8px 0 0;padding-left:18px}}
@@ -490,6 +501,28 @@ def _card(anchor: str, en_it: dict | None, zh_it: dict | None) -> str:
     return "".join(parts)
 
 
+def render_candidates(cands: list[dict], src_count: str) -> str:
+    """把「从 N 条里筛出」做成可点开的面板：只列表题和原文链接，不消耗任何 token。"""
+    if not cands:
+        return ""
+    rows = []
+    for i, c in enumerate(cands, 1):
+        title = clean_text(c.get("title") or "")
+        url = html.escape(c.get("url") or "")
+        score = html.escape(str(c.get("score") or ""))
+        meta = f'<span class="cm">{score}/10 · {html.escape(c.get("profile") or "")}</span>' if score else ""
+        link = f'<a href="{url}" target="_blank" rel="noopener">{title}</a>' if url else title
+        rows.append(f'<li>{link}{meta}</li>')
+    head = f"全部候选 {len(cands)} 条"
+    if src_count:
+        head = f"从 {src_count} 条内容中筛出 · 展开全部 {len(cands)} 条"
+    return (
+        '<details class="cands"><summary>'
+        f'<span class="cbtn">{head}</span></summary>'
+        f'<ol class="clist">{"".join(rows)}</ol></details>'
+    )
+
+
 def render_bilingual(zh: dict | None, en: dict | None) -> str:
     """同一条新闻先英文、再中文，上下对照，不做语言切换。"""
     idx_en = {i["anchor"]: i for i in (en or {}).get("items", [])}
@@ -557,10 +590,18 @@ def main() -> None:
             break
 
     body = render_bilingual(posts.get("zh", (None, None))[1], posts.get("en", (None, None))[1])
+
+    cands = []
+    cand_path = os.path.join(DOCS, "candidates.json")
+    if os.path.exists(cand_path):
+        try:
+            with open(cand_path, encoding="utf-8") as f:
+                cands = json.load(f).get("items", [])
+        except Exception as exc:
+            print(f"[warn] candidates.json unreadable: {exc}")
+    body = render_candidates(cands, src_count) + body
+
     pills = f'<span class="pill">共 {count} 条精选</span>'
-    if src_count:
-        pills += f'<span class="pill">从 {src_count} 条内容中筛出</span>'
-    pills += '<span class="pill">英文在上 · 中文在下</span>'
 
     now = datetime.now(timezone.utc)
     page = TEMPLATE.format(
@@ -582,8 +623,7 @@ def main() -> None:
             updated=now.strftime("%Y-%m-%d %H:%M UTC"),
             updated_short=now.strftime("%Y-%m-%d"),
             pills=pills.replace("英文在上 · 中文在下", "English"),
-            body=render_bilingual(None, posts["en"][1]),
-        )
+            body=render_bilingual(None, posts["en"][1]),        )
         with open(os.path.join(DOCS, "latest-en.html"), "w", encoding="utf-8") as f:
             f.write(en_page)
         print("[ok] latest-en.html")
