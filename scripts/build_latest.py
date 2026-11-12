@@ -477,7 +477,7 @@ def _card(anchor: str, en_it: dict | None, zh_it: dict | None) -> str:
             cls = "note bg" if n["kind"] in ("背景", "Background") else "note"
             parts.append(f'<div class="{cls}"><span class="lbl">{html.escape(n["kind"])}</span>{n["html"]}</div>')
 
-    if zh_it:
+    if zh_it and _has_chinese(zh_it):
         body_zh = "".join(zh_it["paras"]) + "".join(
             f'<div class="note{" bg" if n["kind"] in ("背景", "Background") else ""}">'
             f'<span class="lbl">{html.escape(n["kind"])}</span>{n["html"]}</div>'
@@ -500,6 +500,20 @@ def _card(anchor: str, en_it: dict | None, zh_it: dict | None) -> str:
     parts.append(lead.get("extra", ""))
     parts.append("</article>")
     return "".join(parts)
+
+
+def _has_chinese(item: dict) -> bool:
+    """判断这条「中文稿」里是否真的有中文。
+
+    抓取/分析偶发会让中文档保留英文原文（模型没翻译），
+    这种条目在中文区展示会导致「标着中文、内容是英文」。
+    粗略用汉字数量判断：正文不足 20 个汉字就当作没有中文。
+    """
+    text = item.get("title") or ""
+    text += "".join(item.get("paras") or [])
+    for n in item.get("notes") or []:
+        text += n.get("html") or ""
+    return len(re.findall(r"[\u4e00-\u9fff]", text)) >= 20
 
 
 def render_candidates(cands: list[dict], src_count: str) -> str:
@@ -603,7 +617,11 @@ def main() -> None:
             print(f"[warn] candidates.json unreadable: {exc}")
     cand_block = render_candidates(cands, src_count)
 
+    zh_items = (posts.get("zh", (None, None))[1] or {}).get("items", [])
+    bilingual = sum(1 for it in zh_items if _has_chinese(it))
     pills = f'<span class="pill">共 {count} 条精选</span>'
+    if bilingual and bilingual < count:
+        pills += f'<span class="pill">双语 {bilingual} 条</span>'
 
     now = datetime.now(timezone.utc)
     page = TEMPLATE.format(
