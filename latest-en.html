@@ -5,157 +5,150 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
-<title>{title}</title>
+<title>KIKI Daily 2026-11-11</title>
 <style>
-:root{{
+:root{
   --bg:#f5f7fb; --fg:#141821; --muted:#6d7789; --line:#e3e8f0;
   --card:#ffffff; --soft:#f0f3f9; --accent:#2563eb; --accent2:#0ea5a4;
   --score:#0f766e; --chip:#eef2f8; --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
-}}
-@media (prefers-color-scheme: dark){{
-  :root{{
+}
+@media (prefers-color-scheme: dark){
+  :root{
     --bg:#0b1220; --fg:#e8edf6; --muted:#93a0b6; --line:#1d2738;
     --card:#121a29; --soft:#16202f; --accent:#6ba4ff; --accent2:#2dd4bf;
     --score:#2dd4bf; --chip:#1a2436; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
-  }}
-}}
-*{{box-sizing:border-box}}
-html{{-webkit-text-size-adjust:100%;scroll-behavior:smooth;overflow-x:hidden}}
-body{{
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;overflow-x:hidden}
+body{
   margin:0;background:var(--bg);color:var(--fg);max-width:100vw;overflow-x:hidden;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
   font-size:16.5px;line-height:1.78;-webkit-font-smoothing:antialiased;
   overflow-wrap:break-word;
-}}
-.wrap{{max-width:720px;margin:0 auto;padding:0 16px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom));}}
+}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 
 /* ---------- header ---------- */
-.hero{{
+.hero{
   margin:0 -16px 18px;padding:30px 22px 22px;color:#fff;
   background:linear-gradient(135deg,#2563eb 0%,#0ea5a4 100%);
   border-radius:0 0 22px 22px;
-}}
-@media (prefers-color-scheme: dark){{
-  .hero{{background:linear-gradient(135deg,#1e40af 0%,#0f766e 100%)}}
-}}
-.hero .brand{{font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}}
-.hero h1{{margin:6px 0 8px;font-size:23px;line-height:1.35;font-weight:700;letter-spacing:.2px}}
-.hero .meta{{font-size:12.5px;opacity:.9}}
-.pillrow{{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}}
-.pill{{
+}
+@media (prefers-color-scheme: dark){
+  .hero{background:linear-gradient(135deg,#1e40af 0%,#0f766e 100%)}
+}
+.hero .brand{font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+.hero h1{margin:6px 0 8px;font-size:23px;line-height:1.35;font-weight:700;letter-spacing:.2px}
+.hero .meta{font-size:12.5px;opacity:.9}
+.pillrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.pill{
   font-size:12.5px;padding:5px 11px;border-radius:999px;
   background:rgba(255,255,255,.18);backdrop-filter:blur(6px);white-space:nowrap;
-}}
+}
 
-/* ---------- lang switch ---------- */
-.tabs{{display:flex;gap:6px;background:var(--soft);padding:4px;border-radius:12px;margin:0 0 18px}}
-.tabs button{{
-  flex:1;border:0;background:transparent;color:var(--muted);font-size:14.5px;font-weight:600;
-  padding:9px 0;border-radius:9px;cursor:pointer;font-family:inherit;transition:.18s;
-}}
-.tabs button.on{{background:var(--card);color:var(--fg);box-shadow:0 1px 3px rgba(16,24,40,.12)}}
+/* ---------- 中文对照块 ---------- */
+.zh{
+  margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);
+}
+.zhlabel{
+  display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.08em;
+  color:var(--accent2);background:var(--chip);border:1px solid var(--line);
+  border-radius:6px;padding:2px 8px;margin-bottom:8px;
+}
+.zh h4{margin:0 0 8px;font-size:16px;font-weight:600;line-height:1.5;color:var(--fg)}
 
 /* ---------- summary ---------- */
-.summary{{
+.summary{
   display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
   border-radius:14px;padding:13px 15px;font-size:14.5px;color:var(--muted);margin-bottom:16px;box-shadow:var(--shadow);
-}}
-.summary b{{color:var(--fg)}}
+}
+.summary b{color:var(--fg)}
 
 /* ---------- toc ---------- */
-.toc{{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}}
-.toc a{{
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.toc a{
   text-decoration:none;color:var(--fg);background:var(--chip);border:1px solid var(--line);
   padding:6px 12px;border-radius:999px;font-size:13.5px;
-}}
-.toc a .n{{color:var(--muted);font-size:12px;margin-left:4px}}
+}
+.toc a .n{color:var(--muted);font-size:12px;margin-left:4px}
 
 /* ---------- group heading ---------- */
-.group{{
+.group{
   display:flex;align-items:center;gap:10px;margin:26px 0 12px;
   font-size:15px;font-weight:700;color:var(--fg);
-}}
-.group:before{{content:"";width:4px;height:16px;border-radius:2px;background:var(--accent)}}
-.group span{{color:var(--muted);font-weight:500;font-size:12.5px}}
+}
+.group:before{content:"";width:4px;height:16px;border-radius:2px;background:var(--accent)}
+.group span{color:var(--muted);font-weight:500;font-size:12.5px}
 
 /* ---------- card ---------- */
-.card{{
+.card{
   background:var(--card);border:1px solid var(--line);border-radius:16px;
   padding:16px 16px 6px;margin:0 0 14px;box-shadow:var(--shadow);scroll-margin-top:16px;
-}}
-.card h3{{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700}}
-.card h3 a{{color:var(--fg);text-decoration:none}}
-.card h3 a:active{{color:var(--accent)}}
-.score{{
+}
+.card h3{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700}
+.card h3 a{color:var(--fg);text-decoration:none}
+.card h3 a:active{color:var(--accent)}
+.score{
   display:inline-flex;align-items:center;gap:3px;vertical-align:middle;
   font-size:12px;font-weight:700;color:var(--score);background:var(--chip);
   border-radius:999px;padding:2px 8px;margin-left:6px;
-}}
-.src{{font-size:12.5px;color:var(--muted);margin:-2px 0 10px}}
-.card p{{margin:0 0 12px;font-size:15.5px;color:var(--fg)}}
-.card a{{color:var(--accent);text-decoration:none;word-break:break-word}}
-.note{{
+}
+.src{font-size:12.5px;color:var(--muted);margin:-2px 0 10px}
+.card p{margin:0 0 12px;font-size:15.5px;color:var(--fg)}
+.card a{color:var(--accent);text-decoration:none;word-break:break-word}
+.note{
   border-radius:12px;padding:10px 12px 2px;font-size:14.5px;background:var(--soft);
   border-left:3px solid var(--accent2);margin:0 0 12px;color:var(--fg);
-}}
-.note .lbl{{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--accent2);margin-bottom:2px}}
-.note.bg{{border-left-color:var(--accent)}}
-.note.bg .lbl{{color:var(--accent)}}
-.tags{{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}}
-.chip{{font-size:12px;background:var(--chip);color:var(--muted);padding:3px 9px;border-radius:999px;border:1px solid var(--line)}}
-details{{margin:0 0 14px;font-size:13.5px}}
-details summary{{color:var(--muted);cursor:pointer}}
-details ul{{margin:8px 0 0;padding-left:18px}}
-.card ul,.card ol{{padding-left:20px;margin:0 0 12px}}
-.card li{{margin:0 0 6px}}
-.card blockquote{{margin:0 0 12px;padding:8px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:14px}}
-.card code{{background:var(--chip);padding:2px 6px;border-radius:5px;font-size:13px}}
-.card pre{{background:var(--soft);padding:12px;border-radius:10px;overflow-x:auto;font-size:13px}}
-.card img{{max-width:100%;height:auto;border-radius:10px}}
-.card table{{width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px}}
-.card th,.card td{{border:1px solid var(--line);padding:7px 9px;text-align:left}}
+}
+.note .lbl{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--accent2);margin-bottom:2px}
+.note.bg{border-left-color:var(--accent)}
+.note.bg .lbl{color:var(--accent)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.chip{font-size:12px;background:var(--chip);color:var(--muted);padding:3px 9px;border-radius:999px;border:1px solid var(--line)}
+details{margin:0 0 14px;font-size:13.5px}
+details summary{color:var(--muted);cursor:pointer}
+details ul{margin:8px 0 0;padding-left:18px}
+.card ul,.card ol{padding-left:20px;margin:0 0 12px}
+.card li{margin:0 0 6px}
+.card blockquote{margin:0 0 12px;padding:8px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:14px}
+.card code{background:var(--chip);padding:2px 6px;border-radius:5px;font-size:13px}
+.card pre{background:var(--soft);padding:12px;border-radius:10px;overflow-x:auto;font-size:13px}
+.card img{max-width:100%;height:auto;border-radius:10px}
+.card table{width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px}
+.card th,.card td{border:1px solid var(--line);padding:7px 9px;text-align:left}
 
-footer{{margin-top:34px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.9}}
-footer .dot{{opacity:.45;margin:0 6px}}
-.top{{
+footer{margin-top:34px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.9}
+footer .dot{opacity:.45;margin:0 6px}
+.top{
   position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:9;
   width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);
   color:var(--fg);font-size:18px;box-shadow:var(--shadow);cursor:pointer;display:none;align-items:center;justify-content:center;
-}}
-.top.show{{display:flex}}
+}
+.top.show{display:flex}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="hero">
-    <div class="brand">KIKI DAILY · HORIZON</div>
-    <h1>{hero_title}</h1>
-    <div class="meta">{updated} · 自动生成</div>
-    <div class="pillrow">{pills}</div>
+    <div class="brand">KIKI DAILY · 每日速递</div>
+    <h1>2026-11-11 Tech · Finance · World</h1>
+    <div class="meta">2026-11-12 00:17 UTC · 自动生成</div>
+    <div class="pillrow"><span class="pill">共 5 条精选</span><span class="pill">从 64 条内容中筛出</span><span class="pill">English</span></div>
   </div>
 
-  <div class="tabs">
-    <button id="tab-zh" onclick="sw('zh')">中文</button>
-    <button id="tab-en" class="on" onclick="sw('en')">English</button>
-  </div>
-
-{langs}
+<div class="summary"><span>📌</span><div><b>Summary</b> · From 64 items, 5 important content pieces were selected</div></div><div class="toc"><a href="#item-tech-news-1">Can a Linear Program Do Weight-Space Programming?</a><a href="#item-tech-news-2">AWS Finally Built Its Own AWS Emulator</a><a href="#item-tech-news-3">Pharo in the Browser with WebAssembly</a><a href="#item-tech-news-4">Using voltage glitching to unleash the A100 in my mining card</a><a href="#item-tech-news-5">A false smoke alarm almost drowned Jane Street&#x27;s only NYC datacenter</a></div><div class="group">Technology News<span>5 条 / items</span></div><article class="card" id="item-tech-news-1"><h3><a href="https://nathan.rs/posts/weight-space-lp/" target="_blank" rel="noopener">Can a Linear Program Do Weight-Space Programming?</a><span class="score">▍8.0/10</span></h3><div class="src">hackernews · emschwartz · Nov 11, 12:30 · <a href="https://news.ycombinator.com/item?id=50452655" target="_blank" rel="noopener">Discussion</a></div><p>A blog post proposes using linear programming for weight‑space programming in LLMs, presenting a potentially valuable new tool for model editing and optimization.</p><p><strong>Tags</strong>: <code>#linear programming</code>, <code>#weight editing</code>, <code>#large language models</code>, <code>#machine learning</code>, <code>#optimization</code></p></article><article class="card" id="item-tech-news-2"><h3><a href="https://github.com/aws/aws-emulator" target="_blank" rel="noopener">AWS Finally Built Its Own AWS Emulator</a><span class="score">▍7.0/10</span></h3><div class="src">hackernews · super\_linear · Nov 11, 18:21 · <a href="https://news.ycombinator.com/item?id=50456631" target="_blank" rel="noopener">Discussion</a></div><p>AWS’s new emulator could improve local testing of cloud infrastructure, making it a high‑value update for software engineers and DevOps practitioners.</p><p><strong>Tags</strong>: <code>#AWS</code>, <code>#CloudEmulation</code>, <code>#InfrastructureAsCode</code>, <code>#DevOps</code></p></article><article class="card" id="item-tech-news-3"><h3><a href="https://massimo-nocentini.github.io/pharo-vm/world.html" target="_blank" rel="noopener">Pharo in the Browser with WebAssembly</a><span class="score">▍7.0/10</span></h3><div class="src">hackernews · xkriva11 · Nov 11, 14:21 · <a href="https://news.ycombinator.com/item?id=50453763" target="_blank" rel="noopener">Discussion</a></div><p>Pharo’s WebAssembly‑based browser VM demonstrates a compelling use of WebAssembly for full language runtimes.</p><p><strong>Tags</strong>: <code>#WebAssembly</code>, <code>#Pharo</code>, <code>#Smalltalk</code>, <code>#Browser</code>, <code>#Programming Languages</code></p></article><article class="card" id="item-tech-news-4"><h3><a href="https://blog.kate.land/posts/using-voltage-glitching-to-unlock-the-a100/" target="_blank" rel="noopener">Using voltage glitching to unleash the A100 in my mining card</a><span class="score">▍7.0/10</span></h3><div class="src">hackernews · lae · Nov 11, 10:48 · <a href="https://news.ycombinator.com/item?id=50451903" target="_blank" rel="noopener">Discussion</a></div><p>A voltage‑glitching method to unlock extra memory on A100 mining GPUs could benefit AI workloads but remains a specialized hardware hack.</p><p><strong>Tags</strong>: <code>#GPU</code>, <code>#Hardware Hacking</code>, <code>#AI Compute</code>, <code>#NVIDIA</code></p></article><article class="card" id="item-tech-news-5"><h3><a href="https://michael.bacarella.com/2026/11/10/false-smoke-alarm-jane-street-datacenter/" target="_blank" rel="noopener">A false smoke alarm almost drowned Jane Street&#x27;s only NYC datacenter</a><span class="score">▍6.0/10</span></h3><div class="src">hackernews · mbac32768 · Nov 11, 16:38 · <a href="https://news.ycombinator.com/item?id=50455394" target="_blank" rel="noopener">Discussion</a></div><p>A false smoke alarm nearly flooded Jane Street’s NYC data center, exposing gaps in emergency power‑off and smoke‑alarm integration.</p><p><strong>Tags</strong>: <code>#data center</code>, <code>#infrastructure reliability</code>, <code>#incident response</code></p></article>
 
   <footer>
     <div>由 AI 筛选与撰写，可能存在偏差，请以原文为准。</div>
-    <div>Generated by Horizon<span class="dot">·</span>deployed on GitHub Pages<span class="dot">·</span>{updated_short}</div>
+    <div>Generated by KIKI<span class="dot">·</span>deployed on GitHub Pages<span class="dot">·</span>2026-11-12</div>
   </footer>
 </div>
-<button class="top" id="totop" onclick="window.scrollTo({{top:0,behavior:'smooth'}})">↑</button>
+<button class="top" id="totop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 <script>
-function sw(l){{
-  document.querySelectorAll('[data-lang]').forEach(function(s){{s.style.display=(s.getAttribute('data-lang')===l)?'block':'none';}});
-  document.getElementById('tab-zh').classList.toggle('on',l==='zh');
-  document.getElementById('tab-en').classList.toggle('on',l==='en');
-}}
-window.addEventListener('scroll',function(){{
+window.addEventListener('scroll',function(){
   document.getElementById('totop').classList.toggle('show',window.scrollY>600);
-}});
+});
 </script>
 </body>
 </html>
