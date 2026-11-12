@@ -5,48 +5,48 @@ date: 2026-11-12
 lang: zh
 ---
 
-> 从 114 条内容中筛选出 3 条重要资讯。
+> 从 84 条内容中筛选出 3 条重要资讯。
 
 ---
 
 **科技新闻**
-1. [Nvidia is preparing to oust Jensen Huang](#item-tech-news-1) ⭐️ 8.0/10
-2. [United Airlines bans AI agents from booking flights on behalf of travelers](#item-tech-news-2) ⭐️ 7.0/10
-3. [A false smoke alarm almost drowned Jane Street&\#x27;s only NYC datacenter](#item-tech-news-3) ⭐️ 6.0/10
+1. [AWS emulator](#item-tech-news-1) ⭐️ 8.0/10
+2. [Gemini Decisions API](#item-tech-news-2) ⭐️ 8.0/10
+3. [United Airlines bans AI agents from booking flights on behalf of travelers](#item-tech-news-3) ⭐️ 5.0/10
 
 ---
 
 ## 科技新闻
 
 <a id="item-tech-news-1"></a>
-### [Nvidia is preparing to oust Jensen Huang](https://www.wsj.com/business/nvidia-is-preparing-to-oust-nvidia-ceo-jensen-huang-30f421ad) ⭐️ 8.0/10
+### [AWS emulator](https://github.com/aws/aws-emulator) ⭐️ 8.0/10
 
-A possible ousting of Jensen Huang at Nvidia could reshape AI hardware leadership and industry strategy.
+An official AWS emulator could significantly aid local development and testing of cloud services, though its readiness and security coverage remain in question.
 
-hackernews · jbredeche · 11月11日 22:31 · [社区讨论](https://news.ycombinator.com/item?id=50459703)
+hackernews · super\_linear · 11月11日 18:21 · [社区讨论](https://news.ycombinator.com/item?id=50456631)
 
-**标签**: `#Nvidia`, `#Corporate Governance`, `#AI Hardware`, `#Leadership`
+**标签**: `#aws`, `#emulator`, `#cloud-testing`, `#devops`, `#software-engineering`
 
 ---
 
 <a id="item-tech-news-2"></a>
-### [United Airlines bans AI agents from booking flights on behalf of travelers](https://www.cbsnews.com/news/united-airlines-bans-ai-agents-booking-flights/) ⭐️ 7.0/10
+### [Gemini Decisions API](https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/) ⭐️ 8.0/10
 
-United Airlines’ restriction on AI agents for flight booking raises important considerations for AI automation developers.
+Google&\#x27;s Gemini Decisions API adds probabilistic decision capabilities and multimodal support, a notable development for AI‑focused developers.
 
-hackernews · herpderperator · 11月11日 21:24 · [社区讨论](https://news.ycombinator.com/item?id=50458900)
+hackernews · iamdelirium · 11月11日 18:32 · [社区讨论](https://news.ycombinator.com/item?id=50456791)
 
-**标签**: `#AI agents`, `#web automation`, `#industry policy`, `#software engineering`
+**标签**: `#AI APIs`, `#Decision Models`, `#Google Gemini`, `#Machine Learning`
 
 ---
 
 <a id="item-tech-news-3"></a>
-### [A false smoke alarm almost drowned Jane Street&\#x27;s only NYC datacenter](https://michael.bacarella.com/2026/11/10/false-smoke-alarm-jane-street-datacenter/) ⭐️ 6.0/10
+### [United Airlines bans AI agents from booking flights on behalf of travelers](https://www.cbsnews.com/news/united-airlines-bans-ai-agents-booking-flights/) ⭐️ 5.0/10
 
-A false smoke alarm nearly flooded Jane Street’s NYC data center, underscoring operational and safety concerns for data‑center teams.
+United Airlines bans AI agents from booking flights, a policy shift that may affect automation developers but lacks major technical significance.
 
-hackernews · mbac32768 · 11月11日 16:38 · [社区讨论](https://news.ycombinator.com/item?id=50455394)
+hackernews · herpderperator · 11月11日 21:24 · [社区讨论](https://news.ycombinator.com/item?id=50458900)
 
-**标签**: `#data center`, `#incident response`, `#infrastructure operations`
+**标签**: `#AI agents`, `#automation policy`, `#travel tech`, `#software engineering`
 
 ---
