@@ -1,5 +1,6 @@
 """AI client abstraction supporting multiple providers."""
 
+import asyncio
 import os
 import re
 from abc import ABC, abstractmethod
@@ -102,6 +103,20 @@ def _is_temperature_unsupported(message: str) -> bool:
         # Anthropic: "temperature: Extra inputs are not permitted"
         or "extra inputs are not permitted" in lowered
     )
+
+
+def _rate_limit_wait_seconds(message: str, default: float = 20.0, cap: float = 90.0) -> float:
+    """Parse "try again in 1m3.5s" style hints; fall back to a short fixed wait."""
+    match = re.search(
+        r"try again in\s+(?:(\d+(?:\.\d+)?)m)?\s*(\d+(?:\.\d+)?)?\s*s",
+        message,
+        re.IGNORECASE,
+    )
+    if not match:
+        return default
+    minutes = float(match.group(1) or 0)
+    seconds = float(match.group(2) or 0)
+    return max(2.0, min(minutes * 60 + seconds + 2.0, cap))
 
 
 def _is_token_limit_unsupported(message: str, use_max_completion_tokens: bool) -> bool:
@@ -317,6 +332,7 @@ class OpenAIClient(AIClient):
 
         # Deployment aliases can hide both requirements; learn each at most once.
         retried_tokens = False
+        rate_limit_attempts = 0
         while True:
             include_temperature = self._supports_temperature
             use_max_completion_tokens = self._use_max_completion_tokens
@@ -331,6 +347,17 @@ class OpenAIClient(AIClient):
                 )
                 break
             except OpenAIStatusError as exc:
+                if exc.status_code == 429 and rate_limit_attempts < 4:
+                    wait = _rate_limit_wait_seconds(str(exc))
+                    rate_limit_attempts += 1
+                    logger.warning(
+                        "Rate limited by %s; retrying in %.1fs (attempt %d/4)",
+                        self.provider,
+                        wait,
+                        rate_limit_attempts,
+                    )
+                    await asyncio.sleep(wait)
+                    continue
                 if exc.status_code not in (400, 422):
                     raise
                 if include_temperature and _is_temperature_unsupported(str(exc)):
