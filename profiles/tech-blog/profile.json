@@ -7,9 +7,9 @@
   "match": "match.md",
   "analysis": "analysis.md",
   "content": {
-    "analysis_max_chars": 16000,
-    "enrichment_max_chars": 24000,
-    "sampling": "head-middle-tail"
+    "analysis_max_chars": 2500,
+    "enrichment_max_chars": 6000,
+    "sampling": "prefix"
   },
   "enrichment": {
     "prompt": "enrichment.md",

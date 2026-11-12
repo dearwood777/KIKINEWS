@@ -19,14 +19,23 @@
       {
         "id": "background",
         "type": "section",
-        "tools": ["web_search"]
+        "tools": [
+          "web_search"
+        ]
       },
       {
         "id": "impact",
         "type": "section",
-        "tools": ["web_search"],
+        "tools": [
+          "web_search"
+        ],
         "optional": true
       }
     ]
+  },
+  "content": {
+    "analysis_max_chars": 2500,
+    "enrichment_max_chars": 6000,
+    "sampling": "prefix"
   }
 }

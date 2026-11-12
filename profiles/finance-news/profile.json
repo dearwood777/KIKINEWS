@@ -7,8 +7,8 @@
   "match": "match.md",
   "analysis": "analysis.md",
   "content": {
-    "analysis_max_chars": 4000,
-    "enrichment_max_chars": 8000,
+    "analysis_max_chars": 2500,
+    "enrichment_max_chars": 6000,
     "sampling": "prefix"
   },
   "enrichment": {
@@ -23,12 +23,16 @@
       {
         "id": "background",
         "type": "section",
-        "tools": ["web_search"]
+        "tools": [
+          "web_search"
+        ]
       },
       {
         "id": "impact",
         "type": "section",
-        "tools": ["web_search"],
+        "tools": [
+          "web_search"
+        ],
         "optional": true
       }
     ]

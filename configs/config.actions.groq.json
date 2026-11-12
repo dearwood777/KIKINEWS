@@ -4,7 +4,7 @@
     "model": "openai/gpt-oss-120b",
     "api_key_env": "GROQ_API_KEY",
     "temperature": 0.3,
-    "max_tokens": 4096,
+    "max_tokens": 2048,
     "throttle_sec": 2,
     "languages": [
       "zh",
@@ -41,35 +41,35 @@
       {
         "type": "user_events",
         "username": "karpathy",
-        "enabled": true,
+        "enabled": false,
         "profile": "tech-news"
       },
       {
         "type": "repo_releases",
         "owner": "vllm-project",
         "repo": "vllm",
-        "enabled": true,
+        "enabled": false,
         "profile": "tech-news"
       },
       {
         "type": "repo_releases",
         "owner": "sgl-project",
         "repo": "sglang",
-        "enabled": true,
+        "enabled": false,
         "profile": "tech-news"
       },
       {
         "type": "repo_releases",
         "owner": "triton-lang",
         "repo": "triton",
-        "enabled": true,
+        "enabled": false,
         "profile": "tech-news"
       }
     ],
     "hackernews": {
       "enabled": true,
-      "fetch_top_stories": 40,
-      "min_score": 100,
+      "fetch_top_stories": 20,
+      "min_score": 200,
       "profile": "tech-news"
     },
     "rss": [
@@ -83,7 +83,7 @@
       {
         "name": "vLLM Blog",
         "url": "https://vllm.ai/blog/rss.xml",
-        "enabled": true,
+        "enabled": false,
         "category": "llm-inference",
         "profile": "tech-blog",
         "content_extractor": "trafilatura"
@@ -91,7 +91,7 @@
       {
         "name": "Sean Goedecke",
         "url": "https://www.seangoedecke.com/rss.xml",
-        "enabled": true,
+        "enabled": false,
         "category": "software-engineering",
         "profile": "tech-blog",
         "content_extractor": "trafilatura"
@@ -107,14 +107,14 @@
       {
         "name": "GitHub Trending - Daily",
         "url": "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml",
-        "enabled": true,
+        "enabled": false,
         "category": "github-trending",
         "profile": "tech-news"
       },
       {
         "name": "Semianalysis",
         "url": "https://newsletter.semianalysis.com/feed",
-        "enabled": true,
+        "enabled": false,
         "category": "semiconductors",
         "profile": "tech-news"
       },
@@ -136,7 +136,7 @@
       {
         "name": "Ars Technica",
         "url": "https://feeds.arstechnica.com/arstechnica/index",
-        "enabled": true,
+        "enabled": false,
         "category": "tech-industry",
         "profile": "tech-news",
         "content_extractor": "trafilatura"
@@ -144,14 +144,14 @@
       {
         "name": "The Verge",
         "url": "https://www.theverge.com/rss/index.xml",
-        "enabled": true,
+        "enabled": false,
         "category": "tech-industry",
         "profile": "tech-news"
       },
       {
         "name": "MIT Tech Review",
         "url": "https://www.technologyreview.com/feed/",
-        "enabled": true,
+        "enabled": false,
         "category": "ai-research",
         "profile": "tech-news",
         "content_extractor": "trafilatura"
@@ -175,7 +175,7 @@
       {
         "name": "Al Jazeera",
         "url": "https://www.aljazeera.com/xml/rss/all.xml",
-        "enabled": true,
+        "enabled": false,
         "category": "world",
         "profile": "world-news",
         "content_extractor": "trafilatura"
@@ -183,7 +183,7 @@
       {
         "name": "NYT World",
         "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
-        "enabled": true,
+        "enabled": false,
         "category": "world",
         "profile": "world-news",
         "content_extractor": "trafilatura"
@@ -231,7 +231,7 @@
       "query": "world news OR investigation OR breakthrough OR disaster OR verdict",
       "language": "en",
       "country": "US",
-      "max_results": 40,
+      "max_results": 12,
       "category": "world",
       "profile": "world-news"
     },
@@ -239,7 +239,7 @@
       "enabled": true,
       "query": "(crime OR earthquake OR election OR breakthrough OR verdict)",
       "mode": "ArtList",
-      "max_records": 50,
+      "max_records": 12,
       "timespan": "24h",
       "language": "english",
       "category": "world",
@@ -250,7 +250,7 @@
     "time_window_hours": 24
   },
   "digest": {
-    "max_items": 24,
+    "max_items": 14,
     "profile_order": [
       "tech-news",
       "world-news",
