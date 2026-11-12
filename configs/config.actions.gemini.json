@@ -18,16 +18,20 @@
     "default_profile": "tech-news",
     "profile_settings": {
       "tech-news": {
-        "threshold": 7.0,
+        "threshold": 4.0,
+        "topic_dedup": true
+      },
+      "world-news": {
+        "threshold": 4.0,
+        "topic_dedup": true
+      },
+      "finance-news": {
+        "threshold": 4.0,
         "topic_dedup": true
       },
       "tech-blog": {
-        "threshold": 4.0,
+        "threshold": 3.0,
         "topic_dedup": false
-      },
-      "finance-news": {
-        "threshold": 7.0,
-        "topic_dedup": true
       }
     }
   },
@@ -119,6 +123,38 @@
         "enabled": true,
         "category": "linux-kernel",
         "profile": "tech-news"
+      },
+      {
+        "name": "BBC World",
+        "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+        "enabled": true,
+        "category": "world",
+        "profile": "world-news",
+        "content_extractor": "trafilatura"
+      },
+      {
+        "name": "The Guardian World",
+        "url": "https://www.theguardian.com/world/rss",
+        "enabled": true,
+        "category": "world",
+        "profile": "world-news",
+        "content_extractor": "trafilatura"
+      },
+      {
+        "name": "Al Jazeera",
+        "url": "https://www.aljazeera.com/xml/rss/all.xml",
+        "enabled": true,
+        "category": "world",
+        "profile": "world-news",
+        "content_extractor": "trafilatura"
+      },
+      {
+        "name": "NYT World",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+        "enabled": true,
+        "category": "world",
+        "profile": "world-news",
+        "content_extractor": "trafilatura"
       }
     ],
     "reddit": {
@@ -147,19 +183,47 @@
       "fetch_comments": 3
     },
     "telegram": {
-      "enabled": false,
-      "channels": []
+      "enabled": true,
+      "channels": [
+        {
+          "channel": "zaihuapd",
+          "enabled": true,
+          "fetch_limit": 15,
+          "category": "tech",
+          "profile": "tech-news"
+        }
+      ]
+    },
+    "google_news": {
+      "enabled": true,
+      "query": "world news OR investigation OR breakthrough OR disaster OR verdict",
+      "language": "en",
+      "country": "US",
+      "max_results": 40,
+      "category": "world",
+      "profile": "world-news"
+    },
+    "gdelt": {
+      "enabled": true,
+      "query": "(crime OR earthquake OR election OR breakthrough OR verdict)",
+      "mode": "ArtList",
+      "max_records": 50,
+      "timespan": "24h",
+      "language": "english",
+      "category": "world",
+      "profile": "world-news"
     }
   },
   "collection": {
     "time_window_hours": 24
   },
   "digest": {
-    "max_items": 12,
+    "max_items": 16,
     "profile_order": [
       "tech-news",
-      "tech-blog",
-      "finance-news"
+      "world-news",
+      "finance-news",
+      "tech-blog"
     ],
     "category_groups": {},
     "default_group": "other",

@@ -35,9 +35,14 @@ def main() -> None:
 
     rss = src.get("rss", [])
     if isinstance(rss, list):
-        keep = {"CNBC Finance", "TechCrunch"}
+        keep = {"CNBC Finance", "TechCrunch", "BBC World"}
         for r in rss:
             r["enabled"] = r.get("name") in keep
+
+    for key in ("gdelt", "google_news", "telegram"):
+        block = src.get(key)
+        if isinstance(block, dict):
+            block["enabled"] = False
 
     ai = cfg.get("ai", {})
     ai["analysis_concurrency"] = 2
