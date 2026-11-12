@@ -151,6 +151,9 @@ body{{
 .note.bg .lbl{{color:var(--accent)}}
 .tags{{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}}
 .chip{{font-size:12px;background:var(--chip);color:var(--muted);padding:3px 9px;border-radius:999px;border:1px solid var(--line)}}
+.srcurl{{margin:0 0 14px;font-size:13px}}
+.srcurl a{{color:var(--accent);text-decoration:none;word-break:break-all}}
+.srcurl a:hover{{text-decoration:underline}}
 details{{margin:0 0 14px;font-size:13.5px}}
 details summary{{color:var(--muted);cursor:pointer}}
 details ul{{margin:8px 0 0;padding-left:18px}}
@@ -472,6 +475,12 @@ def _card(anchor: str, en_it: dict | None, zh_it: dict | None) -> str:
         if body_zh or title_zh:
             parts.append(f'<div class="zh"><span class="zhlabel">中文</span>{title_zh}{body_zh}</div>')
 
+    if lead.get("url"):
+        url = html.escape(lead["url"])
+        parts.append(
+            f'<div class="srcurl">🔗 原文链接 · '
+            f'<a href="{url}" target="_blank" rel="noopener">{url}</a></div>'
+        )
     tags = (en_it or {}).get("tags") or (zh_it or {}).get("tags") or []
     if tags:
         chips = "".join(f'<span class="chip">{html.escape(t)}</span>' for t in tags)

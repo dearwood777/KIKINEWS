@@ -68,7 +68,7 @@
     ],
     "hackernews": {
       "enabled": true,
-      "fetch_top_stories": 12,
+      "fetch_top_stories": 8,
       "min_score": 200,
       "profile": "tech-news"
     },
@@ -76,7 +76,7 @@
       {
         "name": "Simon Willison",
         "url": "https://simonwillison.net/atom/everything/",
-        "enabled": true,
+        "enabled": false,
         "category": "ai-tools",
         "profile": "tech-news"
       },
@@ -167,7 +167,7 @@
       {
         "name": "The Guardian World",
         "url": "https://www.theguardian.com/world/rss",
-        "enabled": true,
+        "enabled": false,
         "category": "world",
         "profile": "world-news",
         "content_extractor": "trafilatura"
@@ -220,7 +220,7 @@
         {
           "channel": "zaihuapd",
           "enabled": true,
-          "fetch_limit": 5,
+          "fetch_limit": 3,
           "category": "tech",
           "profile": "tech-news"
         }
@@ -231,7 +231,7 @@
       "query": "world news OR investigation OR breakthrough OR disaster OR verdict",
       "language": "en",
       "country": "US",
-      "max_results": 8,
+      "max_results": 5,
       "category": "world",
       "profile": "world-news"
     },
@@ -239,7 +239,7 @@
       "enabled": true,
       "query": "(crime OR earthquake OR election OR breakthrough OR verdict)",
       "mode": "ArtList",
-      "max_records": 8,
+      "max_records": 5,
       "timespan": "24h",
       "language": "english",
       "category": "world",
@@ -250,7 +250,7 @@
     "time_window_hours": 12
   },
   "digest": {
-    "max_items": 12,
+    "max_items": 8,
     "profile_order": [
       "tech-news",
       "world-news",
