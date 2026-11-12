@@ -131,7 +131,7 @@ body{{
   background:var(--card);border:1px solid var(--line);border-radius:16px;
   padding:16px 16px 6px;margin:0 0 14px;box-shadow:var(--shadow);scroll-margin-top:16px;
 }}
-.card h3{{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700}}
+.card h3{{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700;text-wrap:balance}}
 .card h3 a{{color:var(--fg);text-decoration:none}}
 .card h3 a:active{{color:var(--accent)}}
 .score{{
@@ -516,7 +516,7 @@ def _has_chinese(item: dict) -> bool:
     return len(re.findall(r"[\u4e00-\u9fff]", text)) >= 20
 
 
-def render_candidates(cands: list[dict], src_count: str) -> str:
+def render_candidates(cands: list[dict], src_count: str, generated_at: str = "") -> str:
     """把「从 N 条里筛出」做成可点开的面板：只列表题和原文链接，不消耗任何 token。"""
     if not cands:
         return ""
@@ -528,10 +528,15 @@ def render_candidates(cands: list[dict], src_count: str) -> str:
         meta = f'<span class="cm">{score}/10 · {html.escape(c.get("profile") or "")}</span>' if score else ""
         link = f'<a href="{url}" target="_blank" rel="noopener">{title}</a>' if url else title
         rows.append(f'<li>{link}{meta}</li>')
-    head = f"全部候选 {len(cands)} 条"
-    if src_count and str(len(cands)) == str(src_count):
-        head = f"从 {src_count} 条内容中筛出 · 展开全部 {len(cands)} 条"
-    head = f"{head} · 展开查看"
+    scored = any(c.get("score") for c in cands)
+    if scored:
+        head = f"全部候选 {len(cands)} 条 · 展开查看"
+        if src_count and str(len(cands)) == str(src_count):
+            head = f"从 {src_count} 条内容中筛出 · 展开全部 {len(cands)} 条"
+    else:
+        head = f"本次抓取候选 {len(cands)} 条（未评分） · 展开查看"
+    if generated_at:
+        head = f"{head} · {generated_at}"
     return (
         '<details class="cands"><summary>'
         f'<span class="cbtn">{head}</span></summary>'
@@ -608,14 +613,22 @@ def main() -> None:
     body = render_bilingual(posts.get("zh", (None, None))[1], posts.get("en", (None, None))[1])
 
     cands = []
+    cand_at = ""
     cand_path = os.path.join(DOCS, "candidates.json")
     if os.path.exists(cand_path):
         try:
             with open(cand_path, encoding="utf-8") as f:
-                cands = json.load(f).get("items", [])
+                payload = json.load(f)
+            cands = payload.get("items", [])
+            cand_at = payload.get("generated_at", "")
+            if cand_at:
+                try:
+                    cand_at = datetime.fromisoformat(cand_at).strftime("%m-%d %H:%M")
+                except ValueError:
+                    cand_at = cand_at[:16].replace("T", " ")
         except Exception as exc:
             print(f"[warn] candidates.json unreadable: {exc}")
-    cand_block = render_candidates(cands, src_count)
+    cand_block = render_candidates(cands, src_count, cand_at)
 
     zh_items = (posts.get("zh", (None, None))[1] or {}).get("items", [])
     bilingual = sum(1 for it in zh_items if _has_chinese(it))

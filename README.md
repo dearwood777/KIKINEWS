@@ -1,3 +1,6 @@
+> **KIKINEWS 每日速递（本项目改造版）**
+> 这是从 Horizon 改造来的个人日报：GitHub Actions 定时抓取 → GitHub Pages → Android APK 阅读。
+> 版本更新记录见 [CHANGELOG.md](CHANGELOG.md)。
 <div align="center">
 <h1>🌅 Horizon</h1>
 

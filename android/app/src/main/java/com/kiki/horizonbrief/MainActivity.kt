@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMenu() {
-        val items = arrayOf("重新加载", "强制刷新（清缓存）", "回到顶部", "调整字号", "在浏览器中打开", "复制日报链接", "更新说明 · v1.1")
+        val items = arrayOf("重新加载", "强制刷新（清缓存）", "回到顶部", "调整字号", "在浏览器中打开", "复制日报链接")
         AlertDialog.Builder(this)
             .setTitle("KIKINEWS 日报")
             .setItems(items) { _, which ->
@@ -172,21 +172,8 @@ class MainActivity : AppCompatActivity() {
                         cm.setPrimaryClip(android.content.ClipData.newPlainText("KIKINEWS", digestUrl()))
                         toast("链接已复制")
                     }
-                    6 -> showChangelog()
                 }
             }
-            .show()
-    }
-
-    /** 版本更新说明，随 APK 打包，离线也能看。 */
-    private fun showChangelog() {
-        val text = runCatching {
-            assets.open("changelog.txt").bufferedReader().use { it.readText() }
-        }.getOrDefault("暂无更新说明")
-        AlertDialog.Builder(this)
-            .setTitle("更新说明")
-            .setMessage(text.trim())
-            .setPositiveButton("知道了", null)
             .show()
     }
 
