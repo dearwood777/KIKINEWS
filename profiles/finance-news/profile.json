@@ -7,8 +7,8 @@
   "match": "match.md",
   "analysis": "analysis.md",
   "content": {
-    "analysis_max_chars": 120,
-    "enrichment_max_chars": 700,
+    "analysis_max_chars": 500,
+    "enrichment_max_chars": 800,
     "sampling": "prefix"
   },
   "enrichment": {
