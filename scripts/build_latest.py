@@ -195,6 +195,7 @@ footer .dot{{opacity:.45;margin:0 6px}}
     <div class="meta">{updated} · 自动生成</div>
     <div class="pillrow">{pills}</div>
   </div>
+  {cands}
 
 {body}
 
@@ -514,8 +515,9 @@ def render_candidates(cands: list[dict], src_count: str) -> str:
         link = f'<a href="{url}" target="_blank" rel="noopener">{title}</a>' if url else title
         rows.append(f'<li>{link}{meta}</li>')
     head = f"全部候选 {len(cands)} 条"
-    if src_count:
+    if src_count and str(len(cands)) == str(src_count):
         head = f"从 {src_count} 条内容中筛出 · 展开全部 {len(cands)} 条"
+    head = f"{head} · 展开查看"
     return (
         '<details class="cands"><summary>'
         f'<span class="cbtn">{head}</span></summary>'
@@ -599,7 +601,7 @@ def main() -> None:
                 cands = json.load(f).get("items", [])
         except Exception as exc:
             print(f"[warn] candidates.json unreadable: {exc}")
-    body = render_candidates(cands, src_count) + body
+    cand_block = render_candidates(cands, src_count)
 
     pills = f'<span class="pill">共 {count} 条精选</span>'
 
@@ -610,6 +612,7 @@ def main() -> None:
         updated=now.strftime("%Y-%m-%d %H:%M UTC"),
         updated_short=now.strftime("%Y-%m-%d"),
         pills=pills,
+        cands=cand_block,
         body=body,
     )
     with open(os.path.join(DOCS, "latest.html"), "w", encoding="utf-8") as f:
@@ -622,8 +625,10 @@ def main() -> None:
             hero_title=f"{day} Tech · Finance · World",
             updated=now.strftime("%Y-%m-%d %H:%M UTC"),
             updated_short=now.strftime("%Y-%m-%d"),
-            pills=pills.replace("英文在上 · 中文在下", "English"),
-            body=render_bilingual(None, posts["en"][1]),        )
+            pills=pills,
+            cands=cand_block,
+            body=render_bilingual(None, posts["en"][1]),
+        )
         with open(os.path.join(DOCS, "latest-en.html"), "w", encoding="utf-8") as f:
             f.write(en_page)
         print("[ok] latest-en.html")

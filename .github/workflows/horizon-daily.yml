@@ -136,6 +136,14 @@ jobs:
         if: ${{ inputs.probe != 'yes' }}
         run: python -m pip install --quiet markdown
 
+      - name: Ensure candidate list exists (no AI)
+        if: ${{ inputs.probe != 'yes' }}
+        run: |
+          if [ ! -s docs/candidates.json ]; then
+            echo "candidates.json missing -> collecting links only"
+            python scripts/collect_candidates_only.py data/config.json || true
+          fi
+
       - name: Build mobile digest page
         if: ${{ inputs.probe != 'yes' }}
         run: python scripts/build_latest.py
