@@ -14,7 +14,7 @@ on:
       hours:
         description: "抓取时间窗口（小时）"
         type: string
-        default: "24"
+        default: "12"
       probe:
         description: "只做一次模型连通性探测，不跑日报（yes/no）"
         type: string

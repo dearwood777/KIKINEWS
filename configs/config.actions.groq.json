@@ -4,7 +4,7 @@
     "model": "openai/gpt-oss-120b",
     "api_key_env": "GROQ_API_KEY",
     "temperature": 0.3,
-    "max_tokens": 2048,
+    "max_tokens": 1024,
     "throttle_sec": 2,
     "languages": [
       "zh",
@@ -19,19 +19,19 @@
     "default_profile": "tech-news",
     "profile_settings": {
       "tech-news": {
-        "threshold": 4.0,
+        "threshold": 2.5,
         "topic_dedup": true
       },
       "world-news": {
-        "threshold": 4.0,
+        "threshold": 2.5,
         "topic_dedup": true
       },
       "finance-news": {
-        "threshold": 4.0,
+        "threshold": 2.5,
         "topic_dedup": true
       },
       "tech-blog": {
-        "threshold": 3.0,
+        "threshold": 2.5,
         "topic_dedup": false
       }
     }
@@ -68,7 +68,7 @@
     ],
     "hackernews": {
       "enabled": true,
-      "fetch_top_stories": 20,
+      "fetch_top_stories": 15,
       "min_score": 200,
       "profile": "tech-news"
     },
@@ -231,7 +231,7 @@
       "query": "world news OR investigation OR breakthrough OR disaster OR verdict",
       "language": "en",
       "country": "US",
-      "max_results": 12,
+      "max_results": 10,
       "category": "world",
       "profile": "world-news"
     },
@@ -239,7 +239,7 @@
       "enabled": true,
       "query": "(crime OR earthquake OR election OR breakthrough OR verdict)",
       "mode": "ArtList",
-      "max_records": 12,
+      "max_records": 10,
       "timespan": "24h",
       "language": "english",
       "category": "world",
@@ -247,10 +247,10 @@
     }
   },
   "collection": {
-    "time_window_hours": 24
+    "time_window_hours": 12
   },
   "digest": {
-    "max_items": 14,
+    "max_items": 12,
     "profile_order": [
       "tech-news",
       "world-news",
