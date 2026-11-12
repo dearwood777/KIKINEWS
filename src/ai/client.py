@@ -347,11 +347,11 @@ class OpenAIClient(AIClient):
                 )
                 break
             except OpenAIStatusError as exc:
-                if exc.status_code == 429 and rate_limit_attempts < 4:
-                    wait = _rate_limit_wait_seconds(str(exc))
+                if exc.status_code == 429 and rate_limit_attempts < 2:
+                    wait = _rate_limit_wait_seconds(str(exc), default=10.0, cap=45.0)
                     rate_limit_attempts += 1
                     logger.warning(
-                        "Rate limited by %s; retrying in %.1fs (attempt %d/4)",
+                        "Rate limited by %s; retrying in %.1fs (attempt %d/2)",
                         self.provider,
                         wait,
                         rate_limit_attempts,
