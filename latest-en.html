@@ -109,6 +109,17 @@ body{
 .srcurl{margin:0 0 14px;font-size:13px}
 .srcurl a{color:var(--accent);text-decoration:none;word-break:break-all}
 .srcurl a:hover{text-decoration:underline}
+.cands{margin:0 0 18px}
+.cands summary{list-style:none;cursor:pointer}
+.cands summary::-webkit-details-marker{display:none}
+.cbtn{display:inline-block;font-size:13px;padding:7px 14px;border-radius:999px;
+  border:1px solid var(--line);background:var(--card);color:var(--accent)}
+.cands[open] .cbtn{background:var(--chip)}
+.clist{margin:12px 0 0;padding-left:22px;font-size:13.5px;color:var(--muted)}
+.clist li{margin:0 0 7px}
+.clist a{color:var(--fg);text-decoration:none}
+.clist a:hover{text-decoration:underline}
+.clist .cm{margin-left:6px;opacity:.6;font-size:12px}
 details{margin:0 0 14px;font-size:13.5px}
 details summary{color:var(--muted);cursor:pointer}
 details ul{margin:8px 0 0;padding-left:18px}
@@ -136,8 +147,8 @@ footer .dot{opacity:.45;margin:0 6px}
   <div class="hero">
     <div class="brand">KIKI DAILY · 每日速递</div>
     <h1>2026-11-12 Tech · Finance · World</h1>
-    <div class="meta">2026-11-12 03:58 UTC · 自动生成</div>
-    <div class="pillrow"><span class="pill">共 16 条精选</span><span class="pill">从 74 条内容中筛出</span><span class="pill">English</span></div>
+    <div class="meta">2026-11-12 04:35 UTC · 自动生成</div>
+    <div class="pillrow"><span class="pill">共 16 条精选</span></div>
   </div>
 
 <div class="summary"><span>📌</span><div><b>Summary</b> · From 74 items, 16 important content pieces were selected</div></div><div class="toc"><a href="#item-tech-news-1">Gemini Decisions API Launch</a><a href="#item-world-news-1">Colom Upsets Hyde‑Smith, Becomes Mississippi’s First Black Senator Since Reconstruction</a><a href="#item-world-news-2">US Charges Iran‑Backed Operatives for Planned Attacks, Including RAF Fairford Plot</a><a href="#item-world-news-3">Ukraine talks in Abu Dhabi bring progress on prisoners but not on peace</a><a href="#item-world-news-4">Is the US blue wave a turning point for Europe, too?</a><a href="#item-world-news-5">Nvidia Board to Decide CEO Huang Amid Share Drop</a><a href="#item-world-news-6">Scott Colom Wins Mississippi Senate Seat, First Black Senator in 140 Years</a><a href="#item-world-news-7">Abu Dhabi talks end without breakthrough, prisoner exchange underway</a><a href="#item-world-news-8">Indonesia&#x27;s vice president resigns amid signs ruling alliance is fraying</a><a href="#item-world-news-9">Bomb Threats Hit 7,000 Schools Across Italy, Scotland, Northern Ireland</a><a href="#item-world-news-10">US Treasury Secretary Scott Bessent relocated after alleged Iranian threats</a><a href="#item-world-news-11">Two skulls likely belonging to enslaved people returned to Brazil after Harvard used them in eugenics studies</a><a href="#item-world-news-12">Australian states may sue tobacco firms for $50bn in health costs</a><a href="#item-world-news-13">Marshall Islands President Warns COP31: Failure to Act Means World Over</a><a href="#item-world-news-14">Millions Join Spain’s First General Strike in 14 Years Over Housing Costs</a><a href="#item-world-news-15">Oil slicks from tanker strikes threaten Gulf marine life</a></div><div class="group">Technology News<span>1 条 / items</span></div><article class="card" id="item-tech-news-1"><h3><a href="https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/" target="_blank" rel="noopener">Gemini Decisions API Launch</a><span class="score">▍8.0/10</span></h3><div class="src">hackernews · iamdelirium · Nov 11, 18:32 · <a href="https://news.ycombinator.com/item?id=50456791" target="_blank" rel="noopener">Discussion</a></div><p>Google has released the Gemini Decisions API, a new interface for decision‑making models that supports text, image, audio, video, and PDF inputs, can score up to 1,000 questions in a single request, returns probability and confidence scores, and offers an end‑to‑end latency of roughly 150‑250 ms. The API is priced at $0.10 per million input tokens with no charge for output tokens, making it about five times cheaper than the Gemini 3.5 Flash‑Lite model, and is available through Google AI Studio.</p><div class="note bg"><span class="lbl">Background</span><p>The Gemini Decisions API builds on Google’s Gemini family of large language models, specifically the new Gemini Decision 1 model, which was introduced as a lightweight, closed‑set decision‑making model. It extends the Gemini API by adding primitives for bounded choices such as tool selection, policy checks, model routing, and context grading, and supports multimodal inputs (text, image, audio, video, PDF) with probabilistic outputs.</p></div><div class="note"><span class="lbl">Impact</span><p>Developers can now build multimodal decision systems—such as tool selection, policy checks, or model routing—at lower cost and with low latency, enabling tighter integration into production workflows.</p></div><div class="note"><span class="lbl">Community Discussion</span><p>Commenters noted surprise at the timing of the release, discussed how the API’s probabilistic outputs differ from earlier grammar‑constrained approaches, and highlighted its higher cost relative to other decision models while praising its audio/video support.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/" target="_blank" rel="noopener">https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/</a></div><div class="tags"><span class="chip">#AI</span><span class="chip">#API</span><span class="chip">#Decision Models</span><span class="chip">#Google Gemini</span><span class="chip">#Software Engineering</span></div><details><summary>References</summary>
