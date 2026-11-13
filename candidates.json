@@ -1,108 +1,462 @@
 {
- "generated_at": "2026-11-12T05:55:40+00:00",
- "count": 17,
+ "generated_at": "2026-11-13T22:04:55+00:00",
+ "count": 76,
  "items": [
   {
-   "title": "Lock Your GitHub Actions",
-   "url": "https://hugovk.dev/blog/2026/lock-github-actions/",
-   "score": null,
-   "profile": "hackernews"
+   "title": "Export-banned Nvidia chips are behind China’s most powerful AI models — uh oh, Jensen!",
+   "url": "https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-jensen/",
+   "score": 9.0,
+   "profile": "tech-news"
   },
   {
-   "title": "AWS emulator",
-   "url": "https://github.com/aws/aws-emulator",
-   "score": null,
-   "profile": "hackernews"
+   "title": "Microsoft’s latest email outage turned into a full-blown global cloud crisis",
+   "url": "https://techcrunch.com/2026/11/13/microsoft-latest-email-outage-turned-into-a-full-blown-global-cloud-crisis/",
+   "score": 8.0,
+   "profile": "tech-news"
   },
   {
-   "title": "Gemini Decisions API",
-   "url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/",
-   "score": null,
-   "profile": "hackernews"
+   "title": "Israel’s VCs see opportunity for challengers in Nvidia’s turmoil",
+   "url": "https://techcrunch.com/2026/11/13/israels-vcs-see-opportunity-for-challengers-in-nvidias-turmoil/",
+   "score": 8.0,
+   "profile": "tech-news"
   },
   {
-   "title": "United Airlines bans AI agents from booking flights on behalf of travelers",
-   "url": "https://www.cbsnews.com/news/united-airlines-bans-ai-agents-booking-flights/",
-   "score": null,
-   "profile": "hackernews"
+   "title": "Microsoft 'deeply sorry' for global outage after almost 24 hours of disruption",
+   "url": "https://www.bbc.co.uk/news/articles/c6rrg51rkz09o?at_medium=RSS&at_campaign=rss",
+   "score": 8.0,
+   "profile": "world-news"
   },
   {
-   "title": "93% of paint splatters are valid Perl programs (2019)",
-   "url": "https://www.mcmillen.dev/sigbovik/",
-   "score": null,
-   "profile": "hackernews"
+   "title": "Europe should not walk into Russia’s ‘traps’ on Ukraine talks, EU’s foreign policy chief Kallas says – as it happened",
+   "url": "https://www.theguardian.com/world/live/2026/nov/13/eu-leaders-negotiations-ukraine-russia-dublin-ai-summit-kushner-witkoff-latest-news-updates",
+   "score": 8.0,
+   "profile": "world-news"
   },
   {
-   "title": "Nvidia is preparing to oust Jensen Huang",
-   "url": "https://www.wsj.com/business/nvidia-is-preparing-to-oust-nvidia-ceo-jensen-huang-30f421ad",
-   "score": null,
-   "profile": "hackernews"
+   "title": "Iran says it targeted US military radar in Bahrain in retaliatory strike",
+   "url": "https://www.theguardian.com/world/2026/nov/13/iran-us-radar-bahrain-sirik-hormuz",
+   "score": 8.0,
+   "profile": "world-news"
   },
   {
-   "title": "Prediction markets tied to clinical trials and drug approvals draw lawmakers' ire",
-   "url": "https://www.cnbc.com/2026/11/11/kalsi-polymarket-prediction-market-senators-hhs-drug-approval.html",
-   "score": null,
-   "profile": "rss"
+   "title": "FAA issues nationwide ground-stop order, delaying or canceling nearly 7,000 flights",
+   "url": "https://www.theguardian.com/world/2026/nov/13/faa-nationwide-ground-stop-flights",
+   "score": 8.0,
+   "profile": "world-news"
   },
   {
-   "title": "Who could replace Jensen Huang? A highly unscientific list of possible successors",
-   "url": "https://techcrunch.com/2026/11/11/who-could-replace-jensen-huang-a-highly-unscientific-list-of-possible-successors/",
-   "score": null,
-   "profile": "rss"
+   "title": "Why is Microsoft's outage lasting so long and will emails be lost?",
+   "url": "https://www.bbc.co.uk/news/articles/cwvg238zrnm5o?at_medium=RSS&at_campaign=rss",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Rosenberg: Uncompromising Putin ups demands for peace with Ukraine",
+   "url": "https://www.bbc.co.uk/news/articles/cq39glwprknjo?at_medium=RSS&at_campaign=rss",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Nvidia scandal fallout widens as Trump's treasury secretary blames cabinet colleague",
+   "url": "https://www.bbc.co.uk/news/articles/cqvg2d1eg7zro?at_medium=RSS&at_campaign=rss",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "German spies handed new powers to tackle 'hybrid threats' from abroad",
+   "url": "https://www.bbc.co.uk/news/articles/c6jre3z03w4go?at_medium=RSS&at_campaign=rss",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Democratic Senate leader Schumer set to face leadership challenge",
+   "url": "https://www.bbc.co.uk/news/articles/cmy4930jq749o?at_medium=RSS&at_campaign=rss",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Nvidia scandal: US treasury chief blames Lutnick’s commerce department over alleged lack of action",
+   "url": "https://www.theguardian.com/technology/2026/nov/13/nvidia-scandal-sparks-us-national-security-concerns-china",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Microsoft scrambles to fix global outage affecting Teams and Outlook",
+   "url": "https://www.theguardian.com/technology/2026/nov/13/microsoft-outage-outlook-teams-word-excel-reports",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "New Orleans boat crash: tanker collides with river cruise ship carrying more than 130 people – latest updates",
+   "url": "https://www.theguardian.com/us-news/live/2026/nov/13/new-orleans-cruise-liner-tanker-crash-live-updates",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "🤖 DeepSeek 开放全家桶应用 API",
+   "url": "https://mp.weixin.qq.com/s/78KBHc4-4N5b2vfL9SkutQ",
+   "score": 7.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Trump tariffs face a new threat : Republicans",
+   "url": "https://www.rnz.co.nz/news/world/2585339/trump-s-tariffs-face-a-new-threat-republicans",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "US FAA grounds all departing flights due to extraordinary circumstance, safety reasons - Reuters",
+   "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPTTdvYllmb0pHUXVJVGNLUmFZb2I0WXpjZENubU52NW1nQlFJa1E4c3ZNTGhseUdiUzl0ZXJWa0pOSnR1ZDlRQk9FTHZlaWkyT0hLM1J3OW5tVUhIb0o4OWN5bDVVakF5T3lIanR1SVVMSkctSDlpb2loMWI2MENuWEIxTmhTcy1kZXdqSlRrdi1NMHlFSGtPRWEzdUFrMWR1c2wwNk9rRUUwOGpzajM0N1h2MndWVU9MYngyMVdudw?oc=5",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Why is Microsoft's outage lasting so long and will emails be lost? - BBC",
+   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9DTFFtbnRDTEMtMVlLWk44djBYVEhja0dXYkI3LWVTMkxiNm1EZld4Vkg0Z2hBVGFlU2JUZEFkdTdrUHVWYzd2SGNQNmI4S0dKd2NxZV8xNlBuYlk?oc=5",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "After 600 experiments, here's what I discovered about JEPA world models",
+   "url": "https://haddyalchaer.com/jepa",
+   "score": 6.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Lutnick faces questions over Nvidia spy scandal. His sons’ firm has deep ties to the chipmaker",
+   "url": "https://www.cnbc.com/2026/11/13/howard-lutnick-nvidia-jensen-huang-china-cantor-fitzgerald.html",
+   "score": 6.0,
+   "profile": "finance-news"
+  },
+  {
+   "title": "This young startup wants to power floating data centers with the ocean’s heat, and investors are already on board",
+   "url": "https://techcrunch.com/2026/11/13/this-young-startup-wants-to-power-floating-data-centers-with-the-oceans-heat-and-investors-are-already-on-board/",
+   "score": 6.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "ElevenLabs’ new app combines meeting note-taking and dictation for teams",
+   "url": "https://techcrunch.com/2026/11/13/elevenlabs-new-app-combines-meeting-note-taking-and-dictation-for-teams/",
+   "score": 6.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Watch: Divers explore US ship sunk off Florida coast to create new reef",
+   "url": "https://www.bbc.co.uk/news/videos/ckqx5ryx905qo?at_medium=RSS&at_campaign=rss",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "How a sex scandal at Nvidia is putting pressure on the White House",
+   "url": "https://www.bbc.co.uk/news/articles/c67429m3vem3o?at_medium=RSS&at_campaign=rss",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "What’s behind Australia’s surge in teen extremism?",
+   "url": "https://www.theguardian.com/australia-news/2026/nov/13/australia-surge-in-teen-extremism-ntwnfb",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "‘Ahead of his time’: AI helps unlock discoveries hidden in notebooks of man who transformed maths",
+   "url": "https://www.theguardian.com/science/2026/nov/13/kurt-godel-notebooks-ai-helps-unlock-hidden-discoveries-man-who-transformed-maths",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "UK-EU deal will ‘dissolve’ £60m a year of costs for plant trade, says Angela Eagle",
+   "url": "https://www.theguardian.com/business/2026/nov/13/uk-eu-deal-plant-trade-angela-eagle",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Flights grounded at all US airports due to air traffic control ‘communication issue’, transport secretary says – live",
+   "url": "https://www.theguardian.com/us-news/live/2026/nov/13/us-politics-latest-news-updates-democrats-republicans-donald-trump-van-hollen-chuck-schumer",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "As Van Hollen wages a challenge, Senate Democrats are torn on whom to elect as their leader",
+   "url": "https://www.theguardian.com/us-news/2026/nov/13/democrats-midterms-senate-leader",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "California Prop . 40 billionaire tax has failed , backers vow to try again",
+   "url": "https://www.record-bee.com/2026/11/13/california-prop-40-billionaire-tax-has-failed-backers-vow-to-try-again/",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Canadian bishops ask Parliament to ‘split’ euthanasia bill, urging advance requests not be allowed - EWTN News",
+   "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxQY2hnbGxhY1hFQXhTenpQWEZkTVd6bGFRRWg2VFdWeW9Qd0RtM241M2RycU5FRGJzVXZSM0tEa3Q0X3o3LXp4TUJxdktIU3d3bUQ2RndJWVJUTlFpODB4NElSU0hUOFhHaFQzS09kS3FhNENCQkpZQXI0a3FpRDhsNFFTbC1rOWtUSTRvLXZyb3RiaEdfR2xMU3JSY2pscVUwbS1yTVpmeld3ZDQydkFFUk9PbUhUb2tnMFdXbldRYzFjeVZfWEZ2U3d0LS1VX2Fk?oc=5",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "$11.4M in Nvidia hardware vanishes during shipment from CA to TX",
+   "url": "https://www.freightwaves.com/news/11-4-million-in-nvidia-hardware-vanishes-during-shipment-from-california-to-texas",
+   "score": 5.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "AI agent startup LangChain hits $3B valuation",
+   "url": "https://techcrunch.com/2026/11/13/ai-agent-startup-langchain-hits-3b-valuation/",
+   "score": 5.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "ChatGPT’s new Wallet lets AI agents shop and check out for you",
+   "url": "https://techcrunch.com/2026/11/13/chatgpts-new-wallet-lets-ai-agents-shop-and-check-out-for-you/",
+   "score": 5.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Uber confirms hackers stole thousands of drivers’ license information in data breach",
+   "url": "https://techcrunch.com/2026/11/13/uber-confirms-hackers-stole-thousands-of-drivers-license-information-in-data-breach/",
+   "score": 5.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Watch: How a server outage took down Microsoft Teams and Outlook",
+   "url": "https://www.bbc.co.uk/news/videos/cqzjr903n01po?at_medium=RSS&at_campaign=rss",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "The Peruvian city that has embraced Pope Leo as one of its own",
+   "url": "https://www.bbc.co.uk/news/articles/cwg7l8n7dx5mo?at_medium=RSS&at_campaign=rss",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "At least 24 killed after bus collides with truck in north-east India",
+   "url": "https://www.bbc.co.uk/news/articles/c6r7g5lp1zrxo?at_medium=RSS&at_campaign=rss",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Former NSW Liberal MP Rory Amon found guilty of raping 13-year-old boy",
+   "url": "https://www.theguardian.com/australia-news/2026/nov/13/former-nsw-liberal-mp-rory-amon-found-guilty-of-raping-13-year-old-boy",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Russia is ‘setting traps’ in Ukraine talks, EU foreign policy chief warns",
+   "url": "https://www.theguardian.com/world/2026/nov/13/russia-ukraine-talks-kaja-kallas-eu-foreign-policy-dublin-summit",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Rip out ugly clutter to help revive UK high streets, says thinktank",
+   "url": "https://www.theguardian.com/society/2026/nov/13/rip-out-clutter-to-retail-revive-high-streets-thinktank",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Probation officers in England and Wales vote for strike action over pay and workloads",
+   "url": "https://www.theguardian.com/society/2026/nov/13/probation-officers-in-england-and-wales-vote-for-strike-action-over-pay-and-workloads",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Walliams allegations prompt calls for staggered age of consent at 16 and 17",
+   "url": "https://www.theguardian.com/law/2026/nov/13/staggered-age-of-consent-16-17-law",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "OpenAI 推出 ChatGPT Wallet 支付钱包",
+   "url": "https://openai.com/index/introducing-chatgpt-wallet/",
+   "score": 5.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "✈️ 杜罗夫回应 TG 组件漏洞传闻：主动启动第三方服务才受影响",
+   "url": "https://telegram.me/zaihuapd/45114",
+   "score": 5.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Chris Van Hollen eyes Senate Majority Leader post - The Washington Informer",
+   "url": "https://www.washingtoninformer.com/maryland-democrats-congressional-majorities/",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Microsoft outage shows the risks of relying on a single technology provider for essential services - AP News",
+   "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPYWY5MnRXdTRCaHJZT3BKRWs4TzQxdUR3NEZzQ3ZsTmxCLW9wcFJJMzFaLS1pVGhtb3BabWdhN3pvQUhPU0FNbDJMV2I0a3BWaGtuQWpxVVNxRTZIUGhNS3c5RG5oVHNGaGg3XzJDdkE1V0RBWFJKVzMzTFVnN3otc0xZNWhCWWducmlfS2dXZ3lGcUtWcFJQWkxnejVqWjFxTlZKbENDamJfUQ?oc=5",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Chicago Fed's Goolsbee says central bank 'has definitely got work to do' on inflation",
+   "url": "https://www.cnbc.com/2026/11/13/chicago-feds-goolsbee-says-central-bank-has-definitely-got-work-to-do-on-inflation.html",
+   "score": 4.0,
+   "profile": "finance-news"
+  },
+  {
+   "title": "Jensen Huang didn’t show confidence in his successor, report says",
+   "url": "https://techcrunch.com/2026/11/13/jensen-huang-didnt-show-confidence-in-his-successor-report-says/",
+   "score": 4.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Rosalía scoops historic third best album award at Latin Grammys",
+   "url": "https://www.bbc.co.uk/news/articles/cr3eg97eqde1o?at_medium=RSS&at_campaign=rss",
+   "score": 4.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Former Hamas bodyguard convicted of Birmingham knife crime also wanted in Germany",
+   "url": "https://www.theguardian.com/uk-news/2026/nov/13/former-hamas-bodyguard-convicted-of-birmingham-knife-also-wanted-in-germany",
+   "score": 4.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "FAA Issues National Ground Stop",
+   "url": "https://www.fly.faa.gov/adv/adv_otherdis?adv_date=11132026&advn=111",
+   "score": 3.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "U.S. government grounds all flights across the United States ‘due to extraordinary cirumstances’",
+   "url": "https://techcrunch.com/2026/11/13/u-s-government-grounds-all-flights-across-the-united-states-due-to-extraordinary-cirumstances/",
+   "score": 3.0,
+   "profile": "tech-news"
   },
   {
    "title": "The unfolding Jensen Huang scandal: a timeline",
-   "url": "https://techcrunch.com/2026/11/11/nvidia-ceo-jensen-huangs-affair-with-alleged-chinese-spy-a-timeline/",
-   "score": null,
-   "profile": "rss"
+   "url": "https://techcrunch.com/2026/11/13/nvidia-ceo-jensen-huangs-affair-with-alleged-chinese-spy-a-timeline/",
+   "score": 3.0,
+   "profile": "tech-news"
   },
   {
-   "title": "Nvidia’s stock drops as board reportedly preps to oust CEO Jensen Huang",
-   "url": "https://techcrunch.com/2026/11/11/nvidias-stock-drops-as-board-reportedly-preps-to-oust-ceo-jensen-huang/",
-   "score": null,
-   "profile": "rss"
+   "title": "Aide to fugitive Ukrainian ex-PM wounded in latest Moscow car bombing",
+   "url": "https://www.bbc.co.uk/news/articles/c5gm3gnwl42eo?at_medium=RSS&at_campaign=rss",
+   "score": 3.0,
+   "profile": "world-news"
   },
   {
-   "title": "Jensen Huang accused of having another affair — with an Nvidia exec",
-   "url": "https://techcrunch.com/2026/11/11/jensen-huang-accused-of-having-another-affair-with-a-nvidia-exec/",
-   "score": null,
-   "profile": "rss"
+   "title": "Nigerian university in mourning after four students die at post-exam party",
+   "url": "https://www.bbc.co.uk/news/articles/cmvg2dvw0355o?at_medium=RSS&at_campaign=rss",
+   "score": 3.0,
+   "profile": "world-news"
   },
   {
-   "title": "Why the data center you dread might never even be built",
-   "url": "https://techcrunch.com/video/why-the-data-center-you-dread-might-never-even-be-built/",
-   "score": null,
-   "profile": "rss"
+   "title": "US air force responds to suspected drone activity at RAF Lakenheath",
+   "url": "https://www.theguardian.com/uk-news/2026/nov/13/us-air-force-responds-to-suspected-drone-activity-at-raf-lakenheath",
+   "score": 3.0,
+   "profile": "world-news"
   },
   {
-   "title": "Meta is losing its longtime head of  infrastructure",
-   "url": "https://techcrunch.com/2026/11/11/meta-is-losing-its-longtime-head-of-infrastructure/",
-   "score": null,
-   "profile": "rss"
+   "title": "Families clear homes of David Walliams books after sexual offence allegations",
+   "url": "https://www.theguardian.com/uk-news/2026/nov/13/families-clear-homes-of-david-walliams-books-after-sexual-offence-allegations",
+   "score": 3.0,
+   "profile": "world-news"
   },
   {
-   "title": "Olaf Sakkers is betting he can beat the emerging-manager squeeze",
-   "url": "https://techcrunch.com/2026/11/11/olaf-sakkers-is-betting-he-can-beat-the-emerging-manager-squeeze/",
-   "score": null,
-   "profile": "rss"
+   "title": "Tanker collides with cruise ship on Mississippi River in New Orleans",
+   "url": "https://www.theguardian.com/us-news/2026/nov/13/mississippi-river-crash-new-orleans",
+   "score": 3.0,
+   "profile": "world-news"
   },
   {
-   "title": "CoreWeave turns to customer prepayments, shorter contracts to fund AI growth",
-   "url": "https://techcrunch.com/2026/11/11/coreweave-turns-to-customer-prepayments-shorter-contracts-to-fund-ai-growth/",
-   "score": null,
-   "profile": "rss"
+   "title": "SpaceX 裁撤 Grok Imagine 团队约 60 人",
+   "url": "https://weibo.com/1642634100/RreMyi69Y",
+   "score": 3.0,
+   "profile": "tech-news"
   },
   {
-   "title": "With $720M round, Britain’s Fractile gets a leg up in the race for AI chips",
-   "url": "https://techcrunch.com/2026/11/11/with-720m-round-britains-fractile-gets-a-leg-up-in-the-race-for-ai-chips/",
-   "score": null,
-   "profile": "rss"
+   "title": "12306 上线国际机票，覆盖悉尼东京等 30 余城",
+   "url": "https://mp.weixin.qq.com/s/nCOWdYLkErCYUOO3yKC-GQ",
+   "score": 3.0,
+   "profile": "tech-news"
   },
   {
-   "title": "Congress to call Jensen Huang in to answer for alleged Chinese spy affair",
-   "url": "https://techcrunch.com/2026/11/11/congress-to-call-jensen-huang-in-to-answer-for-alleged-chinese-spy-affair/",
-   "score": null,
-   "profile": "rss"
+   "title": "Multiple arrests over Walton double stabbing",
+   "url": "https://www.clickliverpool.com/news/69306-multiple-arrests-over-walton-double-stabbing/",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Father charged with attempted murder after boy was found in dog crate below the surface",
+   "url": "https://www.wthitv.com/2026/11/13/11-month-old-found-buried-alive-dog-crate-went-home-family-same-night/",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Hyderabad : Freelance model held for supplying mule bank accounts",
+   "url": "https://www.siasat.com/hyderabad-freelance-model-held-for-supplying-mule-bank-accounts-3576716/",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Man’s best (robot) friend - Northeastern Global News",
+   "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE9CY2h0aS1kUzNxOGJpNHIzZGtmcWg2ZThWUnVNaXRIUHoxa3VwNGxXNHhMV1FhYzhPSnVJOHczbDNHaXNFUzhSQmM3TXBzSmxYTWRZWmE3djhsMExKUkFNUkgwbldjOHlqUzByYkJfT2hnUQ?oc=5",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "New evaluation framework to safeguard research quality - University World News",
+   "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTE15ZUxQWDRpOXo2R3NPZE9fMXNXTHlPdjZjZnFza29hTGxoMk13M2lGZ3pIMlBZT011ckxwUGRUaVVLVTlrcGFRX0NQVTRfZ2dYYTZTVzVkUlpfRURRTnE0QkRPemg5VkFDTGNmMTVHMWRZUFVXdTNV?oc=5",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Alex Warren Announces North American Leg For World Tour - Pollstar News",
+   "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOZkxoN1hnVmlKeHNFRzJsdU4yLWRtUTlpeGVBajJ1YzMta0dwOGZFWGNvSGY3cEJmeGZURjlwZFhaVmZ1Q3VBRGZDWnN5YlF3ZU0tQUhJTGUydFBIa1JsRk9ZR1dhTjlhbHFfUmNFVGtOLXlEM1ZLZHQzZ1RwdGZVZVJWMTA0S0RydHhlX2RXYjZJbXJ6X3F5ZQ?oc=5",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Doomsday: Friday, 13 November, A.D. 2026 (1960)",
+   "url": "https://www.science.org/doi/10.1126/science.132.3436.1291",
+   "score": 2.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Democrats are weighing impeachment of Robert F . Kennedy Jr .",
+   "url": "https://www.orlandosentinel.com/2026/11/13/congress-democrats-weighing-impeachment-rfk-jr/",
+   "score": 2.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Iranian  King of Instagram  arrested and taken into ICE custody",
+   "url": "https://cbs4local.com/news/nation-world/iranian-king-of-instagram-arrested-and-taken-into-ice-custody-california-los-angeles-michigan-west-hollywood-rtt",
+   "score": 1.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Iranian  King of Instagram  arrested and taken into ICE custody",
+   "url": "https://fox17.com/news/nation-world/iranian-king-of-instagram-arrested-and-taken-into-ice-custody-california-los-angeles-michigan-west-hollywood-rtt",
+   "score": 1.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Iranian  King of Instagram  arrested and taken into ICE custody",
+   "url": "https://13wham.com/news/nation-world/iranian-king-of-instagram-arrested-and-taken-into-ice-custody-california-los-angeles-michigan-west-hollywood-rtt",
+   "score": 1.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "It’s not the end of the world - University of Illinois Urbana-Champaign",
+   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE9USGQ2anJibF9RY3lQQllReHFyMGN1bUt0Rnl1dVBzbzJ2VFc5UjBxcm5nek9USkZ6YmhtLTA5NUd1NHJ5VjBnR2JlQnM4LTExR0daMkxwdlV3WGpfWEZuRWt4d296Zw?oc=5",
+   "score": 1.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "BREAKING NEWS: FAA ground all flights - Westfair Communications",
+   "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxPTEZGLWY4ai1BZHh3SUtDb0hvVWlWclByLUNJV0JOdTI2azFqNm43cWdUWHJHZ1R0UkpqQXhhT3dpbTJVZlp4TWhtSWtsbTFwT1ctMUZPdUxTSEFMX3FGR3hFSTMxSkg0VWVGUlRlVFhsa2ZVMXdIWk1IZUh6N2lubw?oc=5",
+   "score": 1.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "What in the World? - Foreign Policy",
+   "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNOHRmZURmdjFfZTExSHV5RFgyaHMzVHBkcU5wSkNocXRDUnJ3TkNWdUU0Qmw3RjgtdWtKakdzbmQ2U1AtY1FYd2VxazNzdTRHVzJxWXRJbklnUlJZU01uLUphWktBU3VpMnBMTG9Ma20yRWtYOUFaOE9qZW9FVDRIbTdvN1hacTVlX0lBT3NDeWV5dFhKU2h1bW8tUDNZdk15emJDYQ?oc=5",
+   "score": 0.0,
+   "profile": "world-news"
   }
  ]
 }

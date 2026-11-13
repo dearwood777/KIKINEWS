@@ -5,259 +5,299 @@ date: 2026-11-13
 lang: en
 ---
 
-> From 91 items, 16 important content pieces were selected
+> From 76 items, 16 important content pieces were selected
 
 ---
 
 **Technology News**
-1. [Rust 1.100 Release Adds Never Type, Custom Allocators, and Cargo Enhancements](#item-tech-news-1) ⭐️ 9.0/10
-2. [Jensen Huang is out at Nvidia — who is Colette Kress, his interim replacement?](#item-tech-news-2) ⭐️ 9.0/10
-3. [NVIDIA CEO Jensen Huang Resigns, CFO Kris Kres Becomes Interim CEO](#item-tech-news-3) ⭐️ 9.0/10
-4. [Jensen Huang resigns](#item-tech-news-4) ⭐️ 8.0/10
-5. [I&\#x27;m making LLMs work on small and old devices](#item-tech-news-5) ⭐️ 8.0/10
-6. [Google’s latest Search upgrade promises better answers to your most complicated questions](#item-tech-news-6) ⭐️ 8.0/10
-7. [Jensen Huang’s exit puts Nvidia’s support for open source in question](#item-tech-news-7) ⭐️ 8.0/10
-8. [Hugging Face CEO vows to keep fighting for open source AI after Jensen Huang’s exit](#item-tech-news-8) ⭐️ 8.0/10
+1. [Export-banned Nvidia chips are behind China’s most powerful AI models — uh oh, Jensen\!](#item-tech-news-1) ⭐️ 9.0/10
+2. [Microsoft Cloud Outage Spreads from Outlook to Global Services](#item-tech-news-2) ⭐️ 8.0/10
+3. [Israeli VCs Eye AI Hardware Challengers After Nvidia CEO Resignation](#item-tech-news-3) ⭐️ 8.0/10
+4. [DeepSeek releases full API suite and V4.1‑Flash model](#item-tech-news-4) ⭐️ 7.0/10
 
 **World News**
-1. [Putin Threatens to Target Foreign Troops Amid Starlink Disruptions](#item-world-news-1) ⭐️ 9.0/10
-2. [WFP warns aid is Sudan’s only lifeline amid funding cuts](#item-world-news-2) ⭐️ 9.0/10
-3. [US envoys meet Zelensky in Dublin after talks with Putin in Moscow](#item-world-news-3) ⭐️ 8.0/10
-4. [Democrat Scott Colom makes history as Mississippi&\#x27;s first black senator since 19th Century](#item-world-news-4) ⭐️ 8.0/10
-5. [Millions of Ebola dollars missing with staff unpaid while virus spreads, charity says](#item-world-news-5) ⭐️ 8.0/10
-6. [The rise and fall of Jensen Huang - how the tech superstar became mired in scandal](#item-world-news-6) ⭐️ 8.0/10
-7. [Jensen Huang has resigned, what&\#x27;s next for Nvidia?](#item-world-news-7) ⭐️ 8.0/10
-8. [China rules out hosting Cop33 climate summit in 2028](#item-world-news-8) ⭐️ 8.0/10
+1. [Microsoft apologizes for 24‑hour global Outlook, Teams outage](#item-world-news-1) ⭐️ 8.0/10
+2. [Europe should not walk into Russia’s ‘traps’ on Ukraine talks, EU’s foreign policy chief Kallas says – as it happened](#item-world-news-2) ⭐️ 8.0/10
+3. [Iran says it targeted US military radar in Bahrain in retaliatory strike](#item-world-news-3) ⭐️ 8.0/10
+4. [FAA Ground Stop Halts Nearly 7,000 U.S. Flights](#item-world-news-4) ⭐️ 8.0/10
+5. [Microsoft outage disrupts global services for 24 hours](#item-world-news-5) ⭐️ 7.0/10
+6. [Putin Demands &\#x27;Eternal Peace&\#x27; While Rejecting Ceasefire](#item-world-news-6) ⭐️ 7.0/10
+7. [Nvidia scandal fallout widens as Trump&\#x27;s treasury secretary blames cabinet colleague](#item-world-news-7) ⭐️ 7.0/10
+8. [Germany Grants Intelligence Agencies Expanded Powers](#item-world-news-8) ⭐️ 7.0/10
+9. [Schumer Faces Leadership Challenge from Van Hollen](#item-world-news-9) ⭐️ 7.0/10
+10. [Nvidia scandal: US treasury chief blames Lutnick’s commerce department over alleged lack of action](#item-world-news-10) ⭐️ 7.0/10
+11. [Microsoft scrambles to fix global outage affecting Teams and Outlook](#item-world-news-11) ⭐️ 7.0/10
+12. [New Orleans boat crash: tanker collides with river cruise ship carrying more than 130 people – latest updates](#item-world-news-12) ⭐️ 7.0/10
 
 ---
 
 ## Technology News
 
 <a id="item-tech-news-1"></a>
-### [Rust 1.100 Release Adds Never Type, Custom Allocators, and Cargo Enhancements](https://blog.rust-lang.org/2026/11/12/Rust-1.100.0/) ⭐️ 9.0/10
+### [Export-banned Nvidia chips are behind China’s most powerful AI models — uh oh, Jensen\!](https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-jensen/) ⭐️ 9.0/10
 
-Rust 1.100 stabilizes the never type and custom allocators, introduces dependency cooldowns, Cargo warnings for unused dependencies, and new APIs such as bool::toggle, Box::map, str::trim\_prefix/suffix, Path::trim\_prefix, and DropGuard. Cargo install now defaults to using the lockfile in the crate tarball, making --locked a no‑op.
+China’s top AI models reportedly used banned Nvidia chips, raising serious export‑control and security concerns.
 
-hackernews · mbStavola · Nov 12, 18:39 · [Discussion](https://news.ycombinator.com/item?id=50472038)
+rss · TechCrunch · Nov 13, 18:40
 
-**「Background」** Rust 1.100 builds on the long‑term Cargo dependency cooldown feature defined in RFC 3923, which was first discussed in early 2026 and added to Cargo to delay adoption of newly published crate versions. It also finalizes the never type, a language feature that had been in development for years and was announced as stabilizing in earlier releases. These prior discussions and stabilizations set the stage for the new language and tooling changes in 1.100.
-
-**「Impact」** Developers can now use the never type for functions that never return, write custom allocators for fine‑grained memory control, enforce reproducible builds with dependency cooldowns, and clean Cargo.toml files by removing unused dependencies flagged by Cargo warnings.
-
-<details><summary>References</summary>
-<ul>
-<li><a href="https://releases.rs/docs/1.100.0/">1.100.0 | Rust Changelogs - releases.rs</a></li>
-<li><a href="https://rust-lang.github.io/rfcs//3923-cargo-min-publish-age.html">3923-cargo-min-publish-age - The Rust RFC Book</a></li>
-<li><a href="https://www.linkedin.com/posts/rustjobs-dev_%F0%9D%90%91%F0%9D%90%AE%F0%9D%90%AC%F0%9D%90%AD%F0%9D%90%AC-%F0%9D%90%8D%F0%9D%90%9E%F0%9D%90%AF%F0%9D%90%9E%F0%9D%90%AB-%F0%9D%90%93%F0%9D%90%B2%F0%9D%90%A9%F0%9D%90%9E-%F0%9D%90%8D%F0%9D%90%9E%F0%9D%90%9A%F0%9D%90%AB%F0%9D%90%A2%F0%9D%90%A7%F0%9D%90%A0-activity-7470805631520788481-DKi8">Rust Never Type Stabilization Nears Completion | LinkedIn</a></li>
-
-</ul>
-</details>
-
-**Tags**: `#Rust`, `#Language Features`, `#Cargo`, `#Systems Programming`
+**Tags**: `#AI`, `#Hardware`, `#Geopolitics`, `#Export Controls`, `#Nvidia`
 
 ---
 
 <a id="item-tech-news-2"></a>
-### [Jensen Huang is out at Nvidia — who is Colette Kress, his interim replacement?](https://techcrunch.com/2026/11/12/jensen-huang-is-out-at-nvidia-who-is-colette-kress-his-interim-replacement/) ⭐️ 9.0/10
+### [Microsoft Cloud Outage Spreads from Outlook to Global Services](https://techcrunch.com/2026/11/13/microsoft-latest-email-outage-turned-into-a-full-blown-global-cloud-crisis/) ⭐️ 8.0/10
 
-Jensen Huang’s immediate resignation from Nvidia signals a significant shift in a key AI hardware leader.
+Microsoft’s global cloud outage began as an Outlook and Teams glitch, then cascaded to affect consumer and business email, file storage, Copilot AI, Defender security, and Intune dashboards worldwide, leaving users unable to send email, join meetings, or access cloud resources for roughly a day.
 
-rss · TechCrunch · Nov 12, 15:37
+rss · TechCrunch · Nov 13, 13:15
 
-**Tags**: `#Nvidia`, `#CEO resignation`, `#AI hardware`, `#leadership change`
+**「Background」** Microsoft 365 is a cloud‑based suite that includes Outlook, Teams, OneDrive, and other productivity services used by millions of consumers and businesses worldwide. Prior to this incident, Microsoft had reported sporadic outages but had not experienced a full‑day, global disruption of its core services. The current outage began as an Outlook/Teams glitch that cascaded into a broader failure of Microsoft’s cloud infrastructure.
 
----
-
-<a id="item-tech-news-3"></a>
-### [NVIDIA CEO Jensen Huang Resigns, CFO Kris Kres Becomes Interim CEO](https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition) ⭐️ 9.0/10
-
-NVIDIA announced that Jensen Huang has resigned as president, CEO, and director, effective immediately. CFO Kris Kres is stepping in as interim CEO while continuing his CFO duties, and the board has begun a search for a permanent successor. Harvey C. Jones has been named the new board chair, and the company says operations, customer commitments, and the product roadmap will remain uninterrupted, with the Q3 earnings release still scheduled for November 17.
-
-telegram · zaihuapd · Nov 12, 13:52
-
-**「Background」** NVIDIA, a major AI hardware manufacturer, has been led by founder Jensen Huang, who served as president and CEO. When a CEO resigns, the board can appoint interim leadership; in this case it named CFO Colette Kress interim CEO and appointed Harvey C. Jones as chair.
-
-**「Impact」** The leadership change may prompt investors to reassess NVIDIA’s valuation and could influence partner confidence, but the board’s assurance that product development and the Q3 earnings release will proceed as planned mitigates immediate operational risk.
+**「Impact」** The outage prevented users from sending or receiving email, joining Teams meetings, accessing OneDrive files, and using Azure‑based Copilot and Defender services, forcing many organizations to revert to backup communication and storage solutions.
 
 <details><summary>References</summary>
 <ul>
-<li><a href="https://www.globenewswire.com/news-release/2026/11/12/3401635/0/en/nvidia-announces-ceo-transition.html">NVIDIA Announces CEO Transition | GlobeNewswire News Room</a></li>
+<li><a href="https://www.theguardian.com/australia-news/2026/nov/13/global-microsoft-outage-what-happened-and-why">A global Microsoft 365 outage has hit millions – what... | The Guardian</a></li>
+<li><a href="https://techcrunch.com/2026/11/13/microsoft-latest-email-outage-turned-into-a-full-blown-global-cloud-crisis/">Microsoft &#x27;s latest email outage turned into a full blown global cloud ...</a></li>
+<li><a href="https://www.aljazeera.com/news/liveblog/2026/11/13/live-microsoft-struggles-to-restore-services-as-outage-hits-global-users">Microsoft outage live: Global users affected as services... | Al Jazeera</a></li>
 
 </ul>
 </details>
 
-**Tags**: `#NVIDIA`, `#CEO transition`, `#AI hardware`, `#industry leadership`
+**Tags**: `#cloud`, `#outage`, `#Microsoft`, `#email`, `#Teams`
+
+---
+
+<a id="item-tech-news-3"></a>
+### [Israeli VCs Eye AI Hardware Challengers After Nvidia CEO Resignation](https://techcrunch.com/2026/11/13/israels-vcs-see-opportunity-for-challengers-in-nvidias-turmoil/) ⭐️ 8.0/10
+
+Nvidia’s CEO Jensen Huang resigned, sparking concern in Israel where Nvidia is a key economic driver. The company’s GPUs dominate AI training, and its 2019 $6.9 billion acquisition of Israeli chipmaker Mellanox underpinned a major R&amp;D hub outside the U.S. Israeli venture capitalists now view the leadership vacuum as a chance to back alternative AI‑hardware startups.
+
+rss · TechCrunch · Nov 13, 12:52
+
+**「Prerequisite Context」** Nvidia’s CEO Jensen Huang resigned in November 2026 amid scandal, leaving CFO Colette Kress as interim chief executive.  Prior to the leadership change, Nvidia had acquired Israeli chipmaker Mellanox for $6.9 billion in 2019, establishing a major R&amp;D hub in Israel.
+
+**「Impact」** Israeli VCs are likely to redirect investment toward AI‑hardware challengers, potentially accelerating the emergence of domestic competitors and reshaping the region’s AI supply chain.
+
+<details><summary>References</summary>
+<ul>
+<li><a href="https://www.theguardian.com/technology/2026/nov/12/nvidia-ceo-jensen-huang-resigns">Jensen Huang resigns as Nvidia CEO after alleged... | The Guardian</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Mellanox_Technologies">Mellanox Technologies - Wikipedia</a></li>
+
+</ul>
+</details>
+
+**Tags**: `#Nvidia`, `#AI hardware`, `#venture capital`, `#Israel`, `#leadership change`
 
 ---
 
 <a id="item-tech-news-4"></a>
-### [Jensen Huang resigns](https://apnews.com/article/nvidia-megaspeed-china-singapore-huang-5403f152a601cf82ce939f1d24fffa0f) ⭐️ 8.0/10
+### [DeepSeek releases full API suite and V4.1‑Flash model](https://mp.weixin.qq.com/s/78KBHc4-4N5b2vfL9SkutQ) ⭐️ 7.0/10
 
-Nvidia CEO resignation is a high‑impact industry event with broad implications for AI and technology markets.
+DeepSeek has launched a comprehensive API suite that adds search, file input, link reading, voice, OCR, ASR, and TTS capabilities to its existing chat API, enabling developers to activate these features by setting corresponding parameters. The V4.1‑Flash model is now available on three interfaces—Search, Fetch, and OCR/ASR/TTS—providing a faster, higher‑capacity option for developers. An open‑source front‑end demo that imports historical conversations is also released, allowing local deployment of the DeepSeek web interface via the chat‑demo repository.
 
-hackernews · lldb · Nov 12, 13:52 · [Discussion](https://news.ycombinator.com/item?id=50467087)
+telegram · zaihuapd · Nov 13, 14:27
 
-**Tags**: `#Nvidia`, `#AI`, `#Leadership`, `#ExportControls`, `#IndustryImpact`
+**「Prior DeepSeek model release」** DeepSeek had previously launched the V4.1‑Flash multimodal model in September 2026, a 552 B‑parameter architecture that natively processes images and text up to a 1 M‑token context.
 
----
+**「Impact」** Developers can now integrate a broader set of multimodal and search functionalities into their applications with a single API call, simplifying the creation of AI‑powered tools that require file handling, voice input, or real‑time search, and can deploy the demo locally for rapid prototyping.
 
-<a id="item-tech-news-5"></a>
-### [I&\#x27;m making LLMs work on small and old devices](https://github.com/hyperionaidev/smolmaxxing/) ⭐️ 8.0/10
+<details><summary>References</summary>
+<ul>
+<li><a href="https://www.deepseek.com/en/news/deepseek-v4-1-flash/">DeepSeek | Introducing DeepSeek-V4.1-Flash: smarter, faster ...</a></li>
 
-Open‑source effort shows 16B LLMs running on 1GB‑memory devices, offering impactful edge‑AI insights.
+</ul>
+</details>
 
-hackernews · mrashad74 · Nov 12, 15:23 · [Discussion](https://news.ycombinator.com/item?id=50468888)
-
-**Tags**: `#edge AI`, `#LLM optimization`, `#low-resource inference`, `#open source`, `#hardware acceleration`
-
----
-
-<a id="item-tech-news-6"></a>
-### [Google’s latest Search upgrade promises better answers to your most complicated questions](https://techcrunch.com/2026/11/12/googles-latest-search-upgrade-promises-better-answers-to-your-most-complicated-questions/) ⭐️ 8.0/10
-
-Google’s Gemini 4 Hydrogen model promises a major upgrade to Search, offering faster, more accurate answers to complex queries.
-
-rss · TechCrunch · Nov 12, 19:27
-
-**Tags**: `#AI`, `#Search`, `#Google`, `#Gemini`, `#NLP`
-
----
-
-<a id="item-tech-news-7"></a>
-### [Jensen Huang’s exit puts Nvidia’s support for open source in question](https://techcrunch.com/2026/11/12/jensen-huangs-exit-puts-nvidias-support-for-open-source-in-question/) ⭐️ 8.0/10
-
-Nvidia CEO Jensen Huang’s resignation raises concerns about the company’s future support for open‑source AI amid national‑security scrutiny.
-
-rss · TechCrunch · Nov 12, 18:39
-
-**Tags**: `#open-source`, `#AI`, `#Nvidia`, `#executive resignation`, `#national security`
-
----
-
-<a id="item-tech-news-8"></a>
-### [Hugging Face CEO vows to keep fighting for open source AI after Jensen Huang’s exit](https://techcrunch.com/2026/11/12/hugging-face-ceo-vows-to-keep-fighting-for-open-source-ai-after-jensen-huangs-exit/) ⭐️ 8.0/10
-
-Hugging Face CEO reacts to Nvidia’s acquisition and Jensen Huang’s exit, underscoring the impact on open‑source AI.
-
-rss · TechCrunch · Nov 12, 17:36
-
-**Tags**: `#Nvidia`, `#Hugging Face`, `#Open Source AI`, `#Acquisition`, `#Leadership`
+**Tags**: `#API`, `#DeepSeek`, `#AI`, `#OpenSource`, `#ModelRelease`
 
 ---
 
 ## World News
 
 <a id="item-world-news-1"></a>
-### [Putin Threatens to Target Foreign Troops Amid Starlink Disruptions](https://www.theguardian.com/world/2026/nov/12/vladimir-putin-russia-target-foreign-troops-ukraine-elon-musk-starlink) ⭐️ 9.0/10
+### [Microsoft apologizes for 24‑hour global Outlook, Teams outage](https://www.bbc.co.uk/news/articles/c6rrg51rkz09o?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
 
-On 12 November 2026, Russian President Vladimir Putin warned U.S. negotiators Jared Kushner and Steve Witkoff at the Kremlin that Russia would target any foreign troops deployed to Ukraine, while also refusing to accept peacekeeping forces and insisting on full control of four annexed regions. The remarks came as the Ukrainian military reported renewed disruptions to Elon Musk’s Starlink satellite service.
+Microsoft said it was &quot;deeply sorry&quot; for a nearly 24‑hour outage of Outlook and Teams that began on Thursday and largely resolved by Friday afternoon, affecting more than 70 countries and over 430 million users. The company confirmed the outage was caused by a technical issue during a network capacity upgrade and denied any cyber or AI involvement.
 
-rss · The Guardian World · Nov 12, 22:26
+rss · BBC World · Nov 13, 21:14
 
-**「Background of the conflict and Starlink」** In September 2022, Russia unilaterally declared annexation of Donetsk, Kherson, Luhansk and Zaporizhzhia, establishing occupation administrations in those oblasts. The Ukrainian military has relied on Elon Musk’s Starlink satellite network for communications, which has been intermittently disrupted during the conflict.
+**「Background」** Microsoft’s Outlook and Teams are core cloud communication services used by businesses, governments and individuals worldwide.
 
-**「Impact」** The threat may deter the deployment of foreign peacekeeping troops to Ukraine and heighten the risk of escalation between Russia and the United States.
+**「Impact」** The outage disrupted business operations, government services and personal communications in more than 70 countries, temporarily halting email, meetings and collaboration for millions of users.
 
-<details><summary>References</summary>
-<ul>
-<li><a href="https://en.wikipedia.org/wiki/Russian_annexation_of_Donetsk,_Kherson,_Luhansk_and_Zaporizhzhia_oblasts">Russian annexation of Donetsk, Kherson, Luhansk and ...</a></li>
-<li><a href="https://en.wikipedia.org/wiki/Starlink">Starlink - Wikipedia</a></li>
-
-</ul>
-</details>
-
-**Tags**: `#Russia`, `#Ukraine`, `#United States`, `#Diplomacy`, `#Military`
+**Tags**: `#Microsoft`, `#Outlook`, `#Teams`, `#global outage`, `#technology`
 
 ---
 
 <a id="item-world-news-2"></a>
-### [WFP warns aid is Sudan’s only lifeline amid funding cuts](https://news.google.com/rss/articles/CBMiV0FVX3lxTE9Sb255ek9CX0dfdjdIWUNqWDNzbUFKYWVjV1BQcDhXYXRkMV9kcjlaRG9EMGx1bWtBS1M4RmJCNW00N0d3MmJNa19DTm51S3c3cmZsLUVMcw?oc=5) ⭐️ 9.0/10
+### [Europe should not walk into Russia’s ‘traps’ on Ukraine talks, EU’s foreign policy chief Kallas says – as it happened](https://www.theguardian.com/world/live/2026/nov/13/eu-leaders-negotiations-ukraine-russia-dublin-ai-summit-kushner-witkoff-latest-news-updates) ⭐️ 8.0/10
 
-The World Food Programme chief warned that aid is the only hope for millions of Sudanese as funding cuts worsen the hunger crisis. The cuts have reduced the programme’s ability to deliver food assistance, leaving many families without essential supplies. The warning comes as the UN reports a growing number of people facing acute food insecurity.
+EU leaders are negotiating with Russia over Ukraine, amid Russian demands that could alter the region’s security dynamics.
 
-google\_news · UN News · Nov 12, 18:37
+rss · The Guardian World · Nov 13, 16:39
 
-**「WFP Funding Cuts and Rising Hunger」** The World Food Programme has been cutting assistance due to funding shortfalls, threatening to remove aid for 800,000 vulnerable people by the end of 2026, and the risk of famine has risen as crop failures and malnutrition spread.
-
-**「Risk of Food Assistance Depletion」** The World Food Programme’s funding shortfall could exhaust its Sudan supplies in about two months, leaving more than 21 million people—especially displaced families—at risk of acute hunger, malnutrition and medicine shortages.
-
-<details><summary>References</summary>
-<ul>
-<li><a href="https://www.wfp.org/emergencies/sudan">Risk of Famine in Sudan | World Food Programme</a></li>
-<li><a href="https://allafrica.com/stories/202610230024.html">Sudan Hunger Crisis Deepens As Aid Cuts Collide... - allAfrica.com</a></li>
-<li><a href="https://indonesianpost.com/2026/02/15/un-report-21-million-sudanese-face-acute-hunger-wfp-funding-crunch/">More than 21 million people in Sudan at risk of hunger as WFP aid...</a></li>
-<li><a href="https://allafrica.com/stories/202610230024.html">Sudan Hunger Crisis Deepens As Aid Cuts Collide... - allAfrica.com</a></li>
-<li><a href="https://indonesianpost.com/2026/02/15/un-report-21-million-sudanese-face-acute-hunger-wfp-funding-crunch/">More than 21 million people in Sudan at risk of hunger as WFP aid...</a></li>
-
-</ul>
-</details>
-
-**Tags**: `#Sudan`, `#Humanitarian crisis`, `#WFP`, `#Aid`, `#Hunger`
+**Tags**: `#Ukraine`, `#Russia`, `#EU`, `#Diplomacy`, `#Security`
 
 ---
 
 <a id="item-world-news-3"></a>
-### [US envoys meet Zelensky in Dublin after talks with Putin in Moscow](https://www.bbc.co.uk/news/articles/cwrkgmymk55zo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
+### [Iran says it targeted US military radar in Bahrain in retaliatory strike](https://www.theguardian.com/world/2026/nov/13/iran-us-radar-bahrain-sirik-hormuz) ⭐️ 8.0/10
 
-US envoys Jared Kushner and Steve Witkoff met with Russian President Vladimir Putin and then Ukraine’s President Volodymyr Zelensky, agreeing on a new round of trilateral talks amid ongoing war discussions.
+Iran claims to have destroyed a U.S. early‑warning radar in Bahrain in retaliation for a U.S. strike on a communications tower in Sirik, marking its first direct attack on U.S. military assets in months.
 
-rss · BBC World · Nov 12, 21:00
+rss · The Guardian World · Nov 13, 13:52
 
-**Tags**: `#diplomacy`, `#Ukraine war`, `#US-Russia relations`, `#trilateral talks`, `#Zelensky`
+**Tags**: `#Iran`, `#United States`, `#Bahrain`, `#military conflict`, `#regional security`
 
 ---
 
 <a id="item-world-news-4"></a>
-### [Democrat Scott Colom makes history as Mississippi&\#x27;s first black senator since 19th Century](https://www.bbc.co.uk/news/articles/cw7vppyr80eeo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
+### [FAA Ground Stop Halts Nearly 7,000 U.S. Flights](https://www.theguardian.com/world/2026/nov/13/faa-nationwide-ground-stop-flights) ⭐️ 8.0/10
 
-Scott Colom, a Democrat, won Mississippi&\#x27;s U.S. Senate seat, becoming the state&\#x27;s first black senator since the 1800s.
+The FAA issued a nationwide ground stop on Friday, halting all U.S. departures and delaying or canceling about 7,000 flights due to a communication issue at all Air Route Traffic Control Centers. The order was confirmed by the FAA and Transportation Secretary Sean Duffy; the cause remains under investigation.
 
-rss · BBC World · Nov 12, 12:56
+rss · The Guardian World · Nov 13, 21:44
 
-**Tags**: `#US politics`, `#elections`, `#diversity`, `#Mississippi`, `#Senate`
+**「Background」** This is the third nationwide grounding of U.S. flights, following the 2001 September 11 attacks and a January 2023 pilot notification system malfunction that paused departures for less than two hours.
+
+**「Impact」** The halt disrupted travel plans for millions of passengers and forced airlines to cancel or reschedule flights, affecting the aviation industry and passengers nationwide.
+
+**Tags**: `#aviation`, `#FAA`, `#ground stop`, `#transportation`, `#US`
 
 ---
 
 <a id="item-world-news-5"></a>
-### [Millions of Ebola dollars missing with staff unpaid while virus spreads, charity says](https://www.bbc.co.uk/news/articles/cx98757ymm6zo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
+### [Microsoft outage disrupts global services for 24 hours](https://www.bbc.co.uk/news/articles/cwvg238zrnm5o?at_medium=RSS&amp;at_campaign=rss) ⭐️ 7.0/10
 
-MSF warns that millions of Ebola relief funds are missing and frontline staff in the DRC are unpaid, jeopardizing the outbreak response.
+A technical fault caused a Microsoft 365 outage that began late Thursday, affecting Teams, Outlook, and Copilot in at least 74 countries. Microsoft confirmed the issue was not a cyber‑security incident and apologized for the disruption. Services are being restored after almost 24 hours of downtime.
 
-rss · BBC World · Nov 12, 15:18
+rss · BBC World · Nov 13, 18:36
 
-**Tags**: `#Ebola`, `#DRC`, `#MSF`, `#funding`, `#public health`
+**「Background of the 2026 Microsoft outage」** The outage began on 12 November 2026, when users in more than 70 countries reported connectivity problems across Microsoft 365 services such as Outlook, Teams, and Copilot. It has been described as a widespread technical fault rather than a cyber‑security incident.
+
+**「Impact」** The outage has prevented many users from sending or receiving emails, disrupting communication for schools, healthcare systems, businesses, courts, and governments worldwide.
+
+<details><summary>References</summary>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/2026_Microsoft_outage">2026 Microsoft outage - Wikipedia</a></li>
+<li><a href="https://www.bleepingcomputer.com/news/microsoft/massive-microsoft-365-outage-disrupts-outlook-teams-copilot-worldwide/">Massive Microsoft 365 outage disrupts Outlook, Teams, Copilot ...</a></li>
+
+</ul>
+</details>
+
+**Tags**: `#Microsoft`, `#Outage`, `#Tech`, `#Email`, `#Global Impact`
 
 ---
 
 <a id="item-world-news-6"></a>
-### [The rise and fall of Jensen Huang - how the tech superstar became mired in scandal](https://www.bbc.co.uk/news/articles/cmze750zg0jeo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
+### [Putin Demands &\#x27;Eternal Peace&\#x27; While Rejecting Ceasefire](https://www.bbc.co.uk/news/articles/cq39glwprknjo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 7.0/10
 
-Nvidia’s founder Jensen Huang resigns after a scandal, a development that could reshape the company and affect the global technology landscape.
+Russia&\#x27;s President Vladimir Putin said he wishes for &quot;eternal peace&quot; for Ukraine during talks with U.S. envoys, but he continues to reject a comprehensive ceasefire, insisting that a new, indivisible security architecture for Europe is a prerequisite for peace.
 
-rss · BBC World · Nov 12, 17:11
+rss · BBC World · Nov 13, 16:40
 
-**Tags**: `#technology`, `#business`, `#scandal`, `#Nvidia`, `#Jensen Huang`
+**「Context of the Russia‑Ukraine conflict」** The Russia‑Ukraine war began with Russia’s full‑scale invasion on February 24, 2022, and has continued with ongoing fighting and periodic diplomatic efforts. In November 2026, US envoys Steve Witkoff and Jared Kushner met with President Putin in Moscow following trilateral talks in Abu Dhabi, where Putin reiterated his demand for a new security architecture for Europe.
+
+**「Impact」** The statement does not indicate any immediate policy shift, leaving the current state of the conflict unchanged.
+
+<details><summary>References</summary>
+<ul>
+<li><a href="https://singjupost.com/transcript-us-envoys-jared-kushner-and-steve-witkoff-meet-putin-at-kremlin/">Transcript: US Envoys Jared Kushner And Steve Witkoff Meet ...</a></li>
+<li><a href="https://www.politico.com/news/2026/11/12/us-envoys-witkoff-and-kushner-meet-putin-in-moscow">US envoys Witkoff and Kushner meet Putin in Moscow</a></li>
+
+</ul>
+</details>
+
+**Tags**: `#Russia-Ukraine conflict`, `#Diplomacy`, `#Putin`, `#US-Russia relations`
 
 ---
 
 <a id="item-world-news-7"></a>
-### [Jensen Huang has resigned, what&\#x27;s next for Nvidia?](https://www.bbc.co.uk/news/videos/cmdx1r99kp9wo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
+### [Nvidia scandal fallout widens as Trump&\#x27;s treasury secretary blames cabinet colleague](https://www.bbc.co.uk/news/articles/cqvg2d1eg7zro?at_medium=RSS&amp;at_campaign=rss) ⭐️ 7.0/10
 
-Jensen Huang steps down as Nvidia CEO, triggering an interim leadership change and a brief stock market dip.
+U.S. Treasury Secretary Scott Bessent blamed Commerce Secretary Howard Lutnick for failing to properly oversee the export of high‑spec AI chips in the fallout from the Nvidia scandal.
 
-rss · BBC World · Nov 12, 19:33
+rss · BBC World · Nov 13, 19:53
 
-**Tags**: `#Nvidia`, `#CEO resignation`, `#tech industry`, `#stock market`, `#business`
+**Tags**: `#US politics`, `#AI chips`, `#export controls`, `#Nvidia scandal`, `#cabinet dispute`
 
 ---
 
 <a id="item-world-news-8"></a>
-### [China rules out hosting Cop33 climate summit in 2028](https://www.theguardian.com/environment/2026/nov/12/china-rules-out-hosting-cop33-climate-summit-in-2028) ⭐️ 8.0/10
+### [Germany Grants Intelligence Agencies Expanded Powers](https://www.bbc.co.uk/news/articles/c6jre3z03w4go?at_medium=RSS&amp;at_campaign=rss) ⭐️ 7.0/10
 
-China has declined to host the 2028 COP33 climate summit, opening the bid to other Asian nations and altering the dynamics of global climate diplomacy.
+Germany’s parliament, the Bundestag, approved a major overhaul of its intelligence legislation on 13 November 2026, with 309 MPs voting in favour. The bill grants the BND federal intelligence service and the BfV domestic service new powers to counter espionage, terrorism and sabotage. Interior Minister Alexander Dobrindt hailed it as a &quot;reform of the century&quot;, while the Left Party’s Clara Bünger warned it could create a new secret police.
 
-rss · The Guardian World · Nov 12, 22:00
+rss · BBC World · Nov 13, 15:42
 
-**Tags**: `#Climate Change`, `#COP33`, `#China`, `#International Relations`
+**「Prior legal limits on German intelligence」** Before the 2026 overhaul, Germany’s BND and BfV operated under stricter legal limits that restricted covert operations and cyber countermeasures. The reform follows growing concerns about hybrid warfare from Russia and a desire to reduce reliance on U.S. intelligence sharing.
+
+**「Impact」** The expanded powers allow the BND and BfV to conduct broader surveillance and intelligence operations, potentially affecting civil liberties and privacy rights in Germany.
+
+<details><summary>References</summary>
+<ul>
+<li><a href="https://www.politico.eu/article/germany-to-give-spies-bnd-new-powers-to-counter-russia-threat/">Putin threat pushes Germany to give spies major new powers</a></li>
+<li><a href="https://www.reuters.com/technology/germany-seeks-powers-spies-hack-disrupt-attackers-2026-07-02/">Germany seeks powers for spies to hack and disrupt attackers</a></li>
+
+</ul>
+</details>
+
+**Tags**: `#Germany`, `#Intelligence`, `#Legislation`, `#Hybrid Threats`, `#Security`
+
+---
+
+<a id="item-world-news-9"></a>
+### [Schumer Faces Leadership Challenge from Van Hollen](https://www.bbc.co.uk/news/articles/cmy4930jq749o?at_medium=RSS&amp;at_campaign=rss) ⭐️ 7.0/10
+
+Senator Chuck Schumer is facing a challenge to his position as U.S. Senate majority leader from fellow Democrat Chris Van Hollen, following the party’s midterm election gains. Van Hollen, 67, announced on X that voters demanded change and new leadership, while Schumer, 75, has led Democrats in the chamber since 2017.
+
+rss · BBC World · Nov 13, 19:03
+
+**「Context of the 2026 Senate Shift」** In the November 3, 2026 midterm elections, Democrats won a majority in the Senate, ending a Republican majority that had held the chamber since 2015. The new majority gave the party control of the Senate for the first time since 2015, setting the stage for a leadership contest within the Democratic caucus.
+
+**「Impact」** The challenge reflects a push for more progressive leadership, which could shift Senate priorities and policy direction if Van Hollen succeeds.
+
+<details><summary>References</summary>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/2026_United_States_Senate_elections">2026 United States Senate elections - Wikipedia</a></li>
+
+</ul>
+</details>
+
+**Tags**: `#US politics`, `#Senate leadership`, `#midterm elections`, `#Chuck Schumer`, `#Chris Van Hollen`
+
+---
+
+<a id="item-world-news-10"></a>
+### [Nvidia scandal: US treasury chief blames Lutnick’s commerce department over alleged lack of action](https://www.theguardian.com/technology/2026/nov/13/nvidia-scandal-sparks-us-national-security-concerns-china) ⭐️ 7.0/10
+
+U.S. officials clash over export restrictions on Nvidia chips to China, amid a CEO resignation and national‑security concerns.
+
+rss · The Guardian World · Nov 13, 19:51
+
+**Tags**: `#Nvidia`, `#US-China trade`, `#export controls`, `#national security`, `#technology`
+
+---
+
+<a id="item-world-news-11"></a>
+### [Microsoft scrambles to fix global outage affecting Teams and Outlook](https://www.theguardian.com/technology/2026/nov/13/microsoft-outage-outlook-teams-word-excel-reports) ⭐️ 7.0/10
+
+Microsoft’s 18‑hour global outage crippled Teams, Outlook and other services for millions of users.
+
+rss · The Guardian World · Nov 13, 17:41
+
+**Tags**: `#Microsoft`, `#Outage`, `#Teams`, `#Outlook`, `#Technology`
+
+---
+
+<a id="item-world-news-12"></a>
+### [New Orleans boat crash: tanker collides with river cruise ship carrying more than 130 people – latest updates](https://www.theguardian.com/us-news/live/2026/nov/13/new-orleans-cruise-liner-tanker-crash-live-updates) ⭐️ 7.0/10
+
+A tanker collided with a river cruise ship in New Orleans, causing the ship to take on water and triggering rescue efforts for over 130 passengers.
+
+rss · The Guardian World · Nov 13, 21:47
+
+**Tags**: `#maritime accident`, `#New Orleans`, `#cruise ship`, `#tanker collision`, `#rescue operations`
 
 ---

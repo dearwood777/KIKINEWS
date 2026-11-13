@@ -5,258 +5,299 @@ date: 2026-11-13
 lang: zh
 ---
 
-> 从 91 条内容中筛选出 16 条重要资讯。
+> 从 76 条内容中筛选出 16 条重要资讯。
 
 ---
 
 **科技新闻**
-1. [Rust 1.100 发布：永远类型、定制分配器与 Cargo 新功能](#item-tech-news-1) ⭐️ 9.0/10
-2. [Jensen Huang is out at Nvidia — who is Colette Kress, his interim replacement?](#item-tech-news-2) ⭐️ 9.0/10
-3. [NVIDIA CEO 黄仁勋辞职，CFO 克雷斯临时接任](#item-tech-news-3) ⭐️ 9.0/10
-4. [Jensen Huang resigns](#item-tech-news-4) ⭐️ 8.0/10
-5. [I&\#x27;m making LLMs work on small and old devices](#item-tech-news-5) ⭐️ 8.0/10
-6. [Google’s latest Search upgrade promises better answers to your most complicated questions](#item-tech-news-6) ⭐️ 8.0/10
-7. [Jensen Huang’s exit puts Nvidia’s support for open source in question](#item-tech-news-7) ⭐️ 8.0/10
-8. [Hugging Face CEO vows to keep fighting for open source AI after Jensen Huang’s exit](#item-tech-news-8) ⭐️ 8.0/10
+1. [Export-banned Nvidia chips are behind China’s most powerful AI models — uh oh, Jensen\!](#item-tech-news-1) ⭐️ 9.0/10
+2. [Microsoft 邮件故障升级为全球云服务大停机](#item-tech-news-2) ⭐️ 8.0/10
+3. [以色列 VC 关注 Nvidia 领导层变动带来的硬件机会](#item-tech-news-3) ⭐️ 8.0/10
+4. [DeepSeek 全家桶 API 与 V4.1-Flash 模型发布](#item-tech-news-4) ⭐️ 7.0/10
 
 **国际要闻**
-1. [普京警告美方俄方将针对乌克兰驻军](#item-world-news-1) ⭐️ 9.0/10
-2. [援助是苏丹数百万人的唯一希望，WFP 首席警告资金削减加剧饥饿危机](#item-world-news-2) ⭐️ 9.0/10
-3. [US envoys meet Zelensky in Dublin after talks with Putin in Moscow](#item-world-news-3) ⭐️ 8.0/10
-4. [Democrat Scott Colom makes history as Mississippi&\#x27;s first black senator since 19th Century](#item-world-news-4) ⭐️ 8.0/10
-5. [Millions of Ebola dollars missing with staff unpaid while virus spreads, charity says](#item-world-news-5) ⭐️ 8.0/10
-6. [The rise and fall of Jensen Huang - how the tech superstar became mired in scandal](#item-world-news-6) ⭐️ 8.0/10
-7. [Jensen Huang has resigned, what&\#x27;s next for Nvidia?](#item-world-news-7) ⭐️ 8.0/10
-8. [China rules out hosting Cop33 climate summit in 2028](#item-world-news-8) ⭐️ 8.0/10
+1. [微软因近 24 小时全球服务中断致歉](#item-world-news-1) ⭐️ 8.0/10
+2. [Europe should not walk into Russia’s ‘traps’ on Ukraine talks, EU’s foreign policy chief Kallas says – as it happened](#item-world-news-2) ⭐️ 8.0/10
+3. [Iran says it targeted US military radar in Bahrain in retaliatory strike](#item-world-news-3) ⭐️ 8.0/10
+4. [FAA 发布全国停飞令，近 7000 航班受影响](#item-world-news-4) ⭐️ 8.0/10
+5. [微软全球服务中断持续 24 小时](#item-world-news-5) ⭐️ 7.0/10
+6. [普京坚持要求乌克兰“永恒和平”](#item-world-news-6) ⭐️ 7.0/10
+7. [Nvidia scandal fallout widens as Trump&\#x27;s treasury secretary blames cabinet colleague](#item-world-news-7) ⭐️ 7.0/10
+8. [德国议会授权情报机构新权力对抗“混合威胁”](#item-world-news-8) ⭐️ 7.0/10
+9. [参议院多数党领袖舒马赫面临挑战](#item-world-news-9) ⭐️ 7.0/10
+10. [Nvidia scandal: US treasury chief blames Lutnick’s commerce department over alleged lack of action](#item-world-news-10) ⭐️ 7.0/10
+11. [Microsoft scrambles to fix global outage affecting Teams and Outlook](#item-world-news-11) ⭐️ 7.0/10
+12. [New Orleans boat crash: tanker collides with river cruise ship carrying more than 130 people – latest updates](#item-world-news-12) ⭐️ 7.0/10
 
 ---
 
 ## 科技新闻
 
 <a id="item-tech-news-1"></a>
-### [Rust 1.100 发布：永远类型、定制分配器与 Cargo 新功能](https://blog.rust-lang.org/2026/11/12/Rust-1.100.0/) ⭐️ 9.0/10
+### [Export-banned Nvidia chips are behind China’s most powerful AI models — uh oh, Jensen\!](https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-jensen/) ⭐️ 9.0/10
 
-Rust 1.100 版正式发布，核心改动包括：永远类型（\`\!\`）正式稳定；支持自定义内存分配器；引入依赖冷却（dependency cooldowns）配置，限制 Cargo 解析最近发布的版本；Cargo 现在会警告未使用的依赖；并新增多项 API 如 \`bool::toggle\`、\`Box::map\`、\`str::trim\_prefix\`/\`trim\_suffix\`、\`Path::trim\_prefix\`。
+China’s top AI models reportedly used banned Nvidia chips, raising serious export‑control and security concerns.
 
-hackernews · mbStavola · 11月12日 18:39 · [社区讨论](https://news.ycombinator.com/item?id=50472038)
+rss · TechCrunch · 11月13日 18:40
 
-**「背景」** Rust 1.100 于 2026 年 11 月发布，继承了之前的 1.90 系列，继续推进语言和 Cargo 的功能。此前，never 类型（\!）在 1.90 之前仅为实验性，已在 1.100 中正式稳定；Cargo 通过 RFC 3923 实现了依赖冷却（dependency cooldowns），旨在减少供应链攻击窗口；同时新增了 cargo::unused\_dependencies lint，帮助开发者发现未使用的依赖。
-
-**「影响」** 开发者现在可以直接使用永远类型来表达无返回值的函数，利用自定义分配器实现更细粒度的内存管理；依赖冷却功能帮助团队控制依赖升级节奏；Cargo 的未使用依赖警告促使项目保持依赖清洁，减少不必要的包。
-
-**「社区讨论」** 社区成员对新功能表现出热情，指出博客未提及的实用 API（如 \`bool::toggle\`、\`Box::map\` 等），并对 DropGuard 的实现表示赞赏。
-
-<details><summary>参考链接</summary>
-<ul>
-<li><a href="https://releases.rs/docs/1.100.0/">1.100.0 | Rust Changelogs - releases.rs</a></li>
-<li><a href="https://byteiota.com/rust-1100-cargo-cooldowns/">Rust 1.100: Cargo Dependency Cooldowns Are Here — Enable Them</a></li>
-<li><a href="https://www.linkedin.com/posts/rustjobs-dev_%F0%9D%90%91%F0%9D%90%AE%F0%9D%90%AC%F0%9D%90%AD%F0%9D%90%AC-%F0%9D%90%8D%F0%9D%90%9E%F0%9D%90%AF%F0%9D%90%9E%F0%9D%90%AB-%F0%9D%90%93%F0%9D%90%B2%F0%9D%90%A9%F0%9D%90%9E-%F0%9D%90%8D%F0%9D%90%9E%F0%9D%90%9A%F0%9D%90%AB%F0%9D%90%A2%F0%9D%90%A7%F0%9D%90%A0-activity-7470805631520788481-DKi8">Rust Never Type Stabilization Nears Completion | LinkedIn</a></li>
-
-</ul>
-</details>
-
-**标签**: `#Rust`, `#Language Features`, `#Cargo`, `#Systems Programming`
+**标签**: `#AI`, `#Hardware`, `#Geopolitics`, `#Export Controls`, `#Nvidia`
 
 ---
 
 <a id="item-tech-news-2"></a>
-### [Jensen Huang is out at Nvidia — who is Colette Kress, his interim replacement?](https://techcrunch.com/2026/11/12/jensen-huang-is-out-at-nvidia-who-is-colette-kress-his-interim-replacement/) ⭐️ 9.0/10
+### [Microsoft 邮件故障升级为全球云服务大停机](https://techcrunch.com/2026/11/13/microsoft-latest-email-outage-turned-into-a-full-blown-global-cloud-crisis/) ⭐️ 8.0/10
 
-Jensen Huang’s immediate resignation from Nvidia signals a significant shift in a key AI hardware leader.
+微软在周四开始的 Outlook 邮件和 Teams 视频会议故障演变成一场持续约 24 小时的全球云服务停机。此次故障导致 Microsoft 365 消费者和企业邮箱、文件与文档存储、Copilot AI 工具、Defender 安全扫描以及 Intune 管理员仪表盘等关键服务全部不可用。停机最初被报告为仅影响美国和美洲地区，但随后迅速蔓延至全球。
 
-rss · TechCrunch · 11月12日 15:37
+rss · TechCrunch · 11月13日 13:15
 
-**标签**: `#Nvidia`, `#CEO resignation`, `#AI hardware`, `#leadership change`
+**「背景说明」** Microsoft 365 是微软的云端办公套件，包含 Outlook、Teams、OneDrive 等服务。此前已出现过类似的中断事件，但此次事件规模更大，影响了全球数百个国家。
 
----
-
-<a id="item-tech-news-3"></a>
-### [NVIDIA CEO 黄仁勋辞职，CFO 克雷斯临时接任](https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition) ⭐️ 9.0/10
-
-英伟达宣布黄仁勋立即辞去总裁、CEO 及董事职务，现任执行副总裁兼 CFO 科莱特·克雷斯被任命为临时 CEO 并继续兼任 CFO。董事会已启动永久继任者搜寻，并任命 Harvey C. Jones 为首位董事会主席。公司表示运营、客户承诺和产品路线不会中断，第三季度财报仍按原计划于 11 月 17 日发布。
-
-telegram · zaihuapd · 11月12日 13:52
-
-**「NVIDIA CEO 背景」** NVIDIA 自 1993 年成立以来，黄仁勋一直担任总裁兼 CEO，领导公司成为 AI 硬件领军者。
-
-**「影响」** 投资者和合作伙伴将需要关注董事会对永久继任者的搜寻进展，以评估对公司治理和长期战略的潜在影响。
+**「影响」** 受影响的用户无法发送或接收电子邮件、使用 Teams 进行协作、访问 OneDrive 或 SharePoint 文件、利用 Copilot AI 辅助功能、执行 Defender 安全扫描，或通过 Intune 管理企业设备。
 
 <details><summary>参考链接</summary>
 <ul>
-<li><a href="https://www.globenewswire.com/news-release/2026/11/12/3401635/0/en/nvidia-announces-ceo-transition.html">NVIDIA Announces CEO Transition | GlobeNewswire News Room</a></li>
+<li><a href="https://www.theguardian.com/australia-news/2026/nov/13/global-microsoft-outage-what-happened-and-why">A global Microsoft 365 outage has hit millions – what... | The Guardian</a></li>
+<li><a href="https://techcrunch.com/2026/11/13/microsoft-latest-email-outage-turned-into-a-full-blown-global-cloud-crisis/">Microsoft &#x27;s latest email outage turned into a full blown global cloud ...</a></li>
 
 </ul>
 </details>
 
-**标签**: `#NVIDIA`, `#CEO transition`, `#AI hardware`, `#industry leadership`
+**标签**: `#cloud`, `#outage`, `#Microsoft`, `#email`, `#Teams`
+
+---
+
+<a id="item-tech-news-3"></a>
+### [以色列 VC 关注 Nvidia 领导层变动带来的硬件机会](https://techcrunch.com/2026/11/13/israels-vcs-see-opportunity-for-challengers-in-nvidias-turmoil/) ⭐️ 8.0/10
+
+Nvidia CEO Jensen Huang 递交辞职，导致公司领导层危机。以色列风险投资公司看到这一动荡为投资 AI 硬件竞争者的机会，尤其是那些能替代 Nvidia GPU 的方案。Nvidia 通过收购以色列芯片制造商 Mellanox 并在以色列设立最大研发中心，凸显其在 AI 领域的主导地位。
+
+rss · TechCrunch · 11月13日 12:52
+
+**「背景」** Nvidia 的创始人兼 CEO 詹森·黄在 2026 年 11 月 12 日宣布辞职，导致公司领导层出现空缺。黄在任期间收购了以色列芯片制造商 Mellanox，花费 69 亿美元，并将其作为美国之外最大的研发中心。以色列在 AI 硬件研发方面与英特尔、微软等大厂并肩，因而对 Nvidia 的动荡尤为关注。
+
+**「影响」** 以色列 VC 可能将更多资本投向 AI 硬件初创公司，推动 Nvidia 之外的 GPU 替代方案研发。
+
+<details><summary>参考链接</summary>
+<ul>
+<li><a href="https://www.theguardian.com/technology/2026/nov/12/nvidia-ceo-jensen-huang-resigns">Jensen Huang resigns as Nvidia CEO after alleged... | The Guardian</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Mellanox_Technologies">Mellanox Technologies - Wikipedia</a></li>
+<li><a href="https://techcrunch.com/2026/11/13/israels-vcs-see-opportunity-for-challengers-in-nvidias-turmoil/">Israel &#x27;s VCs see opportunity for challengers in Nvidia &#x27;s turmoil</a></li>
+
+</ul>
+</details>
+
+**标签**: `#Nvidia`, `#AI hardware`, `#venture capital`, `#Israel`, `#leadership change`
 
 ---
 
 <a id="item-tech-news-4"></a>
-### [Jensen Huang resigns](https://apnews.com/article/nvidia-megaspeed-china-singapore-huang-5403f152a601cf82ce939f1d24fffa0f) ⭐️ 8.0/10
+### [DeepSeek 全家桶 API 与 V4.1-Flash 模型发布](https://mp.weixin.qq.com/s/78KBHc4-4N5b2vfL9SkutQ) ⭐️ 7.0/10
 
-Nvidia CEO resignation is a high‑impact industry event with broad implications for AI and technology markets.
+DeepSeek 发布了全家桶应用 API，开发者只需在原有 API 中开启相应参数，即可获得深度思考搜索、文件输入、阅读链接、语音等对话能力，服务端会自动完成工具调用与上下文拼接。V4.1‑Flash 模型已在 Search、Fetch、OCR、ASR、TTS 等三个接口支持，且这些接口可单独调用。官方同时开源了可导入历史对话的前端 Demo（地址 https://deepseek-ai.github.io/chat-demo/），并提供 deepseek‑ai/chat-demo 仓库供本地部署。
 
-hackernews · lldb · 11月12日 13:52 · [社区讨论](https://news.ycombinator.com/item?id=50467087)
+telegram · zaihuapd · 11月13日 14:27
 
-**标签**: `#Nvidia`, `#AI`, `#Leadership`, `#ExportControls`, `#IndustryImpact`
+**「背景」** DeepSeek 在 2026 年 9 月 10 日发布了 V4.1‑Flash 模型，该模型是其多模态 Mixture‑of‑Experts 架构的最新版本，支持图像和文本，具有 552 B 参数和 1 M token 上下文。
 
----
+**「影响」** 开发者可以直接使用这些 API 组合，省去自行实现工具调用和上下文拼接的工作，从而更快地构建具备搜索、文件处理、语音识别与合成等多模态功能的 AI 应用。
 
-<a id="item-tech-news-5"></a>
-### [I&\#x27;m making LLMs work on small and old devices](https://github.com/hyperionaidev/smolmaxxing/) ⭐️ 8.0/10
+<details><summary>参考链接</summary>
+<ul>
+<li><a href="https://www.deepseek.com/en/news/deepseek-v4-1-flash/">DeepSeek | Introducing DeepSeek-V4.1-Flash: smarter, faster ...</a></li>
+<li><a href="https://deepseek-v4.io/deepseek-v4-1-flash">DeepSeek V4.1 Flash: API, Model IDs &amp; Migration</a></li>
 
-Open‑source effort shows 16B LLMs running on 1GB‑memory devices, offering impactful edge‑AI insights.
+</ul>
+</details>
 
-hackernews · mrashad74 · 11月12日 15:23 · [社区讨论](https://news.ycombinator.com/item?id=50468888)
-
-**标签**: `#edge AI`, `#LLM optimization`, `#low-resource inference`, `#open source`, `#hardware acceleration`
-
----
-
-<a id="item-tech-news-6"></a>
-### [Google’s latest Search upgrade promises better answers to your most complicated questions](https://techcrunch.com/2026/11/12/googles-latest-search-upgrade-promises-better-answers-to-your-most-complicated-questions/) ⭐️ 8.0/10
-
-Google’s Gemini 4 Hydrogen model promises a major upgrade to Search, offering faster, more accurate answers to complex queries.
-
-rss · TechCrunch · 11月12日 19:27
-
-**标签**: `#AI`, `#Search`, `#Google`, `#Gemini`, `#NLP`
-
----
-
-<a id="item-tech-news-7"></a>
-### [Jensen Huang’s exit puts Nvidia’s support for open source in question](https://techcrunch.com/2026/11/12/jensen-huangs-exit-puts-nvidias-support-for-open-source-in-question/) ⭐️ 8.0/10
-
-Nvidia CEO Jensen Huang’s resignation raises concerns about the company’s future support for open‑source AI amid national‑security scrutiny.
-
-rss · TechCrunch · 11月12日 18:39
-
-**标签**: `#open-source`, `#AI`, `#Nvidia`, `#executive resignation`, `#national security`
-
----
-
-<a id="item-tech-news-8"></a>
-### [Hugging Face CEO vows to keep fighting for open source AI after Jensen Huang’s exit](https://techcrunch.com/2026/11/12/hugging-face-ceo-vows-to-keep-fighting-for-open-source-ai-after-jensen-huangs-exit/) ⭐️ 8.0/10
-
-Hugging Face CEO reacts to Nvidia’s acquisition and Jensen Huang’s exit, underscoring the impact on open‑source AI.
-
-rss · TechCrunch · 11月12日 17:36
-
-**标签**: `#Nvidia`, `#Hugging Face`, `#Open Source AI`, `#Acquisition`, `#Leadership`
+**标签**: `#API`, `#DeepSeek`, `#AI`, `#OpenSource`, `#ModelRelease`
 
 ---
 
 ## 国际要闻
 
 <a id="item-world-news-1"></a>
-### [普京警告美方俄方将针对乌克兰驻军](https://www.theguardian.com/world/2026/nov/12/vladimir-putin-russia-target-foreign-troops-ukraine-elon-musk-starlink) ⭐️ 9.0/10
+### [微软因近 24 小时全球服务中断致歉](https://www.bbc.co.uk/news/articles/c6rrg51rkz09o?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
 
-在克里姆林宫与美国代表的会谈中，普京警告美国谈判者，俄罗斯将针对部署在乌克兰的任何外国部队。与此同时，乌克兰军方再次遭遇埃隆·马斯克的 Starlink 卫星服务中断。普京在会谈中坚持不放松领土要求，并拒绝接受外国维和部队。
+微软在 2026 年 11 月 13 日宣布，对其 Outlook 和 Teams 服务的近 24 小时全球中断深表歉意。此次故障在超过 70 个国家造成业务和政府服务中断，影响约 4.3 亿用户。微软确认故障源于网络容量升级期间的技术问题，并否认与网络攻击或人工智能相关。
 
-rss · The Guardian World · 11月12日 22:26
+rss · BBC World · 11月13日 21:14
 
-**「俄乌冲突背景」** 自 2022 年 9 月 30 日，俄罗斯宣布吞并顿涅茨克、赫尔松、卢甘斯克和扎波罗热四个乌克兰地区，并在这些地区设立占领行政机构，试图将其纳入俄罗斯政治体系。
+**「背景信息」** 微软的 Outlook 和 Teams 是全球最常用的电子邮件和协作平台，服务于企业、政府和个人用户。此前，微软正在进行网络容量升级，以提升系统性能。
 
-<details><summary>参考链接</summary>
-<ul>
-<li><a href="https://en.wikipedia.org/wiki/Russian_annexation_of_Donetsk,_Kherson,_Luhansk_and_Zaporizhzhia_oblasts">Russian annexation of Donetsk, Kherson, Luhansk and ...</a></li>
-<li><a href="https://www.osw.waw.pl/en/publikacje/analyses/2022-10-03/russia-announces-annexation-four-regions-ukraine">Russia announces the annexation of four regions of Ukraine</a></li>
+**「影响」** 此次中断导致全球超过 70 个国家的企业和政府部门的日常运营受到干扰，部分机构报告业务停滞。
 
-</ul>
-</details>
-
-**标签**: `#Russia`, `#Ukraine`, `#United States`, `#Diplomacy`, `#Military`
+**标签**: `#Microsoft`, `#Outlook`, `#Teams`, `#global outage`, `#technology`
 
 ---
 
 <a id="item-world-news-2"></a>
-### [援助是苏丹数百万人的唯一希望，WFP 首席警告资金削减加剧饥饿危机](https://news.google.com/rss/articles/CBMiV0FVX3lxTE9Sb255ek9CX0dfdjdIWUNqWDNzbUFKYWVjV1BQcDhXYXRkMV9kcjlaRG9EMGx1bWtBS1M4RmJCNW00N0d3MmJNa19DTm51S3c3cmZsLUVMcw?oc=5) ⭐️ 9.0/10
+### [Europe should not walk into Russia’s ‘traps’ on Ukraine talks, EU’s foreign policy chief Kallas says – as it happened](https://www.theguardian.com/world/live/2026/nov/13/eu-leaders-negotiations-ukraine-russia-dublin-ai-summit-kushner-witkoff-latest-news-updates) ⭐️ 8.0/10
 
-联合国世界粮食计划署（WFP）首席警告，苏丹数百万民众的唯一生存希望是援助。 他指出，随着国际捐助资金的削减，饥饿危机正迅速恶化。 目前尚不清楚未来援助水平将如何调整，导致人道主义需求持续上升。
+EU leaders are negotiating with Russia over Ukraine, amid Russian demands that could alter the region’s security dynamics.
 
-google\_news · UN News · 11月12日 18:37
+rss · The Guardian World · 11月13日 16:39
 
-**「背景：世界粮食计划署援助面临削减」** 世界粮食计划署（WFP）一直为苏丹提供紧急粮食援助，但因资金短缺，计划在 2026 年底前削减约 80 万人接受援助，并警告苏丹正面临全球最大饥饿危机，援助物资可能在两个月内耗尽。
-
-**「粮食援助削减导致数千万人面临饥饿风险」** 世界粮食计划署援助削减使苏丹内部的粮食供应在两个月内可能耗尽，导致超过 2100 万民众面临急性饥饿，伴随营养不良和药品短缺等严重后果。
-
-<details><summary>参考链接</summary>
-<ul>
-<li><a href="https://www.wfp.org/emergencies/sudan">Risk of Famine in Sudan | World Food Programme</a></li>
-<li><a href="https://indonesianpost.com/2026/02/15/un-report-21-million-sudanese-face-acute-hunger-wfp-funding-crunch/">More than 21 million people in Sudan at risk of hunger as WFP aid...</a></li>
-<li><a href="https://allafrica.com/stories/202610230024.html">Sudan Hunger Crisis Deepens As Aid Cuts Collide... - allAfrica.com</a></li>
-<li><a href="https://indonesianpost.com/2026/02/15/un-report-21-million-sudanese-face-acute-hunger-wfp-funding-crunch/">More than 21 million people in Sudan at risk of hunger as WFP aid...</a></li>
-
-</ul>
-</details>
-
-**标签**: `#Sudan`, `#Humanitarian crisis`, `#WFP`, `#Aid`, `#Hunger`
+**标签**: `#Ukraine`, `#Russia`, `#EU`, `#Diplomacy`, `#Security`
 
 ---
 
 <a id="item-world-news-3"></a>
-### [US envoys meet Zelensky in Dublin after talks with Putin in Moscow](https://www.bbc.co.uk/news/articles/cwrkgmymk55zo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
+### [Iran says it targeted US military radar in Bahrain in retaliatory strike](https://www.theguardian.com/world/2026/nov/13/iran-us-radar-bahrain-sirik-hormuz) ⭐️ 8.0/10
 
-US envoys Jared Kushner and Steve Witkoff met with Russian President Vladimir Putin and then Ukraine’s President Volodymyr Zelensky, agreeing on a new round of trilateral talks amid ongoing war discussions.
+Iran claims to have destroyed a U.S. early‑warning radar in Bahrain in retaliation for a U.S. strike on a communications tower in Sirik, marking its first direct attack on U.S. military assets in months.
 
-rss · BBC World · 11月12日 21:00
+rss · The Guardian World · 11月13日 13:52
 
-**标签**: `#diplomacy`, `#Ukraine war`, `#US-Russia relations`, `#trilateral talks`, `#Zelensky`
+**标签**: `#Iran`, `#United States`, `#Bahrain`, `#military conflict`, `#regional security`
 
 ---
 
 <a id="item-world-news-4"></a>
-### [Democrat Scott Colom makes history as Mississippi&\#x27;s first black senator since 19th Century](https://www.bbc.co.uk/news/articles/cw7vppyr80eeo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
+### [FAA 发布全国停飞令，近 7000 航班受影响](https://www.theguardian.com/world/2026/nov/13/faa-nationwide-ground-stop-flights) ⭐️ 8.0/10
 
-Scott Colom, a Democrat, won Mississippi&\#x27;s U.S. Senate seat, becoming the state&\#x27;s first black senator since the 1800s.
+美国联邦航空管理局（FAA）于 2026 年 11 月 13 日发布全国停飞令，导致近 7000 架航班被延误或取消。停飞原因是所有空中交通管制中心出现通信问题，FAA 技术人员正在调查。
 
-rss · BBC World · 11月12日 12:56
+rss · The Guardian World · 11月13日 21:44
 
-**标签**: `#US politics`, `#elections`, `#diversity`, `#Mississippi`, `#Senate`
+**「背景信息」** 这是 FAA 第三次实施全美停飞，前两次分别发生在 2001 年 9 月 11 日和 2023 年 1 月。FAA 拥有超过 14,000 名空中交通管制员，负责管理超过 44,000 架飞机。
+
+**「影响」** 近 7000 架航班被延误或取消，数千名乘客被迫改签或推迟行程，航空公司和机场面临运营与经济压力。
+
+**标签**: `#aviation`, `#FAA`, `#ground stop`, `#transportation`, `#US`
 
 ---
 
 <a id="item-world-news-5"></a>
-### [Millions of Ebola dollars missing with staff unpaid while virus spreads, charity says](https://www.bbc.co.uk/news/articles/cx98757ymm6zo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
+### [微软全球服务中断持续 24 小时](https://www.bbc.co.uk/news/articles/cwvg238zrnm5o?at_medium=RSS&amp;at_campaign=rss) ⭐️ 7.0/10
 
-MSF warns that millions of Ebola relief funds are missing and frontline staff in the DRC are unpaid, jeopardizing the outbreak response.
+微软宣布，因技术故障导致的全球性服务中断已持续超过 24 小时，影响了 Teams、Outlook 和 Copilot 等关键服务。该事件已在至少 74 个国家报告，微软已确认并道歉，表示并非网络安全事件。
 
-rss · BBC World · 11月12日 15:18
+rss · BBC World · 11月13日 18:36
 
-**标签**: `#Ebola`, `#DRC`, `#MSF`, `#funding`, `#public health`
+**「微软全球服务中断背景」** 微软 2026 年 11 月 12 日开始的全球 Microsoft 365 服务中断，影响超过 70 个国家的 Teams、Outlook、Copilot 等服务，原因是技术故障，而非网络攻击。该平台是企业和政府日常运营的核心云服务。
+
+**「直接影响」** 受影响的用户在至少 74 个国家无法发送或接收电子邮件，导致通信中断。
+
+<details><summary>参考链接</summary>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/2026_Microsoft_outage">2026 Microsoft outage - Wikipedia</a></li>
+<li><a href="https://www.bleepingcomputer.com/news/microsoft/massive-microsoft-365-outage-disrupts-outlook-teams-copilot-worldwide/">Massive Microsoft 365 outage disrupts Outlook, Teams, Copilot ...</a></li>
+
+</ul>
+</details>
+
+**标签**: `#Microsoft`, `#Outage`, `#Tech`, `#Email`, `#Global Impact`
 
 ---
 
 <a id="item-world-news-6"></a>
-### [The rise and fall of Jensen Huang - how the tech superstar became mired in scandal](https://www.bbc.co.uk/news/articles/cmze750zg0jeo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
+### [普京坚持要求乌克兰“永恒和平”](https://www.bbc.co.uk/news/articles/cq39glwprknjo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 7.0/10
 
-Nvidia’s founder Jensen Huang resigns after a scandal, a development that could reshape the company and affect the global technology landscape.
+俄罗斯总统弗拉基米尔·普京在与美国特使会谈中表示，他希望乌克兰实现“永恒和平”，但仍拒绝全面停火。会谈于 2026 年 11 月 13 日在莫斯科举行，普京强调需要建立“不可分割的安全与和平”新架构，以符合俄罗斯利益。
 
-rss · BBC World · 11月12日 17:11
+rss · BBC World · 11月13日 16:40
 
-**标签**: `#technology`, `#business`, `#scandal`, `#Nvidia`, `#Jensen Huang`
+**「俄乌冲突与外交进展」** 自 2022 年 2 月俄方发动全面入侵乌克兰以来，双方多次通过外交渠道寻求停火与和平方案。2026 年 11 月 12 日，美国特使史蒂夫·维特科夫与贾里德·库什纳在莫斯科会晤，讨论了包括人道主义行动和边界划分在内的多项议题。
+
+<details><summary>参考链接</summary>
+<ul>
+<li><a href="https://singjupost.com/transcript-us-envoys-jared-kushner-and-steve-witkoff-meet-putin-at-kremlin/">Transcript: US Envoys Jared Kushner And Steve Witkoff Meet ...</a></li>
+<li><a href="https://www.politico.com/news/2026/11/12/us-envoys-witkoff-and-kushner-meet-putin-in-moscow">US envoys Witkoff and Kushner meet Putin in Moscow</a></li>
+
+</ul>
+</details>
+
+**标签**: `#Russia-Ukraine conflict`, `#Diplomacy`, `#Putin`, `#US-Russia relations`
 
 ---
 
 <a id="item-world-news-7"></a>
-### [Jensen Huang has resigned, what&\#x27;s next for Nvidia?](https://www.bbc.co.uk/news/videos/cmdx1r99kp9wo?at_medium=RSS&amp;at_campaign=rss) ⭐️ 8.0/10
+### [Nvidia scandal fallout widens as Trump&\#x27;s treasury secretary blames cabinet colleague](https://www.bbc.co.uk/news/articles/cqvg2d1eg7zro?at_medium=RSS&amp;at_campaign=rss) ⭐️ 7.0/10
 
-Jensen Huang steps down as Nvidia CEO, triggering an interim leadership change and a brief stock market dip.
+U.S. Treasury Secretary Scott Bessent blamed Commerce Secretary Howard Lutnick for failing to properly oversee the export of high‑spec AI chips in the fallout from the Nvidia scandal.
 
-rss · BBC World · 11月12日 19:33
+rss · BBC World · 11月13日 19:53
 
-**标签**: `#Nvidia`, `#CEO resignation`, `#tech industry`, `#stock market`, `#business`
+**标签**: `#US politics`, `#AI chips`, `#export controls`, `#Nvidia scandal`, `#cabinet dispute`
 
 ---
 
 <a id="item-world-news-8"></a>
-### [China rules out hosting Cop33 climate summit in 2028](https://www.theguardian.com/environment/2026/nov/12/china-rules-out-hosting-cop33-climate-summit-in-2028) ⭐️ 8.0/10
+### [德国议会授权情报机构新权力对抗“混合威胁”](https://www.bbc.co.uk/news/articles/c6jre3z03w4go?at_medium=RSS&amp;at_campaign=rss) ⭐️ 7.0/10
 
-China has declined to host the 2028 COP33 climate summit, opening the bid to other Asian nations and altering the dynamics of global climate diplomacy.
+德国议会通过一项重大立法改革，授权其外交情报机构 BND 和国内情报机构 BfV 获得更广泛的权力，以打击间谍活动、恐怖主义和破坏行动。309 名议员投票支持该法案，内政部长亚历山大·多布林特称其为“世纪改革”，而左翼党安全发言人克拉拉·布恩格则担心这将形成新的德国秘密警察。
 
-rss · The Guardian World · 11月12日 22:00
+rss · BBC World · 11月13日 15:42
 
-**标签**: `#Climate Change`, `#COP33`, `#China`, `#International Relations`
+**「德国情报机构权限扩张的背景」** 德国此前情报机构的行动权限受到严格限制。此次改革是在俄罗斯被视为主要混合威胁的背景下进行的，旨在赋予联邦情报局（BND）和联邦宪法保护局（BfV）更广泛的行动权限，包括网络攻击和干扰。
+
+**「影响」** 新权力使 BND 和 BfV 能够扩大监视、情报收集和反间谍行动的范围，提升其在国内外对抗混合威胁的作战能力。
+
+<details><summary>参考链接</summary>
+<ul>
+<li><a href="https://www.politico.eu/article/germany-to-give-spies-bnd-new-powers-to-counter-russia-threat/">Putin threat pushes Germany to give spies major new powers</a></li>
+<li><a href="https://www.reuters.com/technology/germany-seeks-powers-spies-hack-disrupt-attackers-2026-07-02/">Germany seeks powers for spies to hack and disrupt attackers</a></li>
+
+</ul>
+</details>
+
+**标签**: `#Germany`, `#Intelligence`, `#Legislation`, `#Hybrid Threats`, `#Security`
+
+---
+
+<a id="item-world-news-9"></a>
+### [参议院多数党领袖舒马赫面临挑战](https://www.bbc.co.uk/news/articles/cmy4930jq749o?at_medium=RSS&amp;at_campaign=rss) ⭐️ 7.0/10
+
+美国参议院多数党领袖舒马赫（Chuck Schumer）正面临来自同党参议员克里斯·范霍伦（Chris Van Hollen）的挑战。范霍伦在推特上表示，选民已投票要求改变，认为需要新的领导。舒马赫自 2017 年以来一直担任该职务，最近的中期选举后，他的地位受到左翼民主党人的质疑。
+
+rss · BBC World · 11月13日 19:03
+
+**「背景」** 2026 年 11 月 3 日的美国中期选举后，民主党在参议院取得多数席位，查克·舒默自 2017 年起担任参议院多数党领袖。
+
+**「影响」** 如果领导层更换，可能导致参议院法案推进速度和议程优先级发生变化。
+
+<details><summary>参考链接</summary>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/2026_United_States_Senate_elections">2026 United States Senate elections - Wikipedia</a></li>
+<li><a href="https://www.deseret.com/politics/2026/11/10/senate-leadership-elections/">Senate Republicans reelect leadership team despite demands ...</a></li>
+
+</ul>
+</details>
+
+**标签**: `#US politics`, `#Senate leadership`, `#midterm elections`, `#Chuck Schumer`, `#Chris Van Hollen`
+
+---
+
+<a id="item-world-news-10"></a>
+### [Nvidia scandal: US treasury chief blames Lutnick’s commerce department over alleged lack of action](https://www.theguardian.com/technology/2026/nov/13/nvidia-scandal-sparks-us-national-security-concerns-china) ⭐️ 7.0/10
+
+U.S. officials clash over export restrictions on Nvidia chips to China, amid a CEO resignation and national‑security concerns.
+
+rss · The Guardian World · 11月13日 19:51
+
+**标签**: `#Nvidia`, `#US-China trade`, `#export controls`, `#national security`, `#technology`
+
+---
+
+<a id="item-world-news-11"></a>
+### [Microsoft scrambles to fix global outage affecting Teams and Outlook](https://www.theguardian.com/technology/2026/nov/13/microsoft-outage-outlook-teams-word-excel-reports) ⭐️ 7.0/10
+
+Microsoft’s 18‑hour global outage crippled Teams, Outlook and other services for millions of users.
+
+rss · The Guardian World · 11月13日 17:41
+
+**标签**: `#Microsoft`, `#Outage`, `#Teams`, `#Outlook`, `#Technology`
+
+---
+
+<a id="item-world-news-12"></a>
+### [New Orleans boat crash: tanker collides with river cruise ship carrying more than 130 people – latest updates](https://www.theguardian.com/us-news/live/2026/nov/13/new-orleans-cruise-liner-tanker-crash-live-updates) ⭐️ 7.0/10
+
+A tanker collided with a river cruise ship in New Orleans, causing the ship to take on water and triggering rescue efforts for over 130 passengers.
+
+rss · The Guardian World · 11月13日 21:47
+
+**标签**: `#maritime accident`, `#New Orleans`, `#cruise ship`, `#tanker collision`, `#rescue operations`
 
 ---
