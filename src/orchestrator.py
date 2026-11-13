@@ -1063,7 +1063,7 @@ class HorizonOrchestrator:
                 rows.append(
                     {
                         "title": item.title,
-                        "url": item.url or "",
+                        "url": str(item.url) if item.url else "",
                         "score": round(analysis.score, 1) if analysis and analysis.score is not None else None,
                         "profile": profile or "",
                     }

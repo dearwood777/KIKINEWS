@@ -620,14 +620,21 @@ def main() -> None:
             with open(cand_path, encoding="utf-8") as f:
                 payload = json.load(f)
             cands = payload.get("items", [])
-            cand_at = payload.get("generated_at", "")
-            if cand_at:
+            raw_at = payload.get("generated_at", "")
+            if raw_at:
                 try:
-                    cand_at = datetime.fromisoformat(cand_at).strftime("%m-%d %H:%M")
+                    cand_at = datetime.fromisoformat(raw_at).strftime("%m-%d %H:%M")
                 except ValueError:
-                    cand_at = cand_at[:16].replace("T", " ")
+                    cand_at = raw_at[:16].replace("T", " ")
+                # 候选清单必须是本次这批内容的，否则不展示，避免把上一轮的旧列表冒充本次候选
+                if raw_at[:10] != day:
+                    print(f"[warn] candidates.json is from {raw_at[:10]} but digest is {day}; panel disabled")
+                    cands = []
+                    cand_at = ""
         except Exception as exc:
             print(f"[warn] candidates.json unreadable: {exc}")
+            cands = []
+            cand_at = ""
     cand_block = render_candidates(cands, src_count, cand_at)
 
     zh_items = (posts.get("zh", (None, None))[1] or {}).get("items", [])
