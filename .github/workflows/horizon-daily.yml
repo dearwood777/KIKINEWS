@@ -40,17 +40,21 @@ jobs:
     outputs:
       skip: ${{ steps.check.outputs.skip }}
     steps:
-      - name: Check whether today's digest is already published
+      - name: Check whether a fresh digest was already published recently
         id: check
         run: |
-          TODAY=$(date -u +%Y-%m-%d)
-          PUB=$(curl -fsS -m 20 "https://dearwood777.github.io/KIKINEWS/latest.json?t=$(date +%s)" \
-                | python3 -c "import sys,json;print(json.load(sys.stdin).get('generated_at','')[:10])" 2>/dev/null || echo "")
-          echo "today=$TODAY published=$PUB"
-          if [ "$PUB" = "$TODAY" ]; then
-            echo "今天的内容已经发布过了，跳过本次抓取（省额度）"
+          # 判断依据是“距上次发布过去多少小时”，而不是“UTC 日期是否相同”。
+          # 原因：一轮运行可能跨 UTC 零点完成（22:00 触发、00:30 完成），
+          # 按日期比较会把次日的定时误判成“今天已发布”，导致整轮跳过、页面停更一天。
+          AGE=$(curl -fsS -m 20 "https://dearwood777.github.io/KIKINEWS/latest.json?t=$(date +%s)" \
+                | python3 -c "import sys,json,datetime;d=json.load(sys.stdin);t=datetime.datetime.fromisoformat(d['generated_at'].replace('Z','+00:00'));t=t if t.tzinfo else t.replace(tzinfo=datetime.timezone.utc);now=datetime.datetime.now(datetime.timezone.utc);print(int((now-t).total_seconds()//3600))" \
+                2>/dev/null || echo 999)
+          echo "published_age_hours=$AGE"
+          if [ "$AGE" -lt 12 ]; then
+            echo "12 小时内已发布过内容，跳过本次抓取（省额度）"
             echo "skip=yes" >> "$GITHUB_OUTPUT"
           else
+            echo "内容已超过 12 小时，正常抓取"
             echo "skip=no" >> "$GITHUB_OUTPUT"
           fi
 
