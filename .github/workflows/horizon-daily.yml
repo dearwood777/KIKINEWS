@@ -2,10 +2,11 @@ name: Horizon Daily Digest
 
 on:
   schedule:
-    # GitHub 定时任务用 UTC：05:00 UTC = 06:00 CET（欧洲冬令时），早上起来就有当天内容
-    # 另留一个 06:00 UTC 的兜底触发：GitHub 的 schedule 偶发延迟/丢触发，双保险
-    - cron: "0 5 * * *"
-    - cron: "0 6 * * *"
+    # GitHub 定时任务用 UTC：22:00 UTC = 次日 06:00 北京时间（用户在国内）
+    # 另留 23:00 UTC（07:00 北京时间）做兜底：GitHub 的 schedule 偶发延迟/丢触发，
+    # 第二次触发时若当天内容已发布，会被守卫步骤直接跳过，不浪费额度。
+    - cron: "0 22 * * *"
+    - cron: "0 23 * * *"
   workflow_dispatch:
     inputs:
       provider:
