@@ -2,9 +2,8 @@ name: Horizon Daily Digest
 
 on:
   schedule:
-    # GitHub 定时任务用 UTC：22:00 UTC = 次日 06:00 北京时间（用户在国内）
-    # 另留 23:00 UTC（07:00 北京时间）做兜底：GitHub 的 schedule 偶发延迟/丢触发，
-    # 第二次触发时若当天内容已发布，会被守卫步骤直接跳过，不浪费额度。
+    # GitHub 定时任务用 UTC：22:00 UTC = 次日 06:00 北京时间
+    # 23:00 UTC（07:00 北京时间）为兜底：GitHub 的 schedule 偶发延迟或丢触发
     - cron: "0 22 * * *"
     - cron: "0 23 * * *"
   workflow_dispatch:
@@ -35,16 +34,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  digest:
+  guard:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
-
+    timeout-minutes: 10
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Skip if today's digest already published
-        id: guard
+      - name: Check whether today's digest is already published
+        id: check
         run: |
           TODAY=$(date -u +%Y-%m-%d)
           PUB=$(curl -fsS -m 20 "https://dearwood777.github.io/KIKINEWS/latest.json?t=$(date +%s)" \
@@ -57,25 +54,30 @@ jobs:
             echo "skip=no" >> "$GITHUB_OUTPUT"
           fi
 
+  digest:
+    needs: guard
+    if: needs.guard.outputs.skip != 'yes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        if: steps.guard.outputs.skip != 'yes'
-        if: steps.guard.outputs.skip != 'yes'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install uv
-        if: steps.guard.outputs.skip != 'yes'
         uses: astral-sh/setup-uv@v6
         with:
           version: "0.11.26"
 
       - name: Install dependencies
-        if: steps.guard.outputs.skip != 'yes'
         run: uv sync --locked || uv sync
 
       - name: Select AI config
-        if: steps.guard.outputs.skip != 'yes'
         run: |
           P="${{ inputs.provider }}"
           if [ -z "$P" ]; then P="groq"; fi
@@ -83,7 +85,6 @@ jobs:
           cp "configs/config.actions.${P}.json" data/config.json
 
       - name: Point Jekyll at this repository
-        if: steps.guard.outputs.skip != 'yes'
         run: |
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           OWNER="${GITHUB_REPOSITORY%%/*}"
@@ -92,7 +93,6 @@ jobs:
           grep -E '^(baseurl|url):' docs/_config.yml
 
       - name: Probe Gemini model
-        if: steps.guard.outputs.skip != 'yes'
         if: ${{ inputs.probe == 'yes' }}
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
@@ -119,8 +119,7 @@ jobs:
           exit 0
 
       - name: Run Horizon
-        if: steps.guard.outputs.skip != 'yes'
-        if: ${{ inputs.probe != 'yes' && steps.guard.outputs.skip != 'yes' }}
+        if: ${{ inputs.probe != 'yes' }}
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -129,8 +128,7 @@ jobs:
 
       # ---- 判断这一期有没有真的抓到东西（空就换另一个 API 重跑一次）----
       - name: Check digest result
-        if: steps.guard.outputs.skip != 'yes'
-        if: ${{ inputs.probe != 'yes' && steps.guard.outputs.skip != 'yes' }}
+        if: ${{ inputs.probe != 'yes' }}
         id: digest
         run: |
           set +e
@@ -141,8 +139,7 @@ jobs:
           else echo "empty=true" >> "$GITHUB_OUTPUT"; fi
 
       - name: Fallback to the other AI provider
-        if: steps.guard.outputs.skip != 'yes'
-        if: ${{ inputs.probe != 'yes' && steps.digest.outputs.empty == 'true' && steps.guard.outputs.skip != 'yes' }}
+        if: ${{ inputs.probe != 'yes' && steps.digest.outputs.empty == 'true' }}
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -160,13 +157,11 @@ jobs:
           uv run horizon --hours ${{ inputs.hours || '24' }} || echo "fallback run exit=$?"
 
       - name: Install markdown
-        if: steps.guard.outputs.skip != 'yes'
-        if: ${{ inputs.probe != 'yes' && steps.guard.outputs.skip != 'yes' }}
+        if: ${{ inputs.probe != 'yes' }}
         run: python -m pip install --quiet markdown
 
       - name: Ensure candidate list exists (no AI)
-        if: steps.guard.outputs.skip != 'yes'
-        if: ${{ inputs.probe != 'yes' && steps.guard.outputs.skip != 'yes' }}
+        if: ${{ inputs.probe != 'yes' }}
         run: |
           if [ ! -s docs/candidates.json ]; then
             echo "candidates.json missing -> collecting links only"
@@ -174,20 +169,17 @@ jobs:
           fi
 
       - name: Build mobile digest page
-        if: steps.guard.outputs.skip != 'yes'
-        if: ${{ inputs.probe != 'yes' && steps.guard.outputs.skip != 'yes' }}
+        if: ${{ inputs.probe != 'yes' }}
         run: python scripts/build_latest.py
 
       - name: Show what was produced
-        if: steps.guard.outputs.skip != 'yes'
-        if: ${{ inputs.probe != 'yes' && steps.guard.outputs.skip != 'yes' }}
+        if: ${{ inputs.probe != 'yes' }}
         run: |
           ls -l docs/latest.html docs/latest.json || true
           cat docs/latest.json || true
 
       - name: Deploy to GitHub Pages
-        if: steps.guard.outputs.skip != 'yes'
-        if: ${{ inputs.probe != 'yes' && steps.guard.outputs.skip != 'yes' }}
+        if: ${{ inputs.probe != 'yes' }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
