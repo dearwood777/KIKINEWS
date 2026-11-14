@@ -145,7 +145,7 @@ body{{
   background:var(--card);border:1px solid var(--line);border-radius:16px;
   padding:16px 16px 6px;margin:0 0 14px;box-shadow:var(--shadow);scroll-margin-top:16px;
 }}
-.card h3{{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700;text-wrap:balance}}
+.card h3{{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700;text-wrap:pretty}}
 .card h3 a{{color:var(--fg);text-decoration:none}}
 .card h3 a:active{{color:var(--accent)}}
 .score{{
@@ -365,8 +365,11 @@ def parse_post(path: str) -> dict:
 
 
 def clean_text(text: str) -> str:
-    """原文里偶尔出现 &\\#x27; 这类被反斜杠挡住的实体，先还原再按 HTML 转义输出。"""
-    return html.escape(html.unescape(text.replace("&\\#", "&#")))
+    """原文里偶尔出现 &\\#x27; 这类被反斜杠挡住的实体，先还原再按 HTML 转义输出。
+    同时去掉 markdown 的反斜杠转义（如标题里的 \\!），否则页面会显示成 "Jensen\\!"。"""
+    text = text.replace("&\\#", "&#")
+    text = re.sub(r"\\([!\"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])", r"\1", text)
+    return html.escape(html.unescape(text))
 
 
 def inline_md(text: str) -> str:
