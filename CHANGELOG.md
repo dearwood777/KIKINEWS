@@ -1,5 +1,66 @@
 # 更新记录
 
+## v1.4（2026-11-15）
+
+**APK**
+- 设置菜单改为**从设置按钮位置向下弹出的下拉菜单**（PopupMenu，靠右对齐），不再用居中对话框挡住正文
+- 改用**正式签名（release）**构建：新建专用密钥 `CN=KIKINEWS`（RSA 2048，有效期 10000 天）
+  - 密钥存本机 `D:\AI\KIKINEWS\keystore\kiki-release.jks`，配置写 `android/keystore.properties`
+  - 两者都进 `.gitignore`，不进公开仓库；缺配置时自动回退 debug 签名，别人 clone 下来能直接编译
+  - **注意**：与 v1.3 的 debug 签名不同，装 v1.4 前必须先卸载旧版
+  - 体积 3.15 MB → 2.49 MB（release 去掉调试信息）
+- versionCode 4 → 5，versionName 1.3 → 1.4
+
+## v1.3（2026-11-15）
+
+**APK**
+- 设置菜单默认只保留 4 项：重新加载、强制刷新（清缓存）、回到顶部、调整字号
+- **长按设置键满 6 秒**才解锁「在浏览器中打开」「复制日报链接」：按住 6 秒弹提示「已解锁高级选项，松手后显示」，松手后菜单出现这两项；提前松手恢复正常菜单
+  - 目的：这两项是自用调试项，分享给别人时默认不暴露
+  - 触摸事件计时（ACTION_DOWN 起定时器，ACTION_UP 判定，ACTION_CANCEL 复位），`onDestroy` 清 Handler
+- 菜单项改为按名称分发，不再硬编码下标，避免以后增删项错位
+- versionCode 3 → 4，versionName 1.2 → 1.3
+
+## 页面与流水线（2026-11-13 ~ 11-15）
+
+**难点词汇页（新功能，全程不耗 AI token）**
+- 新增 `scripts/build_vocab.py`：用离线词典 ECDICT（76 万词条）查表 + 规则筛选，从当天英文正文挑超纲词
+- 首页加「难点词汇 ›」入口（仅当词汇页存在时渲染），词汇页顶部有「‹ 返回今日速递」
+- 卡片内容：音标、词性、中英释义、英文例句、原文语境句（高亮原词）、点按发音、稀有度星标
+- 发音走有道公开接口（`dict.youdao.com/dictvoice`，WebView 里系统 TTS 基本无效），失败再回退 TTS
+- 英文释义/例句来自 Wiktionary 公开接口，结果缓存到 `data/vocab_enrich.json`（进 Actions 缓存）
+- 工作流新增两步：`Cache English-Chinese dictionary` + `Build vocabulary page (no AI)`，排在日报页生成之前
+
+**词表准确性（多轮返工）**
+- 出词表**先还原原形再判定难度**：用词库 `exchange` 的 `0:原形` 标记做变形映射，`countries/parties/policies` 按 `country/party/policy` 判定，不再把极常见词当生僻词
+- 一词多原形（`does → do / doe`）按词频挑最常见的那个
+- 难度判定同时用 `frq`（当代语料）与 `bnc`（英式语料）两套词频，任一套显示为常用词即排除
+- 新增 C1/专八必备词兜底表（`demo / emails / millions / backup / notification / dashboard / startup` 等词库排名偏宽松的高频词）
+- 排除含连字符的复合词（`front-end / real-time`）
+- 音标兜底：词条缺音标时回查原形、再查公开词典接口，仍查不到的不出卡（列出来却不会读没有意义）
+- 语境匹配纳入该词族的所有变形（`underpinned / countermeasures / reshaping`），并以命中处为中心裁剪，保证高亮不被截断
+- 效果：63 词（20 个缺音标）→ 24 词（音标 24/24、语境 24/24）
+
+**页面修复**
+- 撇号字距：`lang="zh-CN"` 下浏览器把弯引号 `’` 当中文字体标点渲染，字形带全角侧边距 → 生成时统一转成 ASCII 单引号
+- 标题右侧大片留白：`text-wrap: balance` 主动把多行调等长 → 改 `text-wrap: pretty`
+- 标题里 `Jensen\!` 的 Markdown 反斜杠漏到页面 → `clean_text` 清转义
+- 页面署名改为「由 AI 筛选与总结，可能存在偏差，请以原文为准。」
+- 词汇页删掉「点 🔊 跟读发音…」提示句
+
+**日期与时间（两轮修复）**
+- 第一轮：Horizon 用 UTC 日期给本期命名，北京时间早上读到的这期日期会差一天 → 显示日期 +1
+- 第二轮：重建页面时用「构建时刻」推算，导致日期退回前一天、时间写成重建时间 → 改为**以 `candidates.json` 的 UTC `generated_at` 为唯一锚点**换算北京时间，重建不再漂移；`latest.json` 的 UTC 时间保持不变（guard 依赖它）
+
+**候选面板**
+- 修复 `HttpUrl` 不可 JSON 序列化导致候选从未落盘（`src/orchestrator.py` 改 `str(item.url)`）
+- 页面拒绝渲染非当日候选，避免旧列表冒充本次候选
+
+**流水线**
+- guard 改为「距上次发布小时数 < 12 则跳过」，修掉跨 UTC 零点导致次日整轮被跳过的问题
+- 定时保持 `0 22 * * *` + 兜底 `0 23 * * *`（UTC）= 北京 06:00 / 07:00
+- 外部定时器 cron-job.org 每天 05:55（北京时间）POST dispatch 作为兜底
+
 ## v1.2（2026-11-12）
 
 **APK**
