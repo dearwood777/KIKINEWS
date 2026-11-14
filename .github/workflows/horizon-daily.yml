@@ -176,7 +176,9 @@ jobs:
         if: ${{ inputs.probe != 'yes' }}
         uses: actions/cache@v4
         with:
-          path: data/ecdict.csv
+          path: |
+            data/ecdict.csv
+            data/vocab_enrich.json
           key: ecdict-csv-v1
 
       - name: Build vocabulary page (no AI)
