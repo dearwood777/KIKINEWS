@@ -196,6 +196,16 @@ def main() -> None:
         print("[skip] no english post found")
         return
     day = os.path.basename(post).split("-summary")[0]
+    # 与日报页保持一致：按北京时间显示日期（UTC 22:00 跑出来的这期，文件名会早一天）
+    display_day = day
+    try:
+        from datetime import datetime, timedelta, timezone
+        post_date = datetime.strptime(day, "%Y-%m-%d").date()
+        bj_date = (datetime.now(timezone.utc) + timedelta(hours=8)).date()
+        if (bj_date - post_date).days == 1:
+            display_day = bj_date.isoformat()
+    except ValueError:
+        pass
     text = read_prose(post)
     wanted = candidates_from(text)
     hits = lookup(dict_path, wanted)
@@ -237,8 +247,8 @@ def main() -> None:
         cards.append(CARD.format(word=html.escape(e["word"]), ph=ph, trans=trans))
 
     page = PAGE.format(
-        title=f"难点词汇 {day}",
-        day=day,
+        title=f"难点词汇 {display_day}",
+        day=display_day,
         count=len(cards),
         cards="\n  ".join(cards) or '<div class="card">这一期没有挑出超纲词。</div>',
     )
