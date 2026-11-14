@@ -50,6 +50,84 @@ STOPWORDS = {
 MAX_WORDS = 80
 ENRICH_CACHE = os.path.join("data", "vocab_enrich.json")
 
+# C1/专八读者本来就该认识的日常词与科技常用词。词库词频排位对这类词偏宽松
+# （demo 排到 12000 名之后），单靠 frq/bnc 会把它们放进来，这里显式兜底排除。
+COMMON_WORDS = {
+    "demo", "demos", "backup", "backups", "email", "emails", "million", "millions",
+    "billion", "billions", "startup", "startups", "platform", "platforms", "update",
+    "updates", "upgrade", "upgrades", "release", "released", "releases", "launch",
+    "launched", "feature", "features", "server", "servers", "cloud", "clouds",
+    "device", "devices", "network", "networks", "networked", "online", "offline",
+    "software", "hardware", "chip", "chips", "data", "dataset", "datasets",
+    "user", "users", "customer", "customers", "market", "markets", "company",
+    "companies", "business", "businesses", "industry", "industries", "economy",
+    "government", "governments", "official", "officials", "policy", "policies",
+    "report", "reports", "reported", "statement", "statements", "announce",
+    "announced", "confirm", "confirmed", "deny", "denied", "claim", "claimed",
+    "warning", "warnings", "risk", "risks", "issue", "issues", "problem", "problems",
+    "solution", "solutions", "system", "systems", "service", "services", "product",
+    "products", "project", "projects", "process", "processes", "result", "results",
+    "increase", "increased", "decrease", "decreased", "growth", "decline",
+    "support", "supported", "supporting", "require", "required", "provide",
+    "provided", "include", "included", "including", "allow", "allowed", "enable",
+    "enabled", "ensure", "ensured", "improve", "improved", "reduce", "reduced",
+    "protect", "protected", "prevent", "prevented", "cause", "caused", "affect",
+    "affected", "impact", "impacted", "impacting", "leading", "leader", "leaders",
+    "leadership", "major", "majors", "majority", "majorities", "minor", "minority",
+    "notify", "notified", "notification", "notifications", "dashboard", "dashboards",
+    "connectivity", "functionality", "natively", "canceling", "canceling", "cancelled",
+    "canceled", "healthcare", "health", "outage", "outages", "cascade", "cascades",
+    "glitch", "glitches", "sending", "sender", "receiver", "volume", "traffic",
+    "content", "contents", "contented", "account", "accounts", "budget", "budgets",
+    "quarter", "quarterly", "annual", "annually", "monthly", "weekly", "daily",
+    "measure", "measures", "policy", "standard", "standards", "framework",
+    "sector", "sectors", "global", "globally", "region", "regional", "national",
+    "international", "domestic", "foreign", "economic", "political", "military",
+    "security", "defense", "trade", "export", "exports", "exported", "import",
+    "imports", "tariff", "tariffs", "sanction", "sanctions", "agreement",
+    "agreements", "negotiate", "negotiated", "negotiation", "negotiations",
+    "challenge", "challenges", "challenged", "challenger", "challengers",
+    "response", "responses", "respond", "responded", "comment", "comments",
+    "commenting", "statement", "briefing", "analysis", "analyst", "analysts",
+    "estimate", "estimates", "forecast", "forecasts", "investor", "investors",
+    "investment", "investments", "funding", "revenue", "revenues", "profit",
+    "losses", "share", "shares", "stock", "stocks", "price", "prices", "cost",
+    "costs", "demand", "supply", "manufacture", "manufacturer", "manufacturers",
+    "production", "productivity", "capacity", "capacities", "efficiency",
+    "infrastructure", "regulation", "regulations", "regulator", "regulators",
+    "compliance", "legal", "illegal", "court", "courts", "lawsuit", "laws",
+    "investigate", "investigation", "investigated", "allege", "alleged",
+    "accused", "charge", "charges", "charged", "sentence", "sentenced",
+    "election", "elections", "vote", "votes", "voters", "campaign", "campaigns",
+    "minister", "ministers", "parliament", "senate", "congress", "president",
+    "senator", "governor", "ambassador", "summit", "treaty", "alliance",
+    "coalition", "protest", "protests", "conflict", "conflicts", "ceasefire",
+    "troops", "forces", "weapons", "strike", "strikes", "attack", "attacks",
+    "attacked", "bombing", "casualties", "refugee", "refugees", "humanitarian",
+    "earthquake", "flood", "floods", "hurricane", "wildfire", "wildfires",
+    "climate", "emission", "emissions", "carbon", "renewable", "energy",
+    "electricity", "nuclear", "reactor", "satellite", "satellites", "orbit",
+    "launch", "launches", "mission", "missions", "spacecraft", "astronaut",
+    "algorithm", "algorithms", "model", "models", "training", "trained",
+    "dataset", "compute", "computing", "processor", "processor", "memory",
+    "storage", "bandwidth", "encryption", "privacy", "privacies", "secure",
+    "security", "vulnerability", "vulnerabilities", "breach", "breaches",
+    "malware", "ransomware", "phishing", "hacker", "hackers", "hacking",
+    "patch", "patches", "bug", "bugs", "debug", "deploy", "deployed", "deployment",
+    "migration", "migrate", "architecture", "architectures", "protocol",
+    "protocols", "interface", "interfaces", "application", "applications",
+    "browser", "browsers", "mobile", "desktop", "tablet", "console",
+    "subscribe", "subscription", "subscriptions", "license", "licenses",
+    "patent", "patents", "copyright", "trademark", "supplier", "suppliers",
+    "logistics", "shipment", "shipments", "container", "containers", "freight",
+    "airline", "airlines", "airport", "airports", "port", "ports", "railway",
+    "vehicle", "vehicles", "automaker", "automakers", "factory", "factories",
+    "plant", "plants", "mining", "agriculture", "harvest", "drought", "droughts",
+    "pandemic", "vaccine", "vaccines", "virus", "viruses", "infection", "outbreak",
+    "hospital", "hospitals", "patient", "patients", "doctor", "doctors",
+    "treatment", "treatments", "diagnosis", "therapy", "symptom", "symptoms",
+}
+
 
 def newest_post(lang: str = "en") -> str | None:
     if not os.path.isdir(POSTS):
@@ -94,34 +172,47 @@ def candidates_from(text: str) -> set[str]:
     words = set()
     for m in TOKEN.finditer(text):
         w = m.group(0).strip("'-").lower()
-        if len(w) < 4 or w in STOPWORDS:
+        if len(w) < 4 or w in STOPWORDS or "-" in w:
             continue
         words.add(w)
-        # 简单变形还原，命中就一起查
+        # 简单变形还原，让词库扫描能命中原形行
         for suf, cut in (("ing", 3), ("ied", 3), ("ies", 3), ("ed", 2), ("es", 2), ("s", 1)):
             if len(w) > cut + 3 and w.endswith(suf):
                 words.add(w[:-cut])
     return words
 
 
-def lookup(dict_path: str, wanted: set[str]) -> dict[str, dict]:
-    """流式扫一遍词库，只保留需要的词条；同时把变形词映射回原形。"""
-    hits: dict[str, dict] = {}
+def scan_dict(dict_path: str, wanted: set[str]) -> tuple[dict[str, dict], dict[str, list[str]]]:
+    """流式扫一遍词库，返回 (原形词条, 变形→可能的原形列表)。
+
+    只保留**原形**词条用于出词表：countries/parties 这类变形行的音标、词频常常缺失，
+    而且它们的出现频率应该按原形（country/party）来判断，否则会把极常见的词收进来。
+    同一个变形可能对应多个原形（does → do / doe），先都记下，稍后按词频挑最可能的。
+    """
+    bases: dict[str, dict] = {}
+    rev_multi: dict[str, list[str]] = {}
     if not os.path.exists(dict_path):
-        return hits
+        return bases, rev_multi
     with open(dict_path, encoding="utf-8", newline="") as f:
         for row in csv.DictReader(f):
             word = (row.get("word") or "").strip().lower()
             if not word:
                 continue
             forms = []
-            ex = row.get("exchange") or ""
-            for part in ex.split("/"):
-                if ":" in part:
-                    forms.append(part.split(":", 1)[1].strip().lower())
+            base_of_row = ""
+            for part in (row.get("exchange") or "").split("/"):
+                if ":" not in part:
+                    continue
+                key, val = part.split(":", 1)
+                val = val.strip().lower()
+                # 0:xxx 表示“本行是 xxx 的变形”，即本行自己的原形
+                if key.strip() == "0":
+                    base_of_row = val
+                elif val:
+                    forms.append(val)
             if word not in wanted and not any(f in wanted for f in forms):
                 continue
-            entry = {
+            bases[word] = {
                 "word": word,
                 "phonetic": (row.get("phonetic") or "").strip(),
                 "translation": (row.get("translation") or "").strip(),
@@ -130,16 +221,33 @@ def lookup(dict_path: str, wanted: set[str]) -> dict[str, dict]:
                 "tag": (row.get("tag") or "").strip(),
                 "pos": (row.get("pos") or "").strip(),
                 "frq": int((row.get("frq") or "0").strip() or 0),
+                "bnc": int((row.get("bnc") or "0").strip() or 0),
             }
-            hits.setdefault(word, entry)
-            for f in forms:
-                if f and f not in hits:
-                    hits[f] = entry
-    return hits
+            if base_of_row:
+                rev_multi.setdefault(word, []).append(base_of_row)
+            for fm in forms:
+                rev_multi.setdefault(fm, []).append(word)
+    return bases, rev_multi
+    return bases, rev
+
+
+def phonetic_guesses(word: str) -> list[str]:
+    """变形词缺音标时，猜几个可能的原形拼法（只对规则后缀，避免把 startup 猜成 start）。"""
+    out = []
+    for suf, cut in (("ing", 3), ("ied", 3), ("ies", 3), ("ed", 2), ("es", 2), ("s", 1)):
+        if word.endswith(suf) and len(word) > cut + 3:
+            stem = word[:-cut]
+            out.append(stem)
+            out.append(stem + "e")
+            if stem and stem[-1] == stem[-2] if len(stem) > 1 else False:
+                out.append(stem[:-1])
+    return [w for w in out if w != word]
 
 
 def is_hard(entry: dict) -> bool:
     if not entry["translation"]:
+        return False
+    if entry["word"] in COMMON_WORDS:
         return False
     trans = entry["translation"]
     for marker in ("[人名]", "[地名]", "[姓氏]", "[缩写]"):
@@ -156,10 +264,17 @@ def is_hard(entry: dict) -> bool:
     except ValueError:
         pass
     frq = entry["frq"]
-    # 词库里查不到词频的短词，多是变形或缩写，不算超纲词
-    if frq == 0 and len(entry["word"]) < 6:
+    bnc = entry.get("bnc", 0)
+    # 两套词频（当代语料 frq / 英式语料 bnc）任一显示为常用词，就说明它不该进超纲词表。
+    # does → do、millions → million 这类常见词，靠这一步排除。
+    if frq >= 9000 or bnc >= 9000:
+        return True
+    if frq > 0 or bnc > 0:
         return False
-    return frq == 0 or frq >= 9000
+    # 两套词频都查不到：短词多是缩写或变形残渣，不收
+    if len(entry["word"]) < 6:
+        return False
+    return True
 
 
 # ---------- 联网补全（免费公开词典，无需密钥，不产生模型 token） ----------
@@ -196,10 +311,13 @@ def fetch_enrich(word: str, timeout: int = 8) -> dict:
         return {}
     first = data[0]
     out = {}
+    if first.get("phonetic"):
+        out["phonetic"] = first["phonetic"].strip()
     for ph in first.get("phonetics") or []:
         if ph.get("audio"):
             out["audio"] = ph["audio"]
-            break
+        if ph.get("text") and "phonetic" not in out:
+            out["phonetic"] = ph["text"].strip()
     meanings = first.get("meanings") or []
     for m in meanings:
         pos = (m.get("partOfSpeech") or "").strip()
@@ -406,10 +524,24 @@ def main() -> None:
     display_day, _ = digest_display(DOCS)
     text = read_prose(post)
     wanted = candidates_from(text)
-    hits = lookup(dict_path, wanted)
-    if not hits:
+    bases, rev_multi = scan_dict(dict_path, wanted)
+    if not bases:
         print(f"[skip] dictionary not found or nothing matched: {dict_path}")
         return
+
+    def resolve(token: str) -> str:
+        """变形 → 最可能的原形：取词频最靠前（最常用）的那个原形。"""
+        cands = rev_multi.get(token)
+        if not cands:
+            return token
+
+        def score(b: str):
+            e = bases.get(b)
+            if not e:
+                return (10**9, 10**9, len(b))
+            return (e["frq"] or 10**9, e["bnc"] or 10**9, len(b))
+
+        return min(cands, key=score)
 
     freq = Counter()
     lower_forms = Counter()
@@ -419,21 +551,38 @@ def main() -> None:
         if raw[:1].islower():
             lower_forms[raw.lower()] += 1
 
+    # 先归到原形再判断：countries 计入 country、held 计入 hold，
+    # 频率和难度都按原形算，避免把极常见的词收进来，也避免拿没有音标的变形行出词。
     picked = []
     seen_words = set()
-    for w in sorted(hits):
-        e = hits[w]
-        if e["word"] in seen_words:
-            continue
-        # 全文里只以大写字头出现过的，基本是人名/机构名，不收进词表
-        if lower_forms.get(w, 0) == 0:
+    for token in sorted(lower_forms):
+        base = resolve(token)
+        e = bases.get(base)
+        if not e or e["word"] in seen_words:
             continue
         if not is_hard(e):
             continue
         seen_words.add(e["word"])
-        picked.append((e["frq"], -freq.get(w, 1), e))
+        # 出现次数按这一族所有变形合计
+        count = sum(c for f, c in lower_forms.items() if resolve(f) == base)
+        picked.append((e["frq"], -count, e))
     picked.sort(key=lambda x: (x[0] if x[0] > 0 else 10**9, x[1]))
     picked = picked[:MAX_WORDS]
+
+    # 音标兜底：变形词（millions / canceling / prototyping）本行往往没音标，
+    # 回到原形词条去取，取到就补上。
+    need_ph = {e["word"] for _, _, e in picked if not e["phonetic"]}
+    if need_ph:
+        guesses = {w: phonetic_guesses(w) for w in need_ph}
+        extra, _ = scan_dict(dict_path, {g for gs in guesses.values() for g in gs})
+        for _, _, e in picked:
+            if e["phonetic"]:
+                continue
+            for g in guesses.get(e["word"], []):
+                cand = extra.get(g)
+                if cand and cand["phonetic"]:
+                    e["phonetic"] = cand["phonetic"]
+                    break
 
     words = [e["word"] for _, _, e in picked]
     use_net = os.environ.get("VOCAB_NO_NET") != "1"
@@ -441,12 +590,18 @@ def main() -> None:
     sents = sentences(text)
 
     cards = []
+    dropped = []
     for _, _, e in picked:
         w = e["word"]
         en = enriched.get(w) or {}
         audio = tts_url(w)
-        ph = (f'<span class="ph">/{html.escape(e["phonetic"], quote=False)}/</span>'
-              if e["phonetic"] else "")
+        # 词库里部分词条（尤其是派生词、专业词）没有音标，用公开词典接口的音标补上
+        ph_text = e["phonetic"] or (en.get("phonetic") or "")
+        if not ph_text:
+            # 连音标都查不到的词不出卡：列出来却不会读，对读者没意义
+            dropped.append(w)
+            continue
+        ph = f'<span class="ph">/{html.escape(ph_text, quote=False)}/</span>'
         # 词库释义用字面量 "\n" 分行，且常带 [网络]/[计] 之类的专业标记
         raw_lines = e["translation"].replace("\\n", "\n").split("\n")
         lines = [ln.strip() for ln in raw_lines if ln.strip()]
@@ -475,6 +630,8 @@ def main() -> None:
         f.write(page)
     print(f"[ok] vocab.html: {len(cards)} words from {os.path.basename(post)} "
           f"(enrich: {sum(1 for w in words if enriched.get(w))})")
+    if dropped:
+        print(f"[info] 无音标已跳过: {', '.join(dropped)}")
 
 
 if __name__ == "__main__":
