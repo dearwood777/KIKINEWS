@@ -19,7 +19,7 @@ import html
 import json
 import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import markdown
 
@@ -623,7 +623,8 @@ def main() -> None:
             raw_at = payload.get("generated_at", "")
             if raw_at:
                 try:
-                    cand_at = datetime.fromisoformat(raw_at).strftime("%m-%d %H:%M")
+                    # 候选时间也按北京时间显示，和页面上的其它时间保持一致
+                    cand_at = (datetime.fromisoformat(raw_at) + timedelta(hours=8)).strftime("%m-%d %H:%M")
                 except ValueError:
                     cand_at = raw_at[:16].replace("T", " ")
                 # 候选清单必须是本次这批内容的，否则不展示，避免把上一轮的旧列表冒充本次候选
@@ -644,11 +645,26 @@ def main() -> None:
         pills += f'<span class="pill">双语 {bilingual} 条</span>'
 
     now = datetime.now(timezone.utc)
+    # 页面上的日期按北京时间显示。Horizon 用 UTC 日期给本期命名，而定时任务在
+    # UTC 22:00（北京 06:00）跑，UTC 日期会比北京日期早一天，于是“北京 11-14 早上”
+    # 的这期会被写成 11-13。这里只在“北京时间正好是发布日的次日”时把显示日期 +1，
+    # 其它情况（比如隔几天重新构建）仍沿用原日期，避免把日期改乱。
+    # 注意：latest.json 里的 generated_at 仍是 UTC，guard 用它算小时数，不受影响。
+    bj_now = now + timedelta(hours=8)
+    display_day = day
+    try:
+        post_date = datetime.strptime(day, "%Y-%m-%d").date()
+        if (bj_now.date() - post_date).days == 1:
+            display_day = bj_now.date().isoformat()
+    except ValueError:
+        pass
+    updated_text = bj_now.strftime("%Y-%m-%d %H:%M") + " 北京时间"
+
     page = TEMPLATE.format(
-        title=f"KIKI 每日速递 {day}",
-        hero_title=f"{day} 科技 · 财经 · 国际速递",
-        updated=now.strftime("%Y-%m-%d %H:%M UTC"),
-        updated_short=now.strftime("%Y-%m-%d"),
+        title=f"KIKI 每日速递 {display_day}",
+        hero_title=f"{display_day} 科技 · 财经 · 国际速递",
+        updated=updated_text,
+        updated_short=bj_now.strftime("%Y-%m-%d"),
         pills=pills,
         cands=cand_block,
         body=body,
@@ -659,10 +675,10 @@ def main() -> None:
 
     if "en" in posts:
         en_page = TEMPLATE.format(
-            title=f"KIKI Daily {day}",
-            hero_title=f"{day} Tech · Finance · World",
-            updated=now.strftime("%Y-%m-%d %H:%M UTC"),
-            updated_short=now.strftime("%Y-%m-%d"),
+            title=f"KIKI Daily {display_day}",
+            hero_title=f"{display_day} Tech · Finance · World",
+            updated=updated_text,
+            updated_short=bj_now.strftime("%Y-%m-%d"),
             pills=pills,
             cands=cand_block,
             body=render_bilingual(None, posts["en"][1]),
@@ -673,7 +689,7 @@ def main() -> None:
 
     manifest = {
         "generated_at": now.isoformat(timespec="seconds"),
-        "date": day,
+        "date": display_day,
         "item_count": count,
         "items": [
             {"lang": l, "date": d["day"], "file": "latest.html" if l == "zh" else "latest-en.html",
