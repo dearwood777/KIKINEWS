@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.webkit.WebResourceError
@@ -201,7 +202,7 @@ class MainActivity : AppCompatActivity() {
                 val advanced = holdUnlocked || held >= HOLD_UNLOCK_MS
                 holdStartAt = 0L
                 v.performClick()
-                showMenu(advanced)
+                showMenu(v, advanced)
                 return true
             }
             MotionEvent.ACTION_CANCEL -> {
@@ -214,40 +215,45 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    private fun showMenu(advanced: Boolean = false) {
+    /** 从设置按钮位置向下弹出的下拉菜单，不再用居中的对话框挡住正文。 */
+    private fun showMenu(anchor: View, advanced: Boolean = false) {
+        val menu = androidx.appcompat.widget.PopupMenu(this, anchor, Gravity.END)
+        val group = menu.menu
         val items = mutableListOf("重新加载", "强制刷新（清缓存）", "回到顶部", "调整字号")
         if (advanced) {
             items.add("在浏览器中打开")
             items.add("复制日报链接")
         }
-        AlertDialog.Builder(this)
-            .setTitle(if (advanced) "KIKINEWS 日报 · 高级" else "KIKINEWS 日报")
-            .setItems(items.toTypedArray()) { _, which ->
-                when (items[which]) {
-                    "重新加载" -> {
-                        web.clearCache(false)
-                        load(digestUrl())
-                    }
-                    "强制刷新（清缓存）" -> {
-                        web.clearCache(true)
-                        load(digestUrl())
-                    }
-                    "回到顶部" -> {
-                        web.scrollTo(0, 0)
-                        toast("已回到顶部")
-                    }
-                    "调整字号" -> pickTextZoom()
-                    "在浏览器中打开" -> runCatching {
-                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(digestUrl())))
-                    }
-                    "复制日报链接" -> {
-                        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                        cm.setPrimaryClip(android.content.ClipData.newPlainText("KIKINEWS", digestUrl()))
-                        toast("链接已复制")
-                    }
+        items.forEachIndexed { i, label -> group.add(0, i, i, label) }
+        menu.setOnMenuItemClickListener { item ->
+            val label = item.title.toString()
+            when (label) {
+                "重新加载" -> {
+                    web.clearCache(false)
+                    load(digestUrl())
+                }
+                "强制刷新（清缓存）" -> {
+                    web.clearCache(true)
+                    load(digestUrl())
+                }
+                "回到顶部" -> {
+                    web.scrollTo(0, 0)
+                    toast("已回到顶部")
+                }
+                "调整字号" -> pickTextZoom()
+                "在浏览器中打开" -> runCatching {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(digestUrl())))
+                }
+                "复制日报链接" -> {
+                    val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    cm.setPrimaryClip(android.content.ClipData.newPlainText("KIKINEWS", digestUrl()))
+                    toast("链接已复制")
                 }
             }
-            .show()
+            true
+        }
+        menu.gravity = Gravity.END
+        menu.show()
     }
 
     /** 网页缩放比例，手机上按需调大调小，设置会被记住。 */
