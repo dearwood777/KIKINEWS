@@ -43,6 +43,20 @@ SRC_LINE = re.compile(r"^([^\s·]+)\s·\s.*")  # e.g. "rss · Simon Willison · 
 TAG_LINE = re.compile(r"^\*\*(?:标签|Tags|Tag)\*\*")
 CODE_CHIP = re.compile(r"<code>(.+?)</code>")
 
+# 中文页面（html lang="zh-CN"）下，弯引号 ’ ‘ “ ” 会被浏览器当成“东亚标点”，
+# 交给中文字体渲染，字形带全角侧边距，就会出现 "China ’s" 中间空出一大块的现象
+# （复制到别处又正常，因为那里用的是拉丁字体）。统一换成 ASCII 引号即可避免。
+TYPO_QUOTES = {
+    "\u2019": "'",  # ’
+    "\u2018": "'",  # ‘
+}
+
+
+def plain_quotes(s: str) -> str:
+    for src, dst in TYPO_QUOTES.items():
+        s = s.replace(src, dst)
+    return s
+
 TEMPLATE = """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -669,6 +683,7 @@ def main() -> None:
         cands=cand_block,
         body=body,
     )
+    page = plain_quotes(page)
     with open(os.path.join(DOCS, "latest.html"), "w", encoding="utf-8") as f:
         f.write(page)
     print("[ok] latest.html (en above zh)")
@@ -684,7 +699,7 @@ def main() -> None:
             body=render_bilingual(None, posts["en"][1]),
         )
         with open(os.path.join(DOCS, "latest-en.html"), "w", encoding="utf-8") as f:
-            f.write(en_page)
+            f.write(plain_quotes(en_page))
         print("[ok] latest-en.html")
 
     manifest = {
