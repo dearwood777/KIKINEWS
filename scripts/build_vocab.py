@@ -182,8 +182,8 @@ def candidates_from(text: str) -> set[str]:
     return words
 
 
-def scan_dict(dict_path: str, wanted: set[str]) -> tuple[dict[str, dict], dict[str, list[str]]]:
-    """流式扫一遍词库，返回 (原形词条, 变形→可能的原形列表)。
+def scan_dict(dict_path: str, wanted: set[str]):
+    """流式扫一遍词库，返回 (原形词条, 变形→可能的原形列表, 原形→变形列表)。
 
     只保留**原形**词条用于出词表：countries/parties 这类变形行的音标、词频常常缺失，
     而且它们的出现频率应该按原形（country/party）来判断，否则会把极常见的词收进来。
@@ -191,8 +191,9 @@ def scan_dict(dict_path: str, wanted: set[str]) -> tuple[dict[str, dict], dict[s
     """
     bases: dict[str, dict] = {}
     rev_multi: dict[str, list[str]] = {}
+    forms_of: dict[str, list[str]] = {}
     if not os.path.exists(dict_path):
-        return bases, rev_multi
+        return bases, rev_multi, forms_of
     with open(dict_path, encoding="utf-8", newline="") as f:
         for row in csv.DictReader(f):
             word = (row.get("word") or "").strip().lower()
@@ -227,8 +228,9 @@ def scan_dict(dict_path: str, wanted: set[str]) -> tuple[dict[str, dict], dict[s
                 rev_multi.setdefault(word, []).append(base_of_row)
             for fm in forms:
                 rev_multi.setdefault(fm, []).append(word)
-    return bases, rev_multi
-    return bases, rev
+            if forms:
+                forms_of.setdefault(word, []).extend(forms)
+    return bases, rev_multi, forms_of
 
 
 def phonetic_guesses(word: str) -> list[str]:
@@ -367,16 +369,36 @@ def tts_url(word: str) -> str:
     return "https://dict.youdao.com/dictvoice?audio=" + urllib.parse.quote(word) + "&amp;type=2"
 
 
-def context_for(word: str, sents: list[str]) -> str:
-    pat = re.compile(r"\b" + re.escape(word) + r"[a-z]{0,3}\b", re.I)
-    for s in sents:
-        if pat.search(s):
-            s2 = html.escape(html.unescape(s), quote=False)
-            # 词本身是 ASCII，转义不影响高亮
-            s2 = pat.sub(lambda m: "<b>" + m.group(0) + "</b>", s2, count=1)
-            if len(s2) > 280:
-                s2 = s2[:277].rsplit(" ", 1)[0] + "…"
-            return s2
+def context_for(word: str, sents: list[str], variants: list[str] | None = None) -> str:
+    """从原文里摘出该词所在的句子并高亮。
+
+    词表里给的是**原形**，原文里往往是变形（retaliation / retaliations / underpinned），
+    所以把词库里该词族的变形一起纳入匹配；实在找不到再退一步用词干前缀匹配，
+    避免出现“有卡片却没语境”或缺高亮的情况。
+    """
+    alts = {word}
+    for v in variants or []:
+        if v and len(v) >= 3:
+            alts.add(v)
+    exact = re.compile(r"\b(?:" + "|".join(re.escape(a) for a in sorted(alts, key=len, reverse=True))
+                       + r")[a-z]{0,3}\b", re.I)
+    stem = word[:max(6, len(word) // 2)]
+    loose = re.compile(r"\b" + re.escape(stem) + r"[a-z]{0,8}\b", re.I)
+    for pat in (exact, loose):
+        for s in sents:
+            m = pat.search(s)
+            if not m:
+                continue
+            # 以命中词为中心裁剪，保证高亮的那一段不会被截断吃掉
+            start = max(0, m.start() - 110)
+            end = min(len(s), start + 300)
+            if end - start < 300:
+                start = max(0, end - 300)
+            piece = ("…" if start else "") + s[start:end] + ("…" if end < len(s) else "")
+            # 先转义（词是纯 ASCII，转义不会改动字母），再在转义结果上标红
+            piece = html.escape(html.unescape(piece), quote=False)
+            piece = pat.sub(lambda mm: "<b>" + mm.group(0) + "</b>", piece, count=1)
+            return piece
     return ""
 
 
@@ -524,7 +546,7 @@ def main() -> None:
     display_day, _ = digest_display(DOCS)
     text = read_prose(post)
     wanted = candidates_from(text)
-    bases, rev_multi = scan_dict(dict_path, wanted)
+    bases, rev_multi, forms_of = scan_dict(dict_path, wanted)
     if not bases:
         print(f"[skip] dictionary not found or nothing matched: {dict_path}")
         return
@@ -574,7 +596,7 @@ def main() -> None:
     need_ph = {e["word"] for _, _, e in picked if not e["phonetic"]}
     if need_ph:
         guesses = {w: phonetic_guesses(w) for w in need_ph}
-        extra, _ = scan_dict(dict_path, {g for gs in guesses.values() for g in gs})
+        extra = scan_dict(dict_path, {g for gs in guesses.values() for g in gs})[0]
         for _, _, e in picked:
             if e["phonetic"]:
                 continue
@@ -611,7 +633,7 @@ def main() -> None:
                   if en.get("en") else "")
         ex_bit = (f'<div class="ex">e.g. {html.escape(short(en["example"], 150), quote=False)}</div>'
                   if en.get("example") else "")
-        ctx = context_for(w, sents)
+        ctx = context_for(w, sents, forms_of.get(w))
         ctx_bit = f'<div class="ctx"><span class="lb">原文语境</span>{ctx}</div>' if ctx else ""
         cards.append(CARD.format(
             word=html.escape(w, quote=False), audio=audio, ph=ph,
