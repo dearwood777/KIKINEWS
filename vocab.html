@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<title>难点词汇 2026-11-14</title>
+<title>难点词汇 2026-11-13</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>
@@ -18,123 +18,422 @@ body{margin:0;background:var(--bg);color:var(--fg);
 .back{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;
   background:var(--card);border:1px solid var(--line);color:var(--fg);text-decoration:none;font-size:14px}
 .count{color:var(--muted);font-size:12.5px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;
-  box-shadow:var(--shadow);margin:0 0 10px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:13px 16px 14px;box-shadow:var(--shadow);margin:0 0 10px;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.55}
+.hdr{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .w{font-size:19px;font-weight:700;letter-spacing:.2px}
-.ph{color:var(--muted);font-size:13px;margin-left:8px;font-weight:400}
-.t{margin-top:6px;font-size:14.5px;color:#cfd6e6;white-space:pre-wrap}
+.ph{color:var(--muted);font-size:13px;font-weight:400}
+.meta{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap}
+.pos{font-size:11.5px;color:var(--fg);background:var(--chip);border-radius:6px;padding:2px 7px}
+.stars{font-size:11.5px;color:#ffc861;letter-spacing:1px}
+.say{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+  border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--fg);
+  font-size:14px;cursor:pointer;padding:0}
+.say:active{transform:scale(.94)}
+.say.on{border-color:var(--accent);color:var(--accent)}
+.t{margin-top:7px;font-size:14.5px;color:#cfd6e6;white-space:pre-wrap}
+.en{margin-top:5px;font-size:13.5px;color:#a9b4cc;font-style:italic}
+.ex{margin-top:4px;font-size:13px;color:var(--muted)}
+.ctx{margin-top:9px;padding:9px 11px;border-left:2px solid #3b4a6b;background:rgba(78,161,255,.07);
+  border-radius:0 10px 10px 0;font-size:13.5px;color:#c3cddf}
+.ctx b{color:#7fb8ff;font-weight:700}
+.ctx .lb{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;letter-spacing:.4px}
 .intro{color:var(--muted);font-size:12.5px;margin:6px 0 14px}
 footer{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line-height:1.9}
 </style>
 <div class="wrap">
   <div class="bar">
     <a class="back" href="latest.html">‹ 返回今日速递</a>
-    <span class="count">65 个词 · 2026-11-14</span>
+    <span class="count">65 个词 · 2026-11-13</span>
   </div>
-  <div class="intro">从今天这期日报正文里挑出的超纲词（已在 CET-4、高中及高频词中排除），释义取自开源词库 ECDICT，全程未调用模型。</div>
-  <div class="card"><span class="w">fallout</span><span class="ph">/'fɒ:laut/</span><div class="t">n. 原子尘的降下, 辐射性微尘, 原子尘, 附带结果
-[医] [放射尘]回降</div></div>
-  <div class="card"><span class="w">reshape</span><span class="ph">/ri:'ʃeip/</span><div class="t">vt. 改造, 使成新的形状, 打开新局面
+  <div class="intro">从今天这期日报英文正文里挑出的超纲词（已排除四六级/高中/高频核心词）。点 🔊 跟读发音，看「原文语境」回忆当时那句话。</div>
+  <div class="card">
+    <div class="hdr"><span class="w">fallout</span><button class="say" data-w="fallout" data-a="">🔊</button><span class="ph">/'fɒ:laut/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★</span></div>
+    <div class="t">n. 原子尘的降下, 辐射性微尘, 原子尘, 附带结果
+[医] [放射尘]回降</div><div class="en">The event of small airborne particles falling to the ground in significant quantities as a result of major industrial activity, volcano eruption…</div><div class="ex">e.g. On 26 April 1986 the reactor number four at the Chernobyl Nuclear Power Plant located in the Soviet Union near Pripyat in Ukraine exploded. Further…</div><div class="ctx"><span class="lb">原文语境</span>Treasury Secretary Scott Bessent blamed Commerce Secretary Howard Lutnick for failing to properly oversee the export of high‑spec AI chips in the <b>fallout</b> from the Nvidia scandal.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">reshape</span><button class="say" data-w="reshape" data-a="">🔊</button><span class="ph">/ri:'ʃeip/</span></div>
+    <div class="meta"><span class="pos">v.</span><span class="stars">★★</span></div>
+    <div class="t">vt. 改造, 使成新的形状, 打开新局面
 vt. 整形
-vi. 整形</div></div>
-  <div class="card"><span class="w">revert</span><span class="ph">/ri'vә:t/</span><div class="t">vi. 恢复, 复归, 回复, 还原
+vi. 整形</div><div class="en">To make into a different shape</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">revert</span><button class="say" data-w="revert" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/revert-uk.mp3">🔊</button><span class="ph">/ri'vә:t/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★</span></div>
+    <div class="t">vi. 恢复, 复归, 回复, 还原
 vt. 使回复原状, 使回转
-n. 恢复原信仰的人</div></div>
-  <div class="card"><span class="w">overhaul</span><span class="ph">/.әuvә'hɒ:l/</span><div class="t">vt. 分解检查, 翻修, 精细检查, 彻底革新
-n. 分解检查, 精细检查, 大检修</div></div>
-  <div class="card"><span class="w">prerequisite</span><span class="ph">/pri:'rekwizit/</span><div class="t">a. 先决条件的, 必要的
-n. 先决条件, 必备条件</div></div>
-  <div class="card"><span class="w">espionage</span><span class="ph">/.espiә'nɑ:ʒ/</span><div class="t">n. 间谍活动
-[法] 间谍活动, 刺探, 间谍</div></div>
-  <div class="card"><span class="w">sporadic</span><span class="ph">/spәu'rædik/</span><div class="t">a. 偶尔发生的, 零星发生的, 分散的
-[医] 散在的, 散发的</div></div>
-  <div class="card"><span class="w">sabotage</span><span class="ph">/'sæbәtɑ:ʒ/</span><div class="t">n. 怠工, 破坏活动, 破坏
+n. 恢复原信仰的人</div><div class="en">One who, or that which, reverts.</div><div class="ex">e.g. We've found that git reverts are at least an order of magnitude faster than SVN reverse merges.</div><div class="ctx"><span class="lb">原文语境</span>**「Impact」** The outage prevented users from sending or receiving email, joining Teams meetings, accessing OneDrive files, and using Azure‑based Copilot and Defender services, forcing many organizations to <b>revert</b> to backup communication and storage solutions.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">overhaul</span><button class="say" data-w="overhaul" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/overhaul-uk.mp3">🔊</button><span class="ph">/.әuvә'hɒ:l/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★</span></div>
+    <div class="t">vt. 分解检查, 翻修, 精细检查, 彻底革新
+n. 分解检查, 精细检查, 大检修</div><div class="en">A major repair, remake, renovation, or revision.</div><div class="ex">e.g. The engine required a complete overhaul to run properly.</div><div class="ctx"><span class="lb">原文语境</span>rss · BBC World · Nov 13, 19:53 &lt;a id="item-world-news-8"&gt;&lt;/a&gt; Germany’s parliament, the Bundestag, approved a major <b>overhaul</b> of its intelligence legislation on 13 November 2026, with 309 MPs voting in favour.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">prerequisite</span><button class="say" data-w="prerequisite" data-a="">🔊</button><span class="ph">/pri:'rekwizit/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★</span></div>
+    <div class="t">a. 先决条件的, 必要的
+n. 先决条件, 必备条件</div><div class="en">Something that must be gained in order to gain something else</div><div class="ex">e.g. A degree is a prerequisite for entry into this profession.</div><div class="ctx"><span class="lb">原文语境</span>rss · TechCrunch · Nov 13, 12:52 **「<b>Prerequisite</b> Context」** Nvidia’s CEO Jensen Huang resigned in November 2026 amid scandal, leaving CFO Colette Kress as interim chief executive.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">espionage</span><button class="say" data-w="espionage" data-a="">🔊</button><span class="ph">/.espiә'nɑ:ʒ/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★</span></div>
+    <div class="t">n. 间谍活动
+[法] 间谍活动, 刺探, 间谍</div><div class="en">The act or process of learning secret information through clandestine means.</div><div class="ctx"><span class="lb">原文语境</span>The bill grants the BND federal intelligence service and the BfV domestic service new powers to counter <b>espionage</b>, terrorism and sabotage.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">sporadic</span><button class="say" data-w="sporadic" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/sporadic-us.mp3">🔊</button><span class="ph">/spәu'rædik/</span></div>
+    <div class="meta"><span class="pos">adj.</span><span class="stars">★★</span></div>
+    <div class="t">a. 偶尔发生的, 零星发生的, 分散的
+[医] 散在的, 散发的</div><div class="en">(of diseases) occurring in isolated instances; not epidemic.</div><div class="ctx"><span class="lb">原文语境</span>Prior to this incident, Microsoft had reported <b>sporadic</b> outages but had not experienced a full‑day, global disruption of its core services.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">sabotage</span><button class="say" data-w="sabotage" data-a="">🔊</button><span class="ph">/'sæbәtɑ:ʒ/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★</span></div>
+    <div class="t">n. 怠工, 破坏活动, 破坏
 vi. 从事破坏活动
-vt. 妨害, 破坏</div></div>
-  <div class="card"><span class="w">dashboard</span><span class="ph">/'dæʃbɒ:d/</span><div class="t">n. 仪表板, 挡泥板</div></div>
-  <div class="card"><span class="w">cascade</span><span class="ph">/kæ'skeid/</span><div class="t">n. 小瀑布, 瀑布状物
+vt. 妨害, 破坏</div><div class="en">A deliberate action aimed at weakening an enemy through subversion, obstruction, disruption, and/or destruction.</div><div class="ctx"><span class="lb">原文语境</span>The bill grants the BND federal intelligence service and the BfV domestic service new powers to counter espionage, terrorism and <b>sabotage</b>.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">dashboard</span><button class="say" data-w="dashboard" data-a="">🔊</button><span class="ph">/'dæʃbɒ:d/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★</span></div>
+    <div class="t">n. 仪表板, 挡泥板</div><div class="en">A panel under the windscreen of a motor car or aircraft, containing indicator dials, compartments, and sometimes controls.</div><div class="ex">e.g. Log in to the dashboard to change your account settings.</div><div class="ctx"><span class="lb">原文语境</span>rss · TechCrunch · Nov 13, 18:40 &lt;a id="item-tech-news-2"&gt;&lt;/a&gt; Microsoft’s global cloud outage began as an Outlook and Teams glitch, then cascaded to affect consumer and business email, file storage, Copilot AI, Defender security, and Intune <b>dashboards</b>…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">cascade</span><button class="say" data-w="cascade" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/cascade-au.mp3">🔊</button><span class="ph">/kæ'skeid/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★</span></div>
+    <div class="t">n. 小瀑布, 瀑布状物
 vi. 成瀑布落下
-[计] 层叠, 级联</div></div>
-  <div class="card"><span class="w">notification</span><span class="ph">/.nәutifi'keiʃәn/</span><div class="t">n. 通知, 通告, 告示
-[经] 通知, 通知书</div></div>
-  <div class="card"><span class="w">demo</span><span class="ph">/'demәu/</span><div class="t">n. 演示, 样本唱片
-[计] 演示</div></div>
-  <div class="card"><span class="w">glitch</span><span class="ph">/^litʃ/</span><div class="t">[计] 假信号</div></div>
-  <div class="card"><span class="w">spec</span><span class="ph">/spek/</span><div class="t">n. 投机, 投机事业, 规格, 说明书, 专业人员
-[化] 加工单</div></div>
-  <div class="card"><span class="w">midterm</span><span class="ph">/'midtә:m/</span><div class="t">a. 中期的
-n. 期中考试</div></div>
-  <div class="card"><span class="w">malfunction</span><span class="ph">/.mæl'fʌŋʃәn/</span><div class="t">n. 故障, 失灵, 疾病
+[计] 层叠, 级联</div><div class="en">A waterfall or series of small waterfalls.</div><div class="ctx"><span class="lb">原文语境</span>rss · TechCrunch · Nov 13, 18:40 &lt;a id="item-tech-news-2"&gt;&lt;/a&gt; Microsoft’s global cloud outage began as an Outlook and Teams glitch, then <b>cascaded</b> to affect consumer and business email, file storage, Copilot AI, Defender security, and Intune dashboards…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">notification</span><button class="say" data-w="notification" data-a="">🔊</button><span class="ph">/.nәutifi'keiʃәn/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★</span></div>
+    <div class="t">n. 通知, 通告, 告示
+[经] 通知, 通知书</div><div class="en">The act of notifying.</div><div class="ctx"><span class="lb">原文语境</span>flights, following the 2001 September 11 attacks and a January 2023 pilot <b>notification</b> system malfunction that paused departures for less than two hours.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">demo</span><button class="say" data-w="demo" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/demo-uk.mp3">🔊</button><span class="ph">/'demәu/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★</span></div>
+    <div class="t">n. 演示, 样本唱片
+[计] 演示</div><div class="en">A demonstration or visual explanation.</div><div class="ex">e.g. The professor prepared a demo to help her class understand the topic.</div><div class="ctx"><span class="lb">原文语境</span>An open‑source front‑end <b>demo</b> that imports historical conversations is also released, allowing local deployment of the DeepSeek web interface via the chat‑demo repository.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">glitch</span><button class="say" data-w="glitch" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/glitch-uk.mp3">🔊</button><span class="ph">/^litʃ/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★</span></div>
+    <div class="t">[计] 假信号</div><div class="en">A problem affecting function.</div><div class="ex">e.g. They are still trying to work out all the glitches.</div><div class="ctx"><span class="lb">原文语境</span>rss · TechCrunch · Nov 13, 18:40 &lt;a id="item-tech-news-2"&gt;&lt;/a&gt; Microsoft’s global cloud outage began as an Outlook and Teams <b>glitch</b>, then cascaded to affect consumer and business email, file storage, Copilot AI, Defender security, and Intune dashboards…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">spec</span><button class="say" data-w="spec" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/spec-au.mp3">🔊</button><span class="ph">/spek/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★</span></div>
+    <div class="t">n. 投机, 投机事业, 规格, 说明书, 专业人员
+[化] 加工单</div><div class="en">A special place (for hiding or viewing)</div><div class="ctx"><span class="lb">原文语境</span>Treasury Secretary Scott Bessent blamed Commerce Secretary Howard Lutnick for failing to properly oversee the export of high‑<b>spec</b> AI chips in the fallout from the Nvidia scandal.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">midterm</span><button class="say" data-w="midterm" data-a="">🔊</button><span class="ph">/'midtә:m/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★</span></div>
+    <div class="t">a. 中期的
+n. 期中考试</div><div class="en">A midterm school exam (i.e., halfway through the term).</div><div class="ctx"><span class="lb">原文语境</span>Senate majority leader from fellow Democrat Chris Van Hollen, following the party’s <b>midterm</b> election gains.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">malfunction</span><button class="say" data-w="malfunction" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/malfunction-au.mp3">🔊</button><span class="ph">/.mæl'fʌŋʃәn/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★</span></div>
+    <div class="t">n. 故障, 失灵, 疾病
 vi. 发生故障, 不起作用
-[计] 故障</div></div>
-  <div class="card"><span class="w">outage</span><span class="ph">/'autidʒ/</span><div class="t">n. (水、电、煤)断供, 储运损耗
-[化] (蓄水池为了水膨胀)预留的容量; 排出量</div></div>
-  <div class="card"><span class="w">underpin</span><span class="ph">/.ʌndә'pin/</span><div class="t">vt. 从下面支承, 支撑, 支持
-[经] 支撑</div></div>
-  <div class="card"><span class="w">grounding</span><span class="ph">/'graundiŋ/</span><div class="t">n. 基础教学, 基础训练
-[经] 搁浅</div></div>
-  <div class="card"><span class="w">reschedule</span><span class="ph">/ri:ʃedju:l/</span><div class="t">[计] 重安排, 重调度
-[化] 修订计划</div></div>
-  <div class="card"><span class="w">downtime</span><span class="ph">/'dauntaim/</span><div class="t">n. 停工期
-[计] 故障停机时间</div></div>
-  <div class="card"><span class="w">wiki</span><div class="t">n. 维基百科（网站名）</div></div>
-  <div class="card"><span class="w">retaliatory</span><span class="ph">/ri'tæliәtәri/</span><div class="t">a. 报复的
-[经] 报复性的</div></div>
-  <div class="card"><span class="w">politico</span><span class="ph">/pә'litikәu/</span><div class="t">n. 政客</div></div>
-  <div class="card"><span class="w">countermeasure</span><span class="ph">/'kauntә.meʒә/</span><div class="t">n. 对策, 反抗手段, 反措施
-[法] 对策, 反对手段, 抵制措施</div></div>
-  <div class="card"><span class="w">indivisible</span><span class="ph">/.indi'vizәbl/</span><div class="t">a. 不能分割的, 除不尽的
-[经] 不可分的, 除不尽的</div></div>
-  <div class="card"><span class="w">chipmaker</span><span class="ph">/t'ʃɪpmeɪkə/</span><div class="t">n. 芯片制造商</div></div>
-  <div class="card"><span class="w">trilateral</span><span class="ph">/trai'lætәrәl/</span><div class="t">a. 有三边的, 三方之间的
-n. 三角形</div></div>
-  <div class="card"><span class="w">held</span><span class="ph">/held/</span><div class="t">hold的过去式和过去分词</div></div>
-  <div class="card"><span class="w">multimodal</span><div class="t">[计] 多模式的</div></div>
-  <div class="card"><span class="w">supplied</span><div class="t">a. 有...提供的；备有...的</div></div>
-  <div class="card"><span class="w">prototyping</span><div class="t">[计] 样机研究, 原型设计</div></div>
-  <div class="card"><span class="w">natively</span><span class="ph">/'neitivli/</span><div class="t">adv. 生来地, 天然地</div></div>
-  <div class="card"><span class="w">microsoft</span><div class="t">n. (美国)微软公司
-[电] 微软公司</div></div>
-  <div class="card"><span class="w">securities</span><span class="ph">/si'kjuәritis/</span><div class="t">n. 有价证券
-[经] 证券</div></div>
-  <div class="card"><span class="w">wikipedia</span><div class="t">维基百科（一个基于wiki技术的多语言的百科全书协作计划, 也是一部用不同语言写成的网络百科全书, 其目标及宗旨是为全人类提供自由的百科全书）；开放性的百科全书</div></div>
-  <div class="card"><span class="w">millions</span><div class="t">n. 数百万</div></div>
-  <div class="card"><span class="w">countries</span><div class="t">国家（country的复数）</div></div>
-  <div class="card"><span class="w">majorities</span><span class="ph">/məˈdʒɔritiz/</span><div class="t">n. 多数( majority的名词复数 ); （获胜的）票数; 票数差距; 法定年龄</div></div>
-  <div class="card"><span class="w">secretaries</span><span class="ph">/ˈsekrətəriz/</span><div class="t">n. 秘书( secretary的名词复数 ); [英]大臣; （政府机关等的） 秘书官; [印刷]草书体大号铅字</div></div>
-  <div class="card"><span class="w">parties</span><div class="t">n. 当事人；聚会；党派；政党机关；同行者（party的复数）</div></div>
-  <div class="card"><span class="w">policies</span><div class="t">n. 政策；保险单（policy的复数）</div></div>
-  <div class="card"><span class="w">technologies</span><div class="t">n. 技术；科技（technology的复数）</div></div>
-  <div class="card"><span class="w">treasuries</span><span class="ph">/t'reʒərɪz/</span><div class="t">n. （政府的）财政部( treasury的名词复数 ); 国库, 金库</div></div>
-  <div class="card"><span class="w">capacities</span><span class="ph">/kəˈpæsitiz/</span><div class="t">n. 容量( capacity的名词复数 ); 才能; 性能; 生产能力</div></div>
-  <div class="card"><span class="w">companied</span><span class="ph">/'kʌmp(ə)nɪ/</span><div class="t">n. 公司；陪伴, 同伴；连队
+[计] 故障</div><div class="en">Faulty functioning</div><div class="ctx"><span class="lb">原文语境</span>flights, following the 2001 September 11 attacks and a January 2023 pilot notification system <b>malfunction</b> that paused departures for less than two hours.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">outage</span><button class="say" data-w="outage" data-a="">🔊</button><span class="ph">/'autidʒ/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★</span></div>
+    <div class="t">n. (水、电、煤)断供, 储运损耗
+[化] (蓄水池为了水膨胀)预留的容量; 排出量</div><div class="en">A temporary suspension of operation, especially of electrical power supply.</div><div class="ctx"><span class="lb">原文语境</span>rss · TechCrunch · Nov 13, 18:40 &lt;a id="item-tech-news-2"&gt;&lt;/a&gt; Microsoft’s global cloud <b>outage</b> began as an Outlook and Teams glitch, then cascaded to affect consumer and business email, file storage, Copilot AI, Defender security, and Intune dashboards…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">underpin</span><button class="say" data-w="underpin" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/underpin-au.mp3">🔊</button><span class="ph">/.ʌndә'pin/</span></div>
+    <div class="meta"><span class="pos">v.</span><span class="stars">★★★</span></div>
+    <div class="t">vt. 从下面支承, 支撑, 支持
+[经] 支撑</div><div class="en">To support from below with props or masonry.</div><div class="ex">e.g. You should underpin the mine roof to prevent further collapse.</div><div class="ctx"><span class="lb">原文语境</span>The company’s GPUs dominate AI training, and its 2019 $6.9 billion acquisition of Israeli chipmaker Mellanox <b>underpinned</b> a major R&amp;D hub outside the U.S.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">grounding</span><button class="say" data-w="grounding" data-a="">🔊</button><span class="ph">/'graundiŋ/</span></div>
+    <div class="meta"><span class="pos">v.</span><span class="stars">★★★</span></div>
+    <div class="t">n. 基础教学, 基础训练
+[经] 搁浅</div><div class="en">To connect (an electrical conductor or device) to a ground.</div><div class="ex">e.g. Eric, you are grounded until further notice for lying to us about where you were last night!</div><div class="ctx"><span class="lb">原文语境</span>rss · The Guardian World · Nov 13, 21:44 **「Background」** This is the third nationwide <b>grounding</b> of U.S.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">reschedule</span><button class="say" data-w="reschedule" data-a="">🔊</button><span class="ph">/ri:ʃedju:l/</span></div>
+    <div class="meta"><span class="pos">v.</span><span class="stars">★★★★</span></div>
+    <div class="t">[计] 重安排, 重调度
+[化] 修订计划</div><div class="en">To schedule again or at a different time.</div><div class="ex">e.g. We'll have to reschedule next Monday's meeting because of the public holiday.</div><div class="ctx"><span class="lb">原文语境</span>**「Impact」** The halt disrupted travel plans for millions of passengers and forced airlines to cancel or <b>reschedule</b> flights, affecting the aviation industry and passengers nationwide.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">downtime</span><button class="say" data-w="downtime" data-a="">🔊</button><span class="ph">/'dauntaim/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★</span></div>
+    <div class="t">n. 停工期
+[计] 故障停机时间</div><div class="en">The amount of time lost due to forces beyond one's control, as with a computer crash.</div><div class="ex">e.g. I've been working all weekend. I need some downtime.</div><div class="ctx"><span class="lb">原文语境</span>Services are being restored after almost 24 hours of <b>downtime</b>.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">wiki</span><button class="say" data-w="wiki" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/wiki-au.mp3">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★</span></div>
+    <div class="t">n. 维基百科（网站名）</div><div class="en">A collaborative website which can be directly edited merely by using a web browser, often by anyone with access to it.</div><div class="ctx"><span class="lb">原文语境</span>| The Guardian&lt;/a&gt;&lt;/li&gt; &lt;li&gt;&lt;a href="https://en.wikipedia.org/<b>wiki</b>/Mellanox_Technologies"&gt;Mellanox Technologies - Wikipedia&lt;/a&gt;&lt;/li&gt; &lt;/ul&gt; &lt;a id="item-tech-news-4"&gt;&lt;/a&gt; DeepSeek has launched a comprehensive API…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">retaliatory</span><button class="say" data-w="retaliatory" data-a="">🔊</button><span class="ph">/ri'tæliәtәri/</span></div>
+    <div class="meta"><span class="pos">adj.</span><span class="stars">★★★★</span></div>
+    <div class="t">a. 报复的
+[经] 报复性的</div><div class="en">Relating to or part of a retaliation.</div><div class="ex">e.g. The hostile forces were at an impasse; neither could attack with enough force and still defend against the retaliatory counterattack.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">politico</span><button class="say" data-w="politico" data-a="">🔊</button><span class="ph">/pә'litikәu/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★</span></div>
+    <div class="t">n. 政客</div><div class="en">A politician.</div><div class="ctx"><span class="lb">原文语境</span>&lt;ul&gt; &lt;li&gt;&lt;a href="https://singjupost.com/transcript-us-envoys-jared-kushner-and-steve-witkoff-meet-putin-at-kremlin/"&gt;Transcript: US Envoys Jared Kushner And Steve Witkoff Meet ...&lt;/a&gt;&lt;/li&gt; &lt;li&gt;&lt;a…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">countermeasure</span><button class="say" data-w="countermeasure" data-a="">🔊</button><span class="ph">/'kauntә.meʒә/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★</span></div>
+    <div class="t">n. 对策, 反抗手段, 反措施
+[法] 对策, 反对手段, 抵制措施</div><div class="en">Any action taken to counteract or correct another.</div><div class="ex">e.g. We fear that this will be the beginning of a negative development of measures and countermeasures, at the end of which there will be no winner…</div><div class="ctx"><span class="lb">原文语境</span>rss · BBC World · Nov 13, 15:42 **「Prior legal limits on German intelligence」** Before the 2026 overhaul, Germany’s BND and BfV operated under stricter legal limits that restricted covert operations and cyber <b>countermeasures</b>.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">indivisible</span><button class="say" data-w="indivisible" data-a="">🔊</button><span class="ph">/.indi'vizәbl/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★</span></div>
+    <div class="t">a. 不能分割的, 除不尽的
+[经] 不可分的, 除不尽的</div><div class="en">That which cannot be divided or split.</div><div class="ctx"><span class="lb">原文语境</span>envoys, but he continues to reject a comprehensive ceasefire, insisting that a new, <b>indivisible</b> security architecture for Europe is a prerequisite for peace.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">chipmaker</span><button class="say" data-w="chipmaker" data-a="">🔊</button><span class="ph">/t'ʃɪpmeɪkə/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★</span></div>
+    <div class="t">n. 芯片制造商</div><div class="en">A company that manufactures integrated circuit chips.</div><div class="ctx"><span class="lb">原文语境</span>The company’s GPUs dominate AI training, and its 2019 $6.9 billion acquisition of Israeli <b>chipmaker</b> Mellanox underpinned a major R&amp;D hub outside the U.S.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">trilateral</span><button class="say" data-w="trilateral" data-a="">🔊</button><span class="ph">/trai'lætәrәl/</span></div>
+    <div class="meta"><span class="pos">adj.</span><span class="stars">★★★★</span></div>
+    <div class="t">a. 有三边的, 三方之间的
+n. 三角形</div><div class="en">Having three sides</div><div class="ex">e.g. The trilateral peace conference, between the red faction, blue faction and white faction, went nowhere.</div><div class="ctx"><span class="lb">原文语境</span>In November 2026, US envoys Steve Witkoff and Jared Kushner met with President Putin in Moscow following <b>trilateral</b> talks in Abu Dhabi, where Putin reiterated his demand for a new security architecture for Europe.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">held</span><button class="say" data-w="held" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/held-us.mp3">🔊</button><span class="ph">/held/</span></div>
+    <div class="meta"><span class="pos">v.</span><span class="stars">★★★★</span></div>
+    <div class="t">hold的过去式和过去分词</div><div class="en">To grasp or grip.</div><div class="ex">e.g. Hold the pencil like this.</div><div class="ctx"><span class="lb">原文语境</span>rss · BBC World · Nov 13, 19:03 **「Context of the 2026 Senate Shift」** In the November 3, 2026 midterm elections, Democrats won a majority in the Senate, ending a Republican majority that had <b>held</b> the chamber since 2015.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">multimodal</span><button class="say" data-w="multimodal" data-a="">🔊</button></div>
+    <div class="meta"><span class="pos">adj.</span><span class="stars">★★★★</span></div>
+    <div class="t">[计] 多模式的</div><div class="en">Having, or employing multiple modes</div><div class="ex">e.g. multimodal transport</div><div class="ctx"><span class="lb">原文语境</span>telegram · zaihuapd · Nov 13, 14:27 **「Prior DeepSeek model release」** DeepSeek had previously launched the V4.1‑Flash <b>multimodal</b> model in September 2026, a 552 B‑parameter architecture that natively processes images and text up to a 1 M‑token context.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">supplied</span><button class="say" data-w="supplied" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/supplied-us.mp3">🔊</button></div>
+    <div class="meta"><span class="pos">v.</span><span class="stars">★★★★</span></div>
+    <div class="t">a. 有...提供的；备有...的</div><div class="en">To provide (something), to make (something) available for use.</div><div class="ex">e.g. to supply money for the war</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">prototyping</span><button class="say" data-w="prototyping" data-a="">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★</span></div>
+    <div class="t">[计] 样机研究, 原型设计</div><div class="en">The rapid creation of prototypes of a new product for demonstration and research purposes</div><div class="ctx"><span class="lb">原文语境</span>**「Impact」** Developers can now integrate a broader set of multimodal and search functionalities into their applications with a single API call, simplifying the creation of AI‑powered tools that require file handling, voice input, or real‑time search, and can deploy the demo…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">natively</span><button class="say" data-w="natively" data-a="">🔊</button><span class="ph">/'neitivli/</span></div>
+    <div class="meta"><span class="pos">adv.</span><span class="stars">★★★★</span></div>
+    <div class="t">adv. 生来地, 天然地</div><div class="ctx"><span class="lb">原文语境</span>telegram · zaihuapd · Nov 13, 14:27 **「Prior DeepSeek model release」** DeepSeek had previously launched the V4.1‑Flash multimodal model in September 2026, a 552 B‑parameter architecture that <b>natively</b> processes images and text up to a 1 M‑token context.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">microsoft</span><button class="say" data-w="microsoft" data-a="">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. (美国)微软公司
+[电] 微软公司</div><div class="ctx"><span class="lb">原文语境</span>rss · TechCrunch · Nov 13, 18:40 &lt;a id="item-tech-news-2"&gt;&lt;/a&gt; <b>Microsoft</b>’s global cloud outage began as an Outlook and Teams glitch, then cascaded to affect consumer and business email, file storage, Copilot AI, Defender security, and Intune dashboards…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">securities</span><button class="say" data-w="securities" data-a="">🔊</button><span class="ph">/si'kjuәritis/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 有价证券
+[经] 证券</div><div class="en">The condition of not being threatened, especially physically, psychologically, emotionally, or financially.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">wikipedia</span><button class="say" data-w="wikipedia" data-a="">🔊</button></div>
+    <div class="meta"><span class="stars">★★★★★</span></div>
+    <div class="t">维基百科（一个基于wiki技术的多语言的百科全书协作计划, 也是一部用不同语言写成的网络百科全书, 其目标及宗旨是为全人类提供自由的百科全书）；开放性的百科全书</div><div class="ctx"><span class="lb">原文语境</span>| The Guardian&lt;/a&gt;&lt;/li&gt; &lt;li&gt;&lt;a href="https://en.<b>wikipedia</b>.org/wiki/Mellanox_Technologies"&gt;Mellanox Technologies - Wikipedia&lt;/a&gt;&lt;/li&gt; &lt;/ul&gt; &lt;a id="item-tech-news-4"&gt;&lt;/a&gt; DeepSeek has launched a comprehensive API…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">millions</span><button class="say" data-w="millions" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/millions-us.mp3">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 数百万</div><div class="en">(long and short scales) The cardinal number 1,000,000: 106; a thousand thousand.</div><div class="ex">e.g. I told you a million times before.</div><div class="ctx"><span class="lb">原文语境</span>rss · TechCrunch · Nov 13, 13:15 **「Background」** Microsoft 365 is a cloud‑based suite that includes Outlook, Teams, OneDrive, and other productivity services used by <b>millions</b> of consumers and businesses worldwide.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">countries</span><button class="say" data-w="countries" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/countries-us.mp3">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">国家（country的复数）</div><div class="en">(chiefly British) An area of land; a district, region.</div><div class="ctx"><span class="lb">原文语境</span>&lt;ul&gt; &lt;li&gt;&lt;a href="https://www.deepseek.com/en/news/deepseek-v4-1-flash/"&gt;DeepSeek | Introducing DeepSeek-V4.1-Flash: smarter, faster ...&lt;/a&gt;&lt;/li&gt; &lt;/ul&gt; ## World News &lt;a id="item-world-news-1"&gt;&lt;/a&gt; Microsoft said it was "deeply…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">majorities</span><button class="say" data-w="majorities" data-a="">🔊</button><span class="ph">/məˈdʒɔritiz/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 多数( majority的名词复数 ); （获胜的）票数; 票数差距; 法定年龄</div><div class="en">More than half (50%) of some group.</div><div class="ex">e.g. The majority agreed that the new proposal was the best.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">secretaries</span><button class="say" data-w="secretaries" data-a="">🔊</button><span class="ph">/ˈsekrətəriz/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 秘书( secretary的名词复数 ); [英]大臣; （政府机关等的） 秘书官; [印刷]草书体大号铅字</div><div class="en">Someone entrusted with a secret; a confidant.</div><div class="ex">e.g. Ban Ki-Moon was a secretary general of the United Nations.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">parties</span><button class="say" data-w="parties" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/parties-us.mp3">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 当事人；聚会；党派；政党机关；同行者（party的复数）</div><div class="en">A person or group of people constituting a particular side in a contract or legal action.</div><div class="ex">e.g. The contract requires that the party of the first part pay the fee.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">policies</span><button class="say" data-w="policies" data-a="">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 政策；保险单（policy的复数）</div><div class="en">A principle of behaviour, conduct etc. thought to be desirable or necessary, especially as formally expressed by a government or other authoritative…</div><div class="ex">e.g. The Communist Party has a policy of returning power to the workers.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">technologies</span><button class="say" data-w="technologies" data-a="">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 技术；科技（technology的复数）</div><div class="en">The organization of knowledge for practical purposes.</div><div class="ctx"><span class="lb">原文语境</span>| The Guardian&lt;/a&gt;&lt;/li&gt; &lt;li&gt;&lt;a href="https://en.wikipedia.org/wiki/Mellanox_Technologies"&gt;Mellanox <b>Technologies</b> - Wikipedia&lt;/a&gt;&lt;/li&gt; &lt;/ul&gt; &lt;a id="item-tech-news-4"&gt;&lt;/a&gt; DeepSeek has launched a comprehensive API…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">treasuries</span><button class="say" data-w="treasuries" data-a="">🔊</button><span class="ph">/t'reʒərɪz/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. （政府的）财政部( treasury的名词复数 ); 国库, 金库</div><div class="en">A place where treasure is stored safely.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">capacities</span><button class="say" data-w="capacities" data-a="">🔊</button><span class="ph">/kəˈpæsitiz/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 容量( capacity的名词复数 ); 才能; 性能; 生产能力</div><div class="en">The ability to hold, receive or absorb</div><div class="ex">e.g. It was hauling a capacity load.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">companied</span><button class="say" data-w="companied" data-a="">🔊</button><span class="ph">/'kʌmp(ə)nɪ/</span></div>
+    <div class="meta"><span class="pos">v.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 公司；陪伴, 同伴；连队
 vi. 交往
-vt. 陪伴</div></div>
-  <div class="card"><span class="w">canceling</span><div class="t">n. 取消；消除</div></div>
-  <div class="card"><span class="w">capabilities</span><span class="ph">/ˌkeɪpəˈbɪlɪti:z/</span><div class="t">n. 能力( capability的名词复数 ); 可能; 容量; [复数]潜在能力</div></div>
-  <div class="card"><span class="w">centuries</span><span class="ph">/'sentʃərɪz/</span><div class="t">n. 100年, 一世纪( century的名词复数 ); 100分; 千秋</div></div>
-  <div class="card"><span class="w">connectivities</span><div class="t">(connectivity 的复数) [计] 连通性, 连通度</div></div>
-  <div class="card"><span class="w">denied</span><div class="t">v. 拒绝；拒签（deny的过去式）</div></div>
-  <div class="card"><span class="w">emails</span><span class="ph">/'iːmeɪl/</span><div class="t">n. 电子信函
+vt. 陪伴</div><div class="en">To accompany, keep company with.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">canceling</span><button class="say" data-w="canceling" data-a="">🔊</button></div>
+    <div class="meta"><span class="pos">v.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 取消；消除</div><div class="en">To cross out something with lines etc.</div><div class="ex">e.g. He cancelled his order on their website.</div><div class="ctx"><span class="lb">原文语境</span>departures and delaying or <b>canceling</b> about 7,000 flights due to a communication issue at all Air Route Traffic Control Centers.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">capabilities</span><button class="say" data-w="capabilities" data-a="">🔊</button><span class="ph">/ˌkeɪpəˈbɪlɪti:z/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 能力( capability的名词复数 ); 可能; 容量; [复数]潜在能力</div><div class="en">The power or ability to generate an outcome</div><div class="ctx"><span class="lb">原文语境</span>| The Guardian&lt;/a&gt;&lt;/li&gt; &lt;li&gt;&lt;a href="https://en.wikipedia.org/wiki/Mellanox_Technologies"&gt;Mellanox Technologies - Wikipedia&lt;/a&gt;&lt;/li&gt; &lt;/ul&gt; &lt;a id="item-tech-news-4"&gt;&lt;/a&gt; DeepSeek has launched a comprehensive API suite that…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">centuries</span><button class="say" data-w="centuries" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/centuries-us.mp3">🔊</button><span class="ph">/'sentʃərɪz/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 100年, 一世纪( century的名词复数 ); 100分; 千秋</div><div class="en">A period of 100 consecutive years; often specifically a numbered period with conventional start and end dates, e.g., the twentieth century, which…</div><div class="ex">e.g. That was his tenth professional century.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">connectivities</span><button class="say" data-w="connectivities" data-a="">🔊</button></div>
+    <div class="meta"><span class="stars">★★★★★</span></div>
+    <div class="t">(connectivity 的复数) [计] 连通性, 连通度</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">denied</span><button class="say" data-w="denied" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/denied-us.mp3">🔊</button></div>
+    <div class="meta"><span class="pos">v.</span><span class="stars">★★★★★</span></div>
+    <div class="t">v. 拒绝；拒签（deny的过去式）</div><div class="en">To disallow or reject.</div><div class="ex">e.g. I wanted to go to the party, but I was denied.</div><div class="ctx"><span class="lb">原文语境</span>The company confirmed the outage was caused by a technical issue during a network capacity upgrade and <b>denied</b> any cyber or AI involvement.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">emails</span><button class="say" data-w="emails" data-a="">🔊</button><span class="ph">/'iːmeɪl/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 电子信函
 vt. 给…发电子邮件
-n. (Email)人名；(法)埃马伊</div></div>
-  <div class="card"><span class="w">functionalities</span><div class="t">(functionality 的复数) [计] 功能性, 泛函性
-[化] 官能度</div></div>
-  <div class="card"><span class="w">healthcare</span><span class="ph">/'helθkεә/</span><div class="t">n. 医疗保健；卫生保健；健康护理, 健康服务</div></div>
-  <div class="card"><span class="w">industries</span><div class="t">n. 行业, 工业；实业公司（industry的复数）</div></div>
-  <div class="card"><span class="w">liberties</span><span class="ph">/ˈlibətiz/</span><div class="t">n. 自由( liberty的名词复数 ); &lt;正式&gt;许可权; 自由（自己选择生活方式而不受政府及权威限制）; 自由（不受关押或奴役的状态）</div></div>
-  <div class="card"><span class="w">likeliest</span><div class="t">n. 最被看好的候选人</div></div>
-  <div class="card"><span class="w">oversaw</span><span class="ph">/'әuvә'sɔ:/</span><div class="t">oversee的过去式</div></div>
-  <div class="card"><span class="w">priorities</span><span class="ph">/praiˈɔritiz/</span><div class="t">n. 先( priority的名词复数 ); 优先; 优先权; 优先考虑的事</div></div>
-  <div class="card"><span class="w">privacies</span><span class="ph">/ˈpraivəsiz/</span><div class="t">n. 隐居( privacy的名词复数 ); （不受干扰的）独处; 私事; 不受公众干扰的状态</div></div>
-  <div class="card"><span class="w">productivities</span><div class="t">(productivity 的复数) n. 生产力
-[经] 生产率, 生产能力</div></div>
-  <div class="card"><span class="w">repositories</span><span class="ph">/rɪˈpɔzɪˌtɔ:ri:z/</span><div class="t">n. 存放处( repository的复数形式 ); 仓库; 宝库; 学识渊博的人</div></div>
-  <div class="card"><span class="w">reuter</span><span class="ph">/'rɔitә/</span><div class="t">n. 路透社, 路透通讯社</div></div>
-  <div class="card"><span class="w">sorrier</span><div class="t">对不起的
+n. (Email)人名；(法)埃马伊</div><div class="en">A system for transferring messages from one computer to another, usually through a network.</div><div class="ex">e.g. He sent me his details via email.</div><div class="ctx"><span class="lb">原文语境</span>**「Impact」** The outage has prevented many users from sending or receiving <b>emails</b>, disrupting communication for schools, healthcare systems, businesses, courts, and governments worldwide.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">functionalities</span><button class="say" data-w="functionalities" data-a="">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">(functionality 的复数) [计] 功能性, 泛函性
+[化] 官能度</div><div class="en">The ability to perform a task or function; that set of functions that something is able or equipped to perform.</div><div class="ctx"><span class="lb">原文语境</span>**「Impact」** Developers can now integrate a broader set of multimodal and search <b>functionalities</b> into their applications with a single API call, simplifying the creation of AI‑powered tools that require file handling, voice input, or real‑time search, and can deploy…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">healthcare</span><button class="say" data-w="healthcare" data-a="">🔊</button><span class="ph">/'helθkεә/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 医疗保健；卫生保健；健康护理, 健康服务</div><div class="en">The prevention, treatment, and management of illness or the preservation of mental and physical well-being through the services offered by the…</div><div class="ex">e.g. I think free health care should also cover nearsightedness.</div><div class="ctx"><span class="lb">原文语境</span>**「Impact」** The outage has prevented many users from sending or receiving emails, disrupting communication for schools, <b>healthcare</b> systems, businesses, courts, and governments worldwide.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">industries</span><button class="say" data-w="industries" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/industries-us.mp3">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 行业, 工业；实业公司（industry的复数）</div><div class="en">The tendency to work persistently. Diligence.</div><div class="ex">e.g. Over the years, their industry and business sense made them wealthy.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">liberties</span><button class="say" data-w="liberties" data-a="https://api.dictionaryapi.dev/media/pronunciations/en/liberties-us.mp3">🔊</button><span class="ph">/ˈlibətiz/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 自由( liberty的名词复数 ); &lt;正式&gt;许可权; 自由（自己选择生活方式而不受政府及权威限制）; 自由（不受关押或奴役的状态）</div><div class="en">The condition of being free from control or restrictions.</div><div class="ex">e.g. The army is here, your liberty is assured.</div><div class="ctx"><span class="lb">原文语境</span>**「Impact」** The expanded powers allow the BND and BfV to conduct broader surveillance and intelligence operations, potentially affecting civil <b>liberties</b> and privacy rights in Germany.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">likeliest</span><button class="say" data-w="likeliest" data-a="">🔊</button></div>
+    <div class="meta"><span class="pos">adj.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 最被看好的候选人</div><div class="en">Probable; having a greater-than-even chance of occurring</div><div class="ex">e.g. Rain is likely later this afternoon.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">oversaw</span><button class="say" data-w="oversaw" data-a="">🔊</button><span class="ph">/'әuvә'sɔ:/</span></div>
+    <div class="meta"><span class="pos">v.</span><span class="stars">★★★★★</span></div>
+    <div class="t">oversee的过去式</div><div class="en">To survey, look at something in a wide angle.</div><div class="ex">e.g. It is congress's duty to oversee the spending of federal funds.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">priorities</span><button class="say" data-w="priorities" data-a="">🔊</button><span class="ph">/praiˈɔritiz/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 先( priority的名词复数 ); 优先; 优先权; 优先考虑的事</div><div class="en">An item's relative importance.</div><div class="ex">e.g. He set his e-mail message's priority to high.</div><div class="ctx"><span class="lb">原文语境</span>**「Impact」** The challenge reflects a push for more progressive leadership, which could shift Senate <b>priorities</b> and policy direction if Van Hollen succeeds.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">privacies</span><button class="say" data-w="privacies" data-a="">🔊</button><span class="ph">/ˈpraivəsiz/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 隐居( privacy的名词复数 ); （不受干扰的）独处; 私事; 不受公众干扰的状态</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">productivities</span><button class="say" data-w="productivities" data-a="">🔊</button></div>
+    <div class="meta"><span class="stars">★★★★★</span></div>
+    <div class="t">(productivity 的复数) n. 生产力
+[经] 生产率, 生产能力</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">repositories</span><button class="say" data-w="repositories" data-a="">🔊</button><span class="ph">/rɪˈpɔzɪˌtɔ:ri:z/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 存放处( repository的复数形式 ); 仓库; 宝库; 学识渊博的人</div><div class="en">A location for storage, often for safety or preservation.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">reuter</span><button class="say" data-w="reuter" data-a="">🔊</button><span class="ph">/'rɔitә/</span></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">n. 路透社, 路透通讯社</div><div class="ctx"><span class="lb">原文语境</span>&lt;ul&gt; &lt;li&gt;&lt;a href="https://www.politico.eu/article/germany-to-give-spies-bnd-new-powers-to-counter-russia-threat/"&gt;Putin threat pushes Germany to give spies major new powers&lt;/a&gt;&lt;/li&gt; &lt;li&gt;&lt;a…</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">sorrier</span><button class="say" data-w="sorrier" data-a="">🔊</button></div>
+    <div class="meta"><span class="pos">adj.</span><span class="stars">★★★★★</span></div>
+    <div class="t">对不起的
 难过的
-遗憾的（sorry的比较级）</div></div>
-  <div class="card"><span class="w">startup</span><div class="t">[计] 启动</div></div>
-  <footer>KIKI · 难点词汇 · 本地词库生成，非 AI 撰写</footer>
+遗憾的（sorry的比较级）</div><div class="en">(of a person) Regretful for an action; grieved or saddened, especially by the loss of something or someone.</div><div class="ex">e.g. I am sorry I stepped on your toes. It was an accident.</div>
+  </div>
+  <div class="card">
+    <div class="hdr"><span class="w">startup</span><button class="say" data-w="startup" data-a="">🔊</button></div>
+    <div class="meta"><span class="pos">n.</span><span class="stars">★★★★★</span></div>
+    <div class="t">[计] 启动</div><div class="en">The act or process of starting a process or machine.</div><div class="ctx"><span class="lb">原文语境</span>Israeli venture capitalists now view the leadership vacuum as a chance to back alternative AI‑hardware <b>startups</b>.</div>
+  </div>
+  <footer>KIKI · 难点词汇 · 释义取自开源词库 ECDICT 与公开词典接口，未调用模型</footer>
 </div>
+<script>
+(function(){
+  var doc = document;
+  function speak(word, audio){
+    try {
+      if (audio) { var a = new Audio(audio); a.play(); return; }
+      if (!window.speechSynthesis) return;
+      var u = new SpeechSynthesisUtterance(word);
+      u.lang = 'en-US'; u.rate = 0.92;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  doc.addEventListener('click', function(ev){
+    var btn = ev.target.closest ? ev.target.closest('.say') : null;
+    if (!btn) return;
+    var self = this;
+    btn.classList.add('on');
+    setTimeout(function(){ btn.classList.remove('on'); }, 600);
+    speak(btn.getAttribute('data-w'), btn.getAttribute('data-a'));
+  }, false);
+})();
+</script>
 </html>
