@@ -172,6 +172,23 @@ jobs:
             python scripts/collect_candidates_only.py data/config.json || true
           fi
 
+      - name: Cache English-Chinese dictionary
+        if: ${{ inputs.probe != 'yes' }}
+        uses: actions/cache@v4
+        with:
+          path: data/ecdict.csv
+          key: ecdict-csv-v1
+
+      - name: Build vocabulary page (no AI)
+        if: ${{ inputs.probe != 'yes' }}
+        run: |
+          if [ ! -s data/ecdict.csv ]; then
+            echo "dictionary missing -> download ECDICT (offline lookup only, no tokens)"
+            curl -fsSL -m 240 -o data/ecdict.csv \
+              https://raw.githubusercontent.com/skywind3000/ECDICT/master/ecdict.csv || true
+          fi
+          python scripts/build_vocab.py || echo "vocab page skipped"
+
       - name: Build mobile digest page
         if: ${{ inputs.probe != 'yes' }}
         run: python scripts/build_latest.py

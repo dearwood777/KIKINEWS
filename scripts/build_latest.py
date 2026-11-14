@@ -105,6 +105,7 @@ body{{
   font-size:12.5px;padding:5px 11px;border-radius:999px;
   background:rgba(255,255,255,.18);backdrop-filter:blur(6px);white-space:nowrap;
 }}
+.pill-link{{color:inherit;text-decoration:none;font-weight:700}}
 
 /* ---------- 中文对照块 ---------- */
 .zh{{
@@ -660,6 +661,8 @@ def main() -> None:
     pills = f'<span class="pill">共 {count} 条精选</span>'
     if bilingual and bilingual < count:
         pills += f'<span class="pill">双语 {bilingual} 条</span>'
+    if os.path.exists(os.path.join(DOCS, "vocab.html")):
+        pills += '<a class="pill pill-link" href="vocab.html">难点词汇 ›</a>'
 
     now = datetime.now(timezone.utc)
     # 页面上的日期按北京时间显示。Horizon 用 UTC 日期给本期命名，而定时任务在
