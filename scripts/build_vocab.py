@@ -28,7 +28,7 @@ import urllib.request
 from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from build_latest import DOCS, POSTS  # noqa: E402
+from build_latest import DOCS, POSTS, digest_display  # noqa: E402
 
 FRONT_MATTER = re.compile(r"^---\s*\n.*?\n---\s*\n", re.S)
 LINK_MD = re.compile(r"\[([^\]]*)\]\([^)]*\)")
@@ -313,7 +313,7 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
     <a class="back" href="latest.html">‹ 返回今日速递</a>
     <span class="count">{count} 个词 · {day}</span>
   </div>
-  <div class="intro">从今天这期日报英文正文里挑出的超纲词（已排除四六级/高中/高频核心词）。点 🔊 跟读发音，看「原文语境」回忆当时那句话。</div>
+  <div class="intro">从今天这期日报英文正文里挑出的超纲词（已排除四六级/高中/高频核心词）。</div>
   {cards}
   <footer>KIKI · 难点词汇 · 释义取自开源词库 ECDICT 与公开词典接口</footer>
 </div>
@@ -402,16 +402,8 @@ def main() -> None:
         print("[skip] no english post found")
         return
     day = os.path.basename(post).split("-summary")[0]
-    # 与日报页保持一致：按北京时间显示日期（UTC 22:00 跑出来的这期，文件名会早一天）
-    display_day = day
-    try:
-        from datetime import datetime, timedelta, timezone
-        post_date = datetime.strptime(day, "%Y-%m-%d").date()
-        bj_date = (datetime.now(timezone.utc) + timedelta(hours=8)).date()
-        if (bj_date - post_date).days == 1:
-            display_day = bj_date.isoformat()
-    except ValueError:
-        pass
+    # 与日报页完全一致：按这次抓取的 UTC 时间换算北京时间，重建不会改日期
+    display_day, _ = digest_display(DOCS)
     text = read_prose(post)
     wanted = candidates_from(text)
     hits = lookup(dict_path, wanted)

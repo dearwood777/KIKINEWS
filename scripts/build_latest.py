@@ -534,6 +534,44 @@ def _has_chinese(item: dict) -> bool:
     return len(re.findall(r"[\u4e00-\u9fff]", text)) >= 20
 
 
+def digest_display(docs: str = DOCS) -> tuple[str, str]:
+    """返回 (页面显示日期, 更新时间文本)。
+
+    以 candidates.json 里那次抓取的 UTC 时间（generated_at）为锚点换算北京时间，
+    而不是用构建时的 now —— 这样无论隔多久重新构建，页面上的日期和时间都不会变。
+    candidates.json 缺失时退化为“本期落款的次日 06:00”，仍与定时任务对齐。
+    """
+    anchor = None
+    cand_path = os.path.join(docs, "candidates.json")
+    post_day = ""
+    if os.path.isdir(POSTS):
+        files = sorted(f for f in os.listdir(POSTS) if re.search(r"-summary-(zh|en)\.md$", f))
+        if files:
+            m = re.search(r"(\d{4}-\d{2}-\d{2})", files[-1])
+            post_day = m.group(1) if m else ""
+    if os.path.exists(cand_path):
+        try:
+            with open(cand_path, encoding="utf-8") as f:
+                raw_at = json.load(f).get("generated_at", "")
+            if raw_at:
+                anchor = datetime.fromisoformat(raw_at)
+        except (OSError, ValueError):
+            anchor = None
+    if anchor is None and post_day:
+        try:
+            anchor = datetime.strptime(post_day, "%Y-%m-%d").replace(
+                hour=22, minute=0, tzinfo=timezone.utc)
+        except ValueError:
+            anchor = None
+    if anchor is None:
+        bj = datetime.now(timezone.utc) + timedelta(hours=8)
+    else:
+        if anchor.tzinfo is None:
+            anchor = anchor.replace(tzinfo=timezone.utc)
+        bj = anchor + timedelta(hours=8)
+    return bj.date().isoformat(), bj.strftime("%Y-%m-%d %H:%M") + " 北京时间"
+
+
 def render_candidates(cands: list[dict], src_count: str, generated_at: str = "") -> str:
     """把「从 N 条里筛出」做成可点开的面板：只列表题和原文链接，不消耗任何 token。"""
     if not cands:
@@ -665,26 +703,17 @@ def main() -> None:
         pills += '<a class="pill pill-link" href="vocab.html">难点词汇 ›</a>'
 
     now = datetime.now(timezone.utc)
-    # 页面上的日期按北京时间显示。Horizon 用 UTC 日期给本期命名，而定时任务在
-    # UTC 22:00（北京 06:00）跑，UTC 日期会比北京日期早一天，于是“北京 11-14 早上”
-    # 的这期会被写成 11-13。这里只在“北京时间正好是发布日的次日”时把显示日期 +1，
-    # 其它情况（比如隔几天重新构建）仍沿用原日期，避免把日期改乱。
+    # 页面日期与“更新时间”都以这次抓取的 UTC 时间为锚点换算到北京时间，
+    # 不随构建时刻漂移（重建不会把日期改回前一天）。
     # 注意：latest.json 里的 generated_at 仍是 UTC，guard 用它算小时数，不受影响。
+    display_day, updated_text = digest_display(DOCS)
     bj_now = now + timedelta(hours=8)
-    display_day = day
-    try:
-        post_date = datetime.strptime(day, "%Y-%m-%d").date()
-        if (bj_now.date() - post_date).days == 1:
-            display_day = bj_now.date().isoformat()
-    except ValueError:
-        pass
-    updated_text = bj_now.strftime("%Y-%m-%d %H:%M") + " 北京时间"
 
     page = TEMPLATE.format(
         title=f"KIKI 每日速递 {display_day}",
         hero_title=f"{display_day} 科技 · 财经 · 国际速递",
         updated=updated_text,
-        updated_short=bj_now.strftime("%Y-%m-%d"),
+        updated_short=display_day,
         pills=pills,
         cands=cand_block,
         body=body,
@@ -699,7 +728,7 @@ def main() -> None:
             title=f"KIKI Daily {display_day}",
             hero_title=f"{display_day} Tech · Finance · World",
             updated=updated_text,
-            updated_short=bj_now.strftime("%Y-%m-%d"),
+            updated_short=display_day,
             pills=pills,
             cands=cand_block,
             body=render_bilingual(None, posts["en"][1]),
