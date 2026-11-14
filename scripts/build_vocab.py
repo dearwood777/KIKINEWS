@@ -79,7 +79,14 @@ def read_prose(path: str) -> str:
             continue
         if s.startswith("> "):
             s = s[2:]
-        lines.append(LINK_MD.sub(r"\1", s))
+        # 清掉正文里的标记残留：来源前缀、HTML 标签、Markdown 粗体、零宽字符
+        s = re.sub(r"^\s*rss\s*·.*?·\s*[A-Za-z]{3,9}\s*\d{1,2},\s*\d{2}:\d{2}\s*", "", s)
+        s = re.sub(r"<[^>]*>", "", s)
+        s = s.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", '"')
+        s = re.sub(r"\*\*(.+?)\*\*", r"\1", s)
+        s = s.replace("\u200b", "").replace("\xa0", " ").replace("\u2011", "-")
+        s = LINK_MD.sub(r"\1", s)
+        lines.append(s)
     return "\n".join(lines)
 
 
@@ -225,6 +232,9 @@ def sentences(text: str) -> list[str]:
     out = []
     for s in SENT_SPLIT.split(flat):
         s = s.strip()
+        # 正文里的小标题（「Impact」「Prerequisite Context」）不是句子，去掉
+        s = re.sub(r"^[「『\"']?[^」』\"']{0,30}[」』\"']\s*", "", s) if re.match(r"^[「『]", s) else s
+        s = s.strip()
         if len(s) < 25:
             continue
         # 标题行常带评分/标签残留，不适合当语境句
@@ -232,6 +242,11 @@ def sentences(text: str) -> list[str]:
             continue
         out.append(s)
     return out
+
+
+def tts_url(word: str) -> str:
+    """有道的公开发音接口（https，直接返回 mp3，无需密钥），比 WebView 自带 TTS 可靠。"""
+    return "https://dict.youdao.com/dictvoice?audio=" + urllib.parse.quote(word) + "&amp;type=2"
 
 
 def context_for(word: str, sents: list[str]) -> str:
@@ -300,20 +315,28 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
   </div>
   <div class="intro">从今天这期日报英文正文里挑出的超纲词（已排除四六级/高中/高频核心词）。点 🔊 跟读发音，看「原文语境」回忆当时那句话。</div>
   {cards}
-  <footer>KIKI · 难点词汇 · 释义取自开源词库 ECDICT 与公开词典接口，未调用模型</footer>
+  <footer>KIKI · 难点词汇 · 释义取自开源词库 ECDICT 与公开词典接口</footer>
 </div>
 <script>
 (function(){{
   var doc = document;
-  function speak(word, audio){{
+  function tts(word){{
     try {{
-      if (audio) {{ var a = new Audio(audio); a.play(); return; }}
       if (!window.speechSynthesis) return;
       var u = new SpeechSynthesisUtterance(word);
       u.lang = 'en-US'; u.rate = 0.92;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(u);
     }} catch (e) {{}}
+  }}
+  function speak(word, src){{
+    if (!src) {{ tts(word); return; }}
+    try {{
+      var a = new Audio(src);
+      a.onerror = function(){{ tts(word); }};
+      var p = a.play();
+      if (p && p.catch) {{ p.catch(function(){{ tts(word); }}); }}
+    }} catch (e) {{ tts(word); }}
   }}
   doc.addEventListener('click', function(ev){{
     var btn = ev.target.closest ? ev.target.closest('.say') : null;
@@ -429,7 +452,7 @@ def main() -> None:
     for _, _, e in picked:
         w = e["word"]
         en = enriched.get(w) or {}
-        audio = html.escape(en.get("audio") or "", quote=False)
+        audio = tts_url(w)
         ph = (f'<span class="ph">/{html.escape(e["phonetic"], quote=False)}/</span>'
               if e["phonetic"] else "")
         # 词库释义用字面量 "\n" 分行，且常带 [网络]/[计] 之类的专业标记
