@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-11-13T22:25:10+00:00",
-  "date": "2026-11-13",
+  "generated_at": "2026-11-14T22:18:02+00:00",
+  "date": "2026-11-15",
   "item_count": 16,
   "items": [
     {
       "lang": "zh",
-      "date": "2026-11-13",
+      "date": "2026-11-14",
       "file": "latest.html",
-      "source": "2026-11-13-summary-zh.md"
+      "source": "2026-11-14-summary-zh.md"
     },
     {
       "lang": "en",
-      "date": "2026-11-13",
+      "date": "2026-11-14",
       "file": "latest-en.html",
-      "source": "2026-11-13-summary-en.md"
+      "source": "2026-11-14-summary-en.md"
     }
   ]
 }
