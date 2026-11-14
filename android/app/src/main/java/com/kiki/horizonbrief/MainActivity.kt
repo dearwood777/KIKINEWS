@@ -9,6 +9,10 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.view.MotionEvent
 import android.view.View
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -33,6 +37,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var errorText: TextView
     private lateinit var prefs: SharedPreferences
 
+    /** 长按设置按钮满 6 秒解锁高级项；计时器随手指抬起/取消清掉。 */
+    private val holdHandler = Handler(Looper.getMainLooper())
+    private var holdStartAt = 0L
+    private var holdUnlocked = false
+    private val unlockTask = Runnable {
+        holdUnlocked = true
+        toast("已解锁高级选项，松手后显示")
+    }
+
     companion object {
         /** 第一次启动用的默认地址：本仓库的 GitHub Pages。 */
         private const val DEFAULT_URL =
@@ -41,6 +54,9 @@ class MainActivity : AppCompatActivity() {
         private const val PREF = "horizon"
         private const val KEY_URL = "digest_url"
         private const val KEY_ZOOM = "text_zoom"
+
+        /** 长按多久解锁「在浏览器中打开」「复制日报链接」。 */
+        private const val HOLD_UNLOCK_MS = 6000L
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +77,9 @@ class MainActivity : AppCompatActivity() {
             errorPanel.visibility = View.GONE
             load(digestUrl())
         }
-        findViewById<View>(R.id.settingsButton).setOnClickListener { showMenu() }
+        findViewById<View>(R.id.settingsButton).setOnTouchListener { v, ev ->
+            handleSettingsTouch(v, ev)
+        }
 
         load(digestUrl())
     }
@@ -164,29 +182,65 @@ class MainActivity : AppCompatActivity() {
         return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
-    private fun showMenu() {
-        val items = arrayOf("重新加载", "强制刷新（清缓存）", "回到顶部", "调整字号", "在浏览器中打开", "复制日报链接")
+    /**
+     * 设置按钮：正常点按只给常用项；按住 6 秒才解锁「在浏览器中打开」「复制日报链接」。
+     * 这两项是给自己调试用的，分享给别人时默认看不到。
+     */
+    private fun handleSettingsTouch(v: View, ev: MotionEvent): Boolean {
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                holdUnlocked = false
+                holdStartAt = SystemClock.elapsedRealtime()
+                holdHandler.removeCallbacks(unlockTask)
+                holdHandler.postDelayed(unlockTask, HOLD_UNLOCK_MS)
+                return true
+            }
+            MotionEvent.ACTION_UP -> {
+                holdHandler.removeCallbacks(unlockTask)
+                val held = SystemClock.elapsedRealtime() - holdStartAt
+                val advanced = holdUnlocked || held >= HOLD_UNLOCK_MS
+                holdStartAt = 0L
+                v.performClick()
+                showMenu(advanced)
+                return true
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                holdHandler.removeCallbacks(unlockTask)
+                holdUnlocked = false
+                holdStartAt = 0L
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun showMenu(advanced: Boolean = false) {
+        val items = mutableListOf("重新加载", "强制刷新（清缓存）", "回到顶部", "调整字号")
+        if (advanced) {
+            items.add("在浏览器中打开")
+            items.add("复制日报链接")
+        }
         AlertDialog.Builder(this)
-            .setTitle("KIKINEWS 日报")
-            .setItems(items) { _, which ->
-                when (which) {
-                    0 -> {
+            .setTitle(if (advanced) "KIKINEWS 日报 · 高级" else "KIKINEWS 日报")
+            .setItems(items.toTypedArray()) { _, which ->
+                when (items[which]) {
+                    "重新加载" -> {
                         web.clearCache(false)
                         load(digestUrl())
                     }
-                    1 -> {
+                    "强制刷新（清缓存）" -> {
                         web.clearCache(true)
                         load(digestUrl())
                     }
-                    2 -> {
+                    "回到顶部" -> {
                         web.scrollTo(0, 0)
                         toast("已回到顶部")
                     }
-                    3 -> pickTextZoom()
-                    4 -> runCatching {
+                    "调整字号" -> pickTextZoom()
+                    "在浏览器中打开" -> runCatching {
                         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(digestUrl())))
                     }
-                    5 -> {
+                    "复制日报链接" -> {
                         val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                         cm.setPrimaryClip(android.content.ClipData.newPlainText("KIKINEWS", digestUrl()))
                         toast("链接已复制")
@@ -215,6 +269,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+
+    override fun onDestroy() {
+        holdHandler.removeCallbacksAndMessages(null)
+        super.onDestroy()
+    }
 
     @Suppress("DEPRECATION")
     override fun onBackPressed() {
