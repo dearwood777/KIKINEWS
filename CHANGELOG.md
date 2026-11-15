@@ -23,6 +23,17 @@
 
 ## 页面与流水线（2026-11-13 ~ 11-15）
 
+**词表过滤第四版（2026-11-16 凌晨，接入 CEFR 等级，从"词频近似"改成"直接判级"）**
+- 接入开源 CEFR 词表 `openlanguageprofiles/olp-en-cefrj`（CC-BY）：
+  - `data/cefrj.csv` CEFR-J A1–B2（7,801 词条）
+  - `data/octanove.csv` Octanove C1–C2
+  - 共 8,845 条去重词条，`load_cefr()` 建词→等级映射（同一词多档取低档）
+- `is_hard()` 新增第一判据：**命中 A1/A2/B1/B2 直接排除**。这比词频可靠得多——`crucial`=B2、`password`=B1、`thousand`=A2、`ecosystem`=B1、`unauthorized`=B2，都直接出局
+- C1/C2 不做"直接收录"，只当参考：`amid`/`bypass`/`regulatory` 也在 C1/C2 表里，对 C1 读者仍太常见，继续走词频判据
+- 词表未收录（8,845 条覆盖不到的技术/法律生词）时，仍按原词频 + 派生 + 常用词表兜底
+- 工作流同步：`Cache English-Chinese dictionary` 增加两个 CSV 的 cache path；构建步骤新增两个 `curl`（缺文件才下，走 raw.githubusercontent，文件小、秒级）
+- 本期实测（11-14 正文）：14 词，与第三版所选一致，说明旧规则本就筛对，CEFR 只是把"crucial 这类漏网"的口子彻底堵死
+
 **词表过滤第三版（2026-11-15 深夜，针对"熟词生义列的都是初中词"）**
 - 熟词生义层加**难度门槛**：只收词频排名 3000 之后的词，`hold / hit / source / official / drive / seat` 这类初中词即使有新闻义也不再占版面
 - 新增**新闻短语层** `data/news_phrases.json`（82 条）：`clamp down`、`push back`、`shore up`、`water down`、`rule out`、`double down`、`dial back` 这类"每个词都认识、整句仍读不懂"的说法

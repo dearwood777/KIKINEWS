@@ -179,6 +179,8 @@ jobs:
           path: |
             data/ecdict.csv
             data/vocab_enrich.json
+            data/cefrj.csv
+            data/octanove.csv
           key: ecdict-csv-v1
 
       - name: Build vocabulary page (no AI)
@@ -188,6 +190,16 @@ jobs:
             echo "dictionary missing -> download ECDICT (offline lookup only, no tokens)"
             curl -fsSL -m 240 -o data/ecdict.csv \
               https://raw.githubusercontent.com/skywind3000/ECDICT/master/ecdict.csv || true
+          fi
+          if [ ! -s data/cefrj.csv ]; then
+            echo "CEFR list missing -> download CEFR-J A1-B2 (offline, no tokens)"
+            curl -fsSL -m 120 -o data/cefrj.csv \
+              https://raw.githubusercontent.com/openlanguageprofiles/olp-en-cefrj/master/cefrj-vocabulary-profile-1.5.csv || true
+          fi
+          if [ ! -s data/octanove.csv ]; then
+            echo "CEFR C1/C2 list missing -> download Octanove profile (offline, no tokens)"
+            curl -fsSL -m 120 -o data/octanove.csv \
+              https://raw.githubusercontent.com/openlanguageprofiles/olp-en-cefrj/master/octanove-vocabulary-profile-c1c2-1.0.csv || true
           fi
           python scripts/build_vocab.py || echo "vocab page skipped"
 

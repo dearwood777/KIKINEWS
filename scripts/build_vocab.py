@@ -268,9 +268,23 @@ def phonetic_guesses(word: str) -> list[str]:
     return [w for w in out if w != word]
 
 
+def _is_proper(entry: dict) -> bool:
+    trans = entry["translation"]
+    return any(trans.startswith(m) for m in ("[人名]", "[地名]", "[姓氏]", "[缩写]"))
+
+
 def is_hard(entry: dict) -> bool:
     if not entry["translation"]:
         return False
+    # 第一判据：CEFR 等级。A1–B2 一律不算超纲，C1/C2 一律收。
+    # 这一层比词频准得多——crucial 被标 B2、password 被标 B1，直接出局。
+    lv = CEFR.get(entry["word"])
+    if lv in CEFR_KNOWN:
+        return False
+    if lv in ("C1", "C2"):
+        # C1/C2 只是“过了 B2 线”，amid / bypass 这种也在这张表里，
+        # 对 C1 读者仍然太常见，所以继续往下走词频判据，不直接收。
+        pass
     if entry["word"] in COMMON_WORDS:
         return False
     trans = entry["translation"]
@@ -366,6 +380,42 @@ def derived_from_known(word: str, bases: dict[str, dict]) -> bool:
 # ECDICT 自带的领域标注不可靠（idea 都被标成 [医]“观念”），靠它自动判断会灌进噪声，
 # 所以这一层用一张人工维护的新闻义词表：命中就出卡、并在卡片上标“新闻义”。
 # 运行时纯查表，零 token；新词直接往 data/news_senses.json 里加即可。
+
+# ---------- CEFR 等级 ----------
+# 词频排位只能近似“难不难”，CEFR 等级才是直接的“这个词属于哪一档”。
+# 数据来自开源项目 openlanguageprofiles/olp-en-cefrj（CC-BY）：
+#   cefrj.csv    CEFR-J 词汇表 A1–B2（约 7800 词条）
+#   octanove.csv Octanove 词汇表 C1–C2
+
+CEFR_FILES = ("cefrj.csv", "octanove.csv")
+CEFR_KNOWN = {"A1", "A2", "B1", "B2"}
+CEFR: dict = {}
+
+
+def load_cefr() -> dict:
+    levels = {}
+    for name in CEFR_FILES:
+        for p in (os.path.join("data", name),
+                  os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", name)):
+            try:
+                with open(os.path.normpath(p), encoding="utf-8") as f:
+                    for row in csv.DictReader(f):
+                        lv = (row.get("CEFR") or "").strip().upper()
+                        if lv not in CEFR_KNOWN and lv not in ("C1", "C2"):
+                            continue
+                        for form in (row.get("headword") or "").split("/"):
+                            w = form.strip().lower()
+                            if not w:
+                                continue
+                            # 同一词多档时取较低档：A2 就认识，就不算超纲
+                            old = levels.get(w)
+                            if old is None or lv < old:
+                                levels[w] = lv
+                break
+            except (OSError, csv.Error):
+                continue
+    return levels
+
 
 NEWS_SENSE_FILE = os.path.join("data", "news_senses.json")
 # 新闻里天天出现、课本上却不怎么教的“说法”：短语动词、惯用搭配。
@@ -743,6 +793,8 @@ def main() -> None:
     # 先归到原形再判断：countries 计入 country、held 计入 hold，
     # 频率和难度都按原形算，避免把极常见的词收进来，也避免拿没有音标的变形行出词。
     sents = sentences(text)
+    global CEFR
+    CEFR = load_cefr()
     news_senses = load_news_senses()
     news_phrases = load_news_phrases()
     picked = []
