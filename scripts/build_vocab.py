@@ -48,6 +48,11 @@ STOPWORDS = {
 }
 
 MAX_WORDS = 80
+MAX_SENSE_WORDS = 6
+# 词频排位在多少名以内算“C1 已认识”。两套词频任一进入该名次即视为已知。
+COMMON_RANK = 8000
+# 熟词生义只看排名 3500 之后的词：ceiling / rate 这类太基础的，即使在新闻里有专业义也不列。
+NEWS_SENSE_MIN_RANK = 3500
 ENRICH_CACHE = os.path.join("data", "vocab_enrich.json")
 
 # C1/专八读者本来就该认识的日常词与科技常用词。词库词频排位对这类词偏宽松
@@ -126,6 +131,22 @@ COMMON_WORDS = {
     "pandemic", "vaccine", "vaccines", "virus", "viruses", "infection", "outbreak",
     "hospital", "hospitals", "patient", "patients", "doctor", "doctors",
     "treatment", "treatments", "diagnosis", "therapy", "symptom", "symptoms",
+    # 现代日常/科技词，词频表对它们偏宽松，单独兜底排除
+    "ecosystem", "ecosystems", "password", "passwords", "scanner", "scanners",
+    "timeline", "timelines", "cookie", "cookies", "cooky", "crypto",
+    "executable", "executables", "credentials", "thousand", "thousands",
+    "hundred", "hundreds", "chopstick", "chopsticks", "abort", "aborted",
+    "booster", "boosters", "negotiator", "negotiators", "legislator", "legislators",
+    "centralize", "centralized", "governorship", "keyless", "unconfirmed",
+    "unauthorized", "unauthorised", "confirm", "authorize", "authorized",
+    "reload", "reset", "upload", "download", "install", "installer", "setup",
+    "config", "configure", "configured", "click", "tap", "login", "logout",
+    "inbox", "spam", "popup", "banner", "widget", "widgets",
+    # 品牌名 / 缩写 / 一眼就懂的科技词
+    "google", "app", "apps", "metadata", "reusable", "reuse", "sideline",
+    "sidelines", "chopstick", "chopsticks", "twitter", "facebook", "tesla",
+    "nvidia", "openai", "chatgpt", "iphone", "android", "windows", "linux",
+    "github", "youtube", "tiktok", "spotify", "amazon",
 }
 
 
@@ -258,6 +279,9 @@ def is_hard(entry: dict) -> bool:
     tags = entry["tag"]
     if any(t in tags for t in ("zk", "gk", "cet4")):
         return False
+    # 六级词按“新闻里常见的书面语”标准保留：真正生僻的留，词频靠前的（C1 早就认识的）仍排除
+    if "cet6" in tags and is_common(entry):
+        return False
     if (entry.get("oxford") or "0").strip() == "1":
         return False
     try:
@@ -277,6 +301,99 @@ def is_hard(entry: dict) -> bool:
     if len(entry["word"]) < 6:
         return False
     return True
+
+
+def is_common(entry: dict) -> bool:
+    """C1/专八读者基本认识：有牛津标注、Collins 星级够、或两套词频都靠前。"""
+    if not entry:
+        return False
+    if entry["word"] in COMMON_WORDS:
+        return True
+    if (entry.get("oxford") or "0").strip() == "1":
+        return True
+    try:
+        if int(entry.get("collins") or 0) >= 2:
+            return True
+    except ValueError:
+        pass
+    for key in ("frq", "bnc"):
+        v = entry.get(key, 0)
+        if 0 < v <= COMMON_RANK:
+            return True
+    return False
+
+
+DERIV_PREFIXES = ("un", "in", "im", "non", "dis", "mis", "re", "pre", "over",
+                  "under", "anti", "co", "sub", "de", "multi", "semi", "post",
+                  "inter", "intra", "hyper", "ultra", "auto", "micro", "macro")
+DERIV_SUFFIXES = ("ization", "isation", "ation", "ition", "ship", "ness", "ment",
+                  "able", "ible", "less", "like", "ward", "wise", "ally", "ity",
+                  "ive", "ous", "ful", "ize", "ise", "ing", "ers", "er", "or",
+                  "al", "ic", "ly", "ed", "es", "s")
+
+
+def roots_of(word: str) -> list[str]:
+    """拆出可能的构词根：unconfirmed → confirm，negotiator → negotiate，censorship → censor。"""
+    out = []
+    for p in DERIV_PREFIXES:
+        if word.startswith(p) and len(word) - len(p) >= 3:
+            out.append(word[len(p):])
+    for s in DERIV_SUFFIXES:
+        if word.endswith(s) and len(word) - len(s) >= 3:
+            stem = word[:-len(s)]
+            out.append(stem)
+            out.append(stem + "e")   # negotiat → negotiate
+            out.append(stem + "y")   # privat → privacy
+            if stem.endswith("i"):
+                out.append(stem[:-1] + "y")  # happi → happy
+    return [w for w in dict.fromkeys(out) if w and w != word]
+
+
+def derived_from_known(word: str, bases: dict[str, dict]) -> bool:
+    """判断是不是“本来认识的词的简单派生”（最多拆两层）。"""
+    for r in roots_of(word):
+        if is_common(bases.get(r)):
+            return True
+        for r2 in roots_of(r):
+            if is_common(bases.get(r2)):
+                return True
+    return False
+
+
+# ---------- 熟词生义 ----------
+# 词频表只能筛“简不简单”，筛不出“新闻里它换了意思”。
+# ECDICT 自带的领域标注不可靠（idea 都被标成 [医]“观念”），靠它自动判断会灌进噪声，
+# 所以这一层用一张人工维护的新闻义词表：命中就出卡、并在卡片上标“新闻义”。
+# 运行时纯查表，零 token；新词直接往 data/news_senses.json 里加即可。
+
+NEWS_SENSE_FILE = os.path.join("data", "news_senses.json")
+
+
+def load_news_senses() -> dict:
+    for p in (NEWS_SENSE_FILE, os.path.join(os.path.dirname(__file__), "..", "data", "news_senses.json")):
+        try:
+            with open(os.path.normpath(p), encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            continue
+    return {}
+
+
+def raw_sentence(word: str, sents: list[str], variants: list[str] | None = None) -> str:
+    """跟 context_for 同样的匹配规则，但返回未加工的句子原文（供语义判断用）。"""
+    alts = {word}
+    for v in variants or []:
+        if v and len(v) >= 3:
+            alts.add(v)
+    exact = re.compile(r"\b(?:" + "|".join(re.escape(a) for a in sorted(alts, key=len, reverse=True))
+                       + r")[a-z]{0,3}\b", re.I)
+    stem = word[:max(6, len(word) // 2)]
+    loose = re.compile(r"\b" + re.escape(stem) + r"[a-z]{0,8}\b", re.I)
+    for pat in (exact, loose):
+        for s in sents:
+            if pat.search(s):
+                return s
+    return ""
 
 
 # ---------- 联网补全（免费公开词典，无需密钥，不产生模型 token） ----------
@@ -441,6 +558,9 @@ body{{margin:0;background:var(--bg);color:var(--fg);
 .t{{margin-top:7px;font-size:14.5px;color:#cfd6e6;white-space:pre-wrap}}
 .en{{margin-top:5px;font-size:13.5px;color:#a9b4cc;font-style:italic}}
 .ex{{margin-top:4px;font-size:13px;color:var(--muted)}}
+.sense{{margin-top:7px;padding:7px 10px;border-radius:8px;background:rgba(255,200,97,.09);
+  border:1px solid rgba(255,200,97,.25);font-size:13.5px;color:#ffd68a}}
+.sense .lb{{color:#c9a45f;font-size:11px;margin-right:6px;letter-spacing:.4px}}
 .ctx{{margin-top:9px;padding:9px 11px;border-left:2px solid #3b4a6b;background:rgba(78,161,255,.07);
   border-radius:0 10px 10px 0;font-size:13.5px;color:#c3cddf}}
 .ctx b{{color:#7fb8ff;font-weight:700}}
@@ -453,7 +573,7 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
     <a class="back" href="latest.html">‹ 返回今日速递</a>
     <span class="count">{count} 个词 · {day}</span>
   </div>
-  <div class="intro">从今天这期日报英文正文里挑出的超纲词（已排除四六级/高中/高频核心词）。</div>
+  <div class="intro">今日超纲词汇（已排除四六级等低于 C1 的高频词）。</div>
   {cards}
   <footer>KIKI · 难点词汇 · 释义取自开源词库 ECDICT 与公开词典接口</footer>
 </div>
@@ -494,7 +614,7 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
 CARD = """<div class="card">
     <div class="hdr"><span class="w">{word}</span><button class="say" data-w="{word}" data-a="{audio}">🔊</button>{ph}</div>
     <div class="meta">{pos}{stars}</div>
-    <div class="t">{trans}</div>{en}{ex}{ctx}
+    <div class="t">{trans}</div>{sense}{en}{ex}{ctx}
   </div>"""
 
 POS_MAP = [
@@ -546,6 +666,8 @@ def main() -> None:
     display_day, _ = digest_display(DOCS)
     text = read_prose(post)
     wanted = candidates_from(text)
+    # 把可能的构词根也一起查进来，才能判断 unconfirmed 是不是由认识的 confirm 派生而来
+    wanted |= {r for t in list(wanted) for r in roots_of(t)}
     bases, rev_multi, forms_of = scan_dict(dict_path, wanted)
     if not bases:
         print(f"[skip] dictionary not found or nothing matched: {dict_path}")
@@ -575,29 +697,45 @@ def main() -> None:
 
     # 先归到原形再判断：countries 计入 country、held 计入 hold，
     # 频率和难度都按原形算，避免把极常见的词收进来，也避免拿没有音标的变形行出词。
+    sents = sentences(text)
+    news_senses = load_news_senses()
     picked = []
     seen_words = set()
+    common_sense = []      # 熟词生义候选，单独排序、单独限额
     for token in sorted(lower_forms):
         base = resolve(token)
         e = bases.get(base)
         if not e or e["word"] in seen_words:
             continue
-        if not is_hard(e):
+        # 简单派生词不收：unconfirmed / negotiator / redesign 这类，
+        # 只要去掉前后缀后能落到一个“本来就会”的词，就不算生词。
+        if derived_from_known(e["word"], bases):
             continue
-        seen_words.add(e["word"])
-        # 出现次数按这一族所有变形合计
         count = sum(c for f, c in lower_forms.items() if resolve(f) == base)
-        picked.append((e["frq"], -count, e))
+        if is_hard(e):
+            seen_words.add(e["word"])
+            picked.append((e["frq"], -count, e, None))
+            continue
+        # 第二层：熟词生义。词本身不算生僻，但在这条新闻里是另一个意思——
+        # 这正是“看得懂每个词、却读不懂这句话”的来源，值得单独列出。
+        note = news_senses.get(e["word"])
+        if note:
+            seen_words.add(e["word"])
+            common_sense.append((e["frq"], -count, e, (e["word"], note)))
+
     picked.sort(key=lambda x: (x[0] if x[0] > 0 else 10**9, x[1]))
     picked = picked[:MAX_WORDS]
+    common_sense.sort(key=lambda x: (x[0] if x[0] > 0 else 10**9, x[1]))
+    sense_picked = common_sense[:MAX_SENSE_WORDS]
 
     # 音标兜底：变形词（millions / canceling / prototyping）本行往往没音标，
     # 回到原形词条去取，取到就补上。
-    need_ph = {e["word"] for _, _, e in picked if not e["phonetic"]}
+    all_picked = picked + sense_picked
+    need_ph = {e["word"] for _, _, e, _ in all_picked if not e["phonetic"]}
     if need_ph:
         guesses = {w: phonetic_guesses(w) for w in need_ph}
         extra = scan_dict(dict_path, {g for gs in guesses.values() for g in gs})[0]
-        for _, _, e in picked:
+        for _, _, e, _ in all_picked:
             if e["phonetic"]:
                 continue
             for g in guesses.get(e["word"], []):
@@ -606,14 +744,13 @@ def main() -> None:
                     e["phonetic"] = cand["phonetic"]
                     break
 
-    words = [e["word"] for _, _, e in picked]
+    words = [e["word"] for _, _, e, _ in all_picked]
     use_net = os.environ.get("VOCAB_NO_NET") != "1"
     enriched = enrich_words(words, use_net) if words else {}
-    sents = sentences(text)
 
     cards = []
     dropped = []
-    for _, _, e in picked:
+    for _, _, e, sense in all_picked:
         w = e["word"]
         en = enriched.get(w) or {}
         audio = tts_url(w)
@@ -629,6 +766,8 @@ def main() -> None:
         lines = [ln.strip() for ln in raw_lines if ln.strip()]
         keep = [ln for ln in lines if not ln.startswith("[网络]")][:3] or lines[:3]
         trans = html.escape("\n".join(keep), quote=False)
+        sense_bit = (f'<div class="sense"><span class="lb">新闻义</span>'
+                     f'{html.escape(sense[1], quote=False)}</div>' if sense else "")
         en_bit = (f'<div class="en">{html.escape(short(en["en"], 150), quote=False)}</div>'
                   if en.get("en") else "")
         ex_bit = (f'<div class="ex">e.g. {html.escape(short(en["example"], 150), quote=False)}</div>'
@@ -638,7 +777,7 @@ def main() -> None:
         cards.append(CARD.format(
             word=html.escape(w, quote=False), audio=audio, ph=ph,
             pos=pos_of(e, en), stars=f'<span class="stars">{stars_for(e["frq"])}</span>',
-            trans=trans, en=en_bit, ex=ex_bit, ctx=ctx_bit,
+            trans=trans, sense=sense_bit, en=en_bit, ex=ex_bit, ctx=ctx_bit,
         ))
 
     page = PAGE.format(

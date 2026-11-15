@@ -23,6 +23,18 @@
 
 ## 页面与流水线（2026-11-13 ~ 11-15）
 
+**词表过滤第二版（2026-11-15 晚，针对"四六级高频词仍混进来"）**
+- 第一版只按词频判难度，仍是粗筛：`crucial / password / scanner / timeline / thousands / crypto` 这类照样进表
+- 加**简单派生词过滤**：去掉前缀（un- / re- / non- / pre- / over- …）与后缀（-ly / -ness / -tion / -er / -able …）最多两层，只要能落回一个"本来就会"的词，就不算生词
+  - 例：`unconfirmed ← confirm`、`negotiator ← negotiate`、`redesign ← design`、`governorship ← govern`
+- 词库兜底表再扩一批日常/科技词（`password / scanner / timeline / ecosystem / metadata / app` 及品牌名）
+- 六级词按"新闻常见书面语"标准保留：真生僻的留，词频靠前的（C1 早该认识的）仍排除
+- **新增"熟词生义"层**：ECDICT 自带的领域标注（[法] / [医] / [经]）质量太差（`idea` 被标成 [医]"观念"），自动判断会灌进噪声，因此改用人工维护的 `data/news_senses.json`
+  - 命中即出卡，卡片上单独标一条"新闻义"（如 `hold` 执政、`source` 消息人士、`drive` 外交攻势、`seat` 议席）
+  - 运行时纯查表，零 token；新词直接往 JSON 里加，不用改代码
+- 顶部说明改为「今日超纲词汇（已排除四六级等低于 C1 的高频词）。」
+- 效果：同一期正文抽样，词表 40 → 12 个纯生僻词 + 6 个熟词生义词
+
 **难点词汇页（新功能，全程不耗 AI token）**
 - 新增 `scripts/build_vocab.py`：用离线词典 ECDICT（76 万词条）查表 + 规则筛选，从当天英文正文挑超纲词
 - 首页加「难点词汇 ›」入口（仅当词汇页存在时渲染），词汇页顶部有「‹ 返回今日速递」
