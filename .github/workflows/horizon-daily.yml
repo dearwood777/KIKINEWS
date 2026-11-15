@@ -185,6 +185,8 @@ jobs:
 
       - name: Build vocabulary page (no AI)
         if: ${{ inputs.probe != 'yes' }}
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           if [ ! -s data/ecdict.csv ]; then
             echo "dictionary missing -> download ECDICT (offline lookup only, no tokens)"

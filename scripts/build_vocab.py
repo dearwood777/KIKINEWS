@@ -729,6 +729,68 @@ def stars_for(frq: int) -> str:
     return "★★"
 
 
+# ---------- AI 复核（可选，一次约 1–2k token） ----------
+# 规则能筛“难不难”，筛不出“这词在本句是不是另一个意思”。
+# 但规则也有反向风险：把真的难词误判成简单派生词而漏掉。
+# 所以让模型直接读一遍正文、自己挑“C1 读者会卡住”的表达，
+# 规则结果与模型结果取并集——模型挑中的词即使规则判它“简单”也保留。
+AI_PROMPT = """你是英语阅读教练。读者是中文母语者，英语水平欧洲 CEFR C1（相当于英语专业八级），每天读英文新闻，目标是长期看新闻越来越顺。
+下面是一篇英文新闻正文。只做一件事：挑出会让这位读者卡住的地方，两类都算——
+1) 超纲单词：C1 以下不会出现、但有实际含义的词。不要列人名、机构名、公司名、产品名、纯缩写。
+2) 熟词生义 / 固定说法：每个词都认识，但在新闻语境里是另一个意思或换了搭配，例如 clamp down、shore up、push back、hawk。
+必须排除 C1 读者肯定认识的词，例如 crucial、password、source、hold、official、seat。
+最多 20 条，按“最卡住”的顺序排。只输出 JSON，不要任何解释文字：
+{"items":[{"w":"单词或短语","cn":"它在本文这句话里的中文意思（8-20字）","kind":"word 或 phrase"}]}"""
+
+
+def ai_review(text: str, enabled: bool = True) -> dict:
+    """让模型读正文挑超纲词/熟词生义。失败或未配置 key 时返回空字典，不影响页面生成。"""
+    key = os.environ.get("GROQ_API_KEY", "").strip()
+    if not enabled or not key:
+        return {}
+    body = json.dumps({
+        "model": os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b"),
+        "max_tokens": 900,
+        "temperature": 0.2,
+        "messages": [{"role": "user", "content": AI_PROMPT + "\n\n正文：\n" + text[:7000]}],
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.groq.com/openai/v1/chat/completions",
+        data=body,
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=90) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        content = payload["choices"][0]["message"]["content"]
+        usage = payload.get("usage") or {}
+        if usage:
+            print(f"[ai] tokens in={usage.get('prompt_tokens', 0)} out={usage.get('completion_tokens', 0)}")
+    except Exception as exc:  # 网络/额度/格式任何问题都不该拖垮日报
+        print(f"[warn] AI 复核跳过：{exc}")
+        return {}
+    start, end = content.find("{"), content.rfind("}")
+    if start < 0 or end < start:
+        print("[warn] AI 复核输出无法解析，已跳过")
+        return {}
+    try:
+        data = json.loads(content[start:end + 1])
+    except ValueError:
+        print("[warn] AI 复核 JSON 解析失败，已跳过")
+        return {}
+    out = {"words": {}, "phrases": {}}
+    for item in data.get("items", [])[:24]:
+        w = str(item.get("w") or "").strip().lower()
+        cn = str(item.get("cn") or "").strip()
+        if not w or not cn:
+            continue
+        if len(w.split()) >= 2:
+            out["phrases"][w] = cn
+        else:
+            out["words"][w] = cn
+    return out
+
+
 def short(text: str, limit: int) -> str:
     text = re.sub(r"\s+", " ", text).strip()
     if len(text) <= limit:
@@ -828,6 +890,31 @@ def main() -> None:
     common_sense.sort(key=lambda x: (x[0] if x[0] > 0 else 10**9, x[1]))
     sense_picked = common_sense[:MAX_SENSE_WORDS]
 
+    # 第三层：模型复核。规则先筛一遍，模型再独立读一遍正文，两者取并集——
+    # 规则漏掉的（被误判成简单派生词、或 CEFR 表里被标成 B2 其实很难的）由模型补上。
+    ai = ai_review(text, enabled=os.environ.get("VOCAB_AI", "1") != "0")
+    ai_words = [w for w in ai.get("words", {}) if w not in seen_words]
+    if ai_words:
+        extra_bases = scan_dict(dict_path, set(ai_words))[0]
+        by_form = {}
+        for b, e in extra_bases.items():
+            by_form[b] = e
+            for f in forms_of.get(b, []):
+                by_form.setdefault(f, e)
+        ai_picked = []
+        for w, cn in ai["words"].items():
+            if w in seen_words:
+                continue
+            e = by_form.get(w)
+            if not e or not e["translation"] or _is_proper(e):
+                continue
+            seen_words.add(w)
+            ai_picked.append((e["frq"] if e["frq"] else 10**9, dict(e), (e["word"], cn)))
+        ai_picked.sort(key=lambda x: x[0])
+        added = ai_picked[: max(0, MAX_WORDS - len(picked))]
+        picked.extend((x[0], 0, x[1], None) for x in added)
+        sense_picked.extend((x[0], 0, x[1], x[2]) for x in ai_picked[len(added):] if x[2])
+
     # 音标兜底：变形词（millions / canceling / prototyping）本行往往没音标，
     # 回到原形词条去取，取到就补上。
     all_picked = picked + sense_picked
@@ -882,7 +969,16 @@ def main() -> None:
 
     # 短语卡片：新闻里高频、课本上少见的说法（clamp down / shore up / dial back）
     phrase_cards = []
-    for word, note, sent in find_phrases(text, news_phrases, sents)[:MAX_PHRASES]:
+    found = find_phrases(text, news_phrases, sents)
+    seen_ph = {w for w, _, _ in found}
+    for p, cn in ai.get("phrases", {}).items():
+        if p in seen_ph:
+            continue
+        pat_p = re.compile(r"\b" + re.escape(p.split()[0]) + r"[a-z]{0,3}\s+"
+                           + r"\s+".join(re.escape(x) for x in p.split()[1:]) + r"\b", re.I)
+        ctx_p = next((s for s in sents if pat_p.search(s)), "")
+        found.append((p, cn, ctx_p))
+    for word, note, sent in found[:MAX_PHRASES]:
         ctx_bit = ""
         if sent:
             esc = html.escape(html.unescape(sent), quote=False)
