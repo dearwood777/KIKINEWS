@@ -743,7 +743,7 @@ AI_PROMPT = """你是英语阅读教练。读者是中文母语者，英语水�
    例如 clamp down（镇压）、shore up（支撑）、push back（抵制）、water down（削弱）、rule out（排除）、hawk（主战派）。
    这一类比单纯难词更该挑——读新闻卡住，往往卡在说法，不是卡在单词。
 必须排除 C1 读者肯定认识的词，例如 source、hold、official、seat、drive、hit。
-最多 20 条，**按难度从高到低排**：第 1 条是最难、最容易卡住的那个，越往后越容易。只输出 JSON，不要任何解释文字：
+最多 30 条，**按难度从高到低排**：第 1 条是最难、最容易卡住的那个，越往后越容易。只输出 JSON，不要任何解释文字：
 {"items":[{"w":"单词或短语","cn":"它在本文这句话里的中文意思（8-20字）","kind":"word 或 phrase"}]}"""
 
 
@@ -754,7 +754,7 @@ def ai_review(text: str, enabled: bool = True) -> dict:
         return {}
     body = json.dumps({
         "model": os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b"),
-        "max_tokens": 900,
+        "max_tokens": 1200,
         "temperature": 0.2,
         "messages": [{"role": "user", "content": AI_PROMPT + "\n\n正文：\n" + text[:7000]}],
     }).encode("utf-8")
@@ -898,7 +898,7 @@ def main() -> None:
     # 规则漏掉的（被误判成简单派生词、或词频被判成常见其实很难的）由模型补上。
     # 两道保险：① A1–B2 等级的词仍然排除（crucial 这种模型也可能挑，但读者确实认识）
     #          ② 最多补 AI_EXTRA_MAX 个，防止一次灌进一堆
-    AI_EXTRA_MAX = 12
+    AI_EXTRA_MAX = 20
     ai = ai_review(text, enabled=os.environ.get("VOCAB_AI", "1") != "0")
     ai_words = [w for w in ai.get("words", {}) if w not in seen_words]
     if ai_words:
