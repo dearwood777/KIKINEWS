@@ -737,8 +737,12 @@ def stars_for(frq: int) -> str:
 AI_PROMPT = """你是英语阅读教练。读者是中文母语者，英语水平欧洲 CEFR C1（相当于英语专业八级），每天读英文新闻，目标是长期看新闻越来越顺。
 下面是一篇英文新闻正文。只做一件事：挑出会让这位读者卡住的地方，两类都算——
 1) 超纲单词：C1 以下不会出现、但有实际含义的词。不要列人名、机构名、公司名、产品名、纯缩写。
-2) 熟词生义 / 固定说法：每个词都认识，但在新闻语境里是另一个意思或换了搭配，例如 clamp down、shore up、push back、hawk。
-必须排除 C1 读者肯定认识的词，例如 crucial、password、source、hold、official、seat。
+   也不要列四六级/高中阶段就该会的词，例如 crucial、password、thousand、ecosystem、unauthorized、scanner、timeline。
+   也不要列“本来会的词加个前后缀”的简单派生，例如 unconfirmed（confirm）、reusable（use）。
+2) 熟词生义 / 固定说法：每个词都认识，但在新闻语境里是另一个意思或换了搭配，
+   例如 clamp down（镇压）、shore up（支撑）、push back（抵制）、water down（削弱）、rule out（排除）、hawk（主战派）。
+   这一类比单纯难词更该挑——读新闻卡住，往往卡在说法，不是卡在单词。
+必须排除 C1 读者肯定认识的词，例如 source、hold、official、seat、drive、hit。
 最多 20 条，**按难度从高到低排**：第 1 条是最难、最容易卡住的那个，越往后越容易。只输出 JSON，不要任何解释文字：
 {"items":[{"w":"单词或短语","cn":"它在本文这句话里的中文意思（8-20字）","kind":"word 或 phrase"}]}"""
 
