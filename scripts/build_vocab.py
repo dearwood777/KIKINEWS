@@ -739,7 +739,7 @@ AI_PROMPT = """你是英语阅读教练。读者是中文母语者，英语水�
 1) 超纲单词：C1 以下不会出现、但有实际含义的词。不要列人名、机构名、公司名、产品名、纯缩写。
 2) 熟词生义 / 固定说法：每个词都认识，但在新闻语境里是另一个意思或换了搭配，例如 clamp down、shore up、push back、hawk。
 必须排除 C1 读者肯定认识的词，例如 crucial、password、source、hold、official、seat。
-最多 20 条，按“最卡住”的顺序排。只输出 JSON，不要任何解释文字：
+最多 20 条，**按难度从高到低排**：第 1 条是最难、最容易卡住的那个，越往后越容易。只输出 JSON，不要任何解释文字：
 {"items":[{"w":"单词或短语","cn":"它在本文这句话里的中文意思（8-20字）","kind":"word 或 phrase"}]}"""
 
 
@@ -891,7 +891,10 @@ def main() -> None:
     sense_picked = common_sense[:MAX_SENSE_WORDS]
 
     # 第三层：模型复核。规则先筛一遍，模型再独立读一遍正文，两者取并集——
-    # 规则漏掉的（被误判成简单派生词、或 CEFR 表里被标成 B2 其实很难的）由模型补上。
+    # 规则漏掉的（被误判成简单派生词、或词频被判成常见其实很难的）由模型补上。
+    # 两道保险：① A1–B2 等级的词仍然排除（crucial 这种模型也可能挑，但读者确实认识）
+    #          ② 最多补 AI_EXTRA_MAX 个，防止一次灌进一堆
+    AI_EXTRA_MAX = 12
     ai = ai_review(text, enabled=os.environ.get("VOCAB_AI", "1") != "0")
     ai_words = [w for w in ai.get("words", {}) if w not in seen_words]
     if ai_words:
@@ -908,12 +911,21 @@ def main() -> None:
             e = by_form.get(w)
             if not e or not e["translation"] or _is_proper(e):
                 continue
+            if CEFR.get(e["word"]) in CEFR_KNOWN:
+                continue
+            # amid / bypass 这种 C1 标签里的高频词，模型也可能挑，但对 C1 读者太常见：
+            # 词频排名 5000 以内的一律不要，只补真正少见的。
+            ranks = [x for x in (e["frq"], e["bnc"]) if x]
+            if ranks and min(ranks) < 5000:
+                continue
             seen_words.add(w)
             ai_picked.append((e["frq"] if e["frq"] else 10**9, dict(e), (e["word"], cn)))
-        ai_picked.sort(key=lambda x: x[0])
-        added = ai_picked[: max(0, MAX_WORDS - len(picked))]
+        # 按“难易度”补，不按词频：模型按“最卡住”排序返回，保留它给的顺序，
+        # 取前 12 个最难的；词频排序会把最能读懂的排前面，方向正好相反。
+        added = ai_picked[: min(AI_EXTRA_MAX, max(0, MAX_WORDS - len(picked)))]
         picked.extend((x[0], 0, x[1], None) for x in added)
-        sense_picked.extend((x[0], 0, x[1], x[2]) for x in ai_picked[len(added):] if x[2])
+        sense_picked.extend((x[0], 0, x[1], x[2]) for x in ai_picked[len(added):][:MAX_SENSE_WORDS]
+                            if x[2])
 
     # 音标兜底：变形词（millions / canceling / prototyping）本行往往没音标，
     # 回到原形词条去取，取到就补上。
