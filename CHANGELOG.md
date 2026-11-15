@@ -23,7 +23,13 @@
 
 ## 页面与流水线（2026-11-13 ~ 11-15）
 
-**词表过滤第二版（2026-11-15 晚，针对"四六级高频词仍混进来"）**
+**词表过滤第三版（2026-11-15 深夜，针对"熟词生义列的都是初中词"）**
+- 熟词生义层加**难度门槛**：只收词频排名 3000 之后的词，`hold / hit / source / official / drive / seat` 这类初中词即使有新闻义也不再占版面
+- 新增**新闻短语层** `data/news_phrases.json`（82 条）：`clamp down`、`push back`、`shore up`、`water down`、`rule out`、`double down`、`dial back` 这类"每个词都认识、整句仍读不懂"的说法
+  - 支持动词变形（clamped down / stepping up / pushed back），单独成卡，标"短语 / 新闻常见说法"，带原文语境高亮
+  - 与熟词生义一样是纯查表，零 token
+- 效果：本期 14 个词（12 生僻 + `hike` 加息、`curb` 遏制两个新闻义），短语层本期正文未命中（这期英文正文里没有这些说法）
+
 - 第一版只按词频判难度，仍是粗筛：`crucial / password / scanner / timeline / thousands / crypto` 这类照样进表
 - 加**简单派生词过滤**：去掉前缀（un- / re- / non- / pre- / over- …）与后缀（-ly / -ness / -tion / -er / -able …）最多两层，只要能落回一个"本来就会"的词，就不算生词
   - 例：`unconfirmed ← confirm`、`negotiator ← negotiate`、`redesign ← design`、`governorship ← govern`

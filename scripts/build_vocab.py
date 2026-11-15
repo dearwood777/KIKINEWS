@@ -49,10 +49,11 @@ STOPWORDS = {
 
 MAX_WORDS = 80
 MAX_SENSE_WORDS = 6
+MAX_PHRASES = 8
 # 词频排位在多少名以内算“C1 已认识”。两套词频任一进入该名次即视为已知。
 COMMON_RANK = 8000
 # 熟词生义只看排名 3500 之后的词：ceiling / rate 这类太基础的，即使在新闻里有专业义也不列。
-NEWS_SENSE_MIN_RANK = 3500
+NEWS_SENSE_MIN_RANK = 3000
 ENRICH_CACHE = os.path.join("data", "vocab_enrich.json")
 
 # C1/专八读者本来就该认识的日常词与科技常用词。词库词频排位对这类词偏宽松
@@ -367,16 +368,59 @@ def derived_from_known(word: str, bases: dict[str, dict]) -> bool:
 # 运行时纯查表，零 token；新词直接往 data/news_senses.json 里加即可。
 
 NEWS_SENSE_FILE = os.path.join("data", "news_senses.json")
+# 新闻里天天出现、课本上却不怎么教的“说法”：短语动词、惯用搭配。
+# 这类才是“每个词都认识、整句仍读不懂”的主要来源，单独成卡。
+NEWS_PHRASE_FILE = os.path.join("data", "news_phrases.json")
 
 
-def load_news_senses() -> dict:
-    for p in (NEWS_SENSE_FILE, os.path.join(os.path.dirname(__file__), "..", "data", "news_senses.json")):
+def load_json_data(path: str) -> dict:
+    for p in (path, os.path.join(os.path.dirname(__file__), "..", path)):
         try:
             with open(os.path.normpath(p), encoding="utf-8") as f:
                 return json.load(f)
         except (OSError, ValueError):
             continue
     return {}
+
+
+def load_news_senses() -> dict:
+    return load_json_data(NEWS_SENSE_FILE)
+
+
+def load_news_phrases() -> dict:
+    return load_json_data(NEWS_PHRASE_FILE)
+
+
+def find_phrases(text: str, phrases: dict, sents: list[str]) -> list[tuple[str, str, str]]:
+    """在正文里找短语动词/惯用说法，返回（短语, 中文义, 语境句）。"""
+    out = []
+    flat = text
+    for phrase, note in phrases.items():
+        # 只认真正的多词说法；单字条目交给单词层，别在这里重复出卡
+        if len(phrase.split()) < 2:
+            continue
+        # 允许动词变形：clamp down / clamped down / clamping down
+        pat = re.compile(r"\b" + re.escape(phrase.split()[0]) + r"[a-z]{0,3}\s+"
+                         + r"\s+".join(re.escape(w) for w in phrase.split()[1:]) + r"\b", re.I)
+        m = pat.search(flat)
+        if not m:
+            continue
+        ctx = ""
+        for s in sents:
+            if pat.search(s):
+                ctx = s
+                break
+        out.append((m.group(0).lower(), note, ctx))
+    # 同一个短语只留一条；长的优先，避免 "clamp down" 被 "down" 之类的短条盖住
+    seen = set()
+    uniq = []
+    for word, note, ctx in sorted(out, key=lambda x: -len(x[0])):
+        key = word.split()[-1] + "|" + note
+        if key in seen:
+            continue
+        seen.add(key)
+        uniq.append((word, note, ctx))
+    return uniq
 
 
 def raw_sentence(word: str, sents: list[str], variants: list[str] | None = None) -> str:
@@ -550,6 +594,7 @@ body{{margin:0;background:var(--bg);color:var(--fg);
 .meta{{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap}}
 .pos{{font-size:11.5px;color:var(--fg);background:var(--chip);border-radius:6px;padding:2px 7px}}
 .stars{{font-size:11.5px;color:#ffc861;letter-spacing:1px}}
+.streak{{font-size:11.5px;color:#7fdcb5}}
 .say{{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
   border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--fg);
   font-size:14px;cursor:pointer;padding:0}}
@@ -699,6 +744,7 @@ def main() -> None:
     # 频率和难度都按原形算，避免把极常见的词收进来，也避免拿没有音标的变形行出词。
     sents = sentences(text)
     news_senses = load_news_senses()
+    news_phrases = load_news_phrases()
     picked = []
     seen_words = set()
     common_sense = []      # 熟词生义候选，单独排序、单独限额
@@ -718,8 +764,10 @@ def main() -> None:
             continue
         # 第二层：熟词生义。词本身不算生僻，但在这条新闻里是另一个意思——
         # 这正是“看得懂每个词、却读不懂这句话”的来源，值得单独列出。
+        # 只收排名 3000 之后的词：hold / hit / source 这种初中词即使有新闻义也不占版面。
+        ranks = [x for x in (e["frq"], e["bnc"]) if x]
         note = news_senses.get(e["word"])
-        if note:
+        if note and ranks and min(ranks) >= NEWS_SENSE_MIN_RANK:
             seen_words.add(e["word"])
             common_sense.append((e["frq"], -count, e, (e["word"], note)))
 
@@ -779,6 +827,25 @@ def main() -> None:
             pos=pos_of(e, en), stars=f'<span class="stars">{stars_for(e["frq"])}</span>',
             trans=trans, sense=sense_bit, en=en_bit, ex=ex_bit, ctx=ctx_bit,
         ))
+
+    # 短语卡片：新闻里高频、课本上少见的说法（clamp down / shore up / dial back）
+    phrase_cards = []
+    for word, note, sent in find_phrases(text, news_phrases, sents)[:MAX_PHRASES]:
+        ctx_bit = ""
+        if sent:
+            esc = html.escape(html.unescape(sent), quote=False)
+            pat = re.compile(r"\b" + re.escape(word.split()[0]) + r"[a-z]{0,3}\s+"
+                             + r"\s+".join(re.escape(x) for x in word.split()[1:]) + r"\b", re.I)
+            esc = pat.sub(lambda m: "<b>" + m.group(0) + "</b>", esc, count=1)
+            ctx_bit = f'<div class="ctx"><span class="lb">原文语境</span>{esc}</div>'
+        phrase_cards.append(CARD.format(
+            word=html.escape(word, quote=False), audio=tts_url(word), ph="",
+            pos='<span class="pos">短语</span>',
+            stars='<span class="streak">新闻常见说法</span>',
+            trans=html.escape(note, quote=False), sense="", en="", ex="",
+            ctx=ctx_bit,
+        ))
+    cards = phrase_cards + cards
 
     page = PAGE.format(
         title=f"难点词汇 {display_day}",
