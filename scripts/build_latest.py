@@ -69,7 +69,7 @@ TEMPLATE = """<!DOCTYPE html>
    两页在平板/手机上会一明一暗。现统一成同一套深色 token，亮度偏柔和不刺眼。 */
 :root{{
   --bg:#0e1320; --fg:#e2e8f4; --muted:#8b93a7; --line:#242d40;
-  --card:#121a27; --soft:#1a2233; --accent:#5aa6ff; --accent2:#4fd1c5;
+  --card:#111926; --soft:#1a2233; --accent:#5aa6ff; --accent2:#4fd1c5;
   --score:#4fd1c5; --chip:#242e42; --shadow:0 8px 24px rgba(0,0,0,.28);
 }}
 *{{box-sizing:border-box}}
