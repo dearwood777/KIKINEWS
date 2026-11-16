@@ -1,5 +1,17 @@
 # 更新记录
 
+## AI 复核为什么一直没跑起来（2026-11-16）
+
+早上那次 06:00 的流水线里，词表步骤确实调了模型，但 Groq 返回 403，日志只有一行 `[warn] AI 复核跳过：HTTP Error 403`，所以那期 25 个词是纯规则层的结果。
+
+排查（用一次性探测工作流在 Actions 里实测）：
+- **Groq 在 Actions 里其实可用**：`/models` 与 `/chat/completions` 都是 200，用 curl 默认 UA 也通 → 403 不是密钥/额度问题，是 `urllib` 默认的 `Python-urllib` UA 被 Cloudflare 挡了
+- 修法：所有模型请求统一带浏览器 UA；`HTTPError` 时把响应体打进日志（以前只看得到状态码）
+- 另一个更隐蔽的坑：`openai/gpt-oss-20b` 是推理模型，思考过程也吃 token，`max_tokens=1200` 被推理吃光后 `content` 为空、只留 `reasoning`，JSON 就"消失"了。改为 `reasoning_effort=low` + `max_tokens=1600`，并对不认该字段的接口自动退回普通调用
+- 兜底：Groq 失败时改用 `GOOGLE_API_KEY` 调 Gemini（实测该接口从 Actions 侧 60s 超时，所以基本不会生效，但不会拖垮出刊）
+- 条目上限对齐 30（原来代码里切的是 24，与提示词的 30 不一致）
+- 探测用的临时工作流 `probe-groq.yml` 验完即删（它跑出的 6 次失败通知是探测脚本最后一步 Gemini 超时 exit 28，与日报无关）
+
 ## 页面细节修复（2026-11-16）
 
 **词汇页与主页的历史修复对齐**
