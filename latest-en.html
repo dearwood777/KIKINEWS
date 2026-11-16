@@ -35,18 +35,27 @@ body{
 
 
 /* ---------- header ---------- */
+/* 页头再压暗一档（原 #1b3f78→#0f6560 相对深色页面偏亮，白字会发灰），
+   加深后与页面底色区分但白字更跳；窄屏把圆弧收小，免得标题折两行时显得笨 */
 .hero{
   margin:0 -16px 18px;padding:30px 22px 22px;color:#fff;
-  background:linear-gradient(135deg,#1b3f78 0%,#0f6560 100%);
-  border-radius:0 0 22px 22px;
+  background:linear-gradient(135deg,#102a4e 0%,#0a3f3c 100%);
+  border-radius:0 0 14px 14px;
+  box-shadow:inset 0 -1px 0 rgba(255,255,255,.06);
 }
-.hero .brand{font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
-.hero h1{margin:6px 0 8px;font-size:23px;line-height:1.35;font-weight:700;letter-spacing:.2px}
-.hero .meta{font-size:12.5px;opacity:.9}
+.hero .brand{font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.8;color:#9fc4d8}
+.hero h1{margin:6px 0 8px;font-size:23px;line-height:1.35;font-weight:700;letter-spacing:.2px;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.hero .meta{font-size:12.5px;opacity:.82}
+@media (max-width: 520px){
+  .hero{padding:24px 16px 16px;border-radius:0 0 10px 10px}
+  .hero h1{font-size:20px;line-height:1.3;letter-spacing:0}
+  .hero .brand{font-size:11.5px;letter-spacing:.1em}
+}
 .pillrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .pill{
   font-size:12.5px;padding:5px 11px;border-radius:999px;
-  background:rgba(255,255,255,.18);backdrop-filter:blur(6px);white-space:nowrap;
+  background:rgba(255,255,255,.12);backdrop-filter:blur(6px);white-space:nowrap;
+  border:1px solid rgba(255,255,255,.14);
 }
 .pill-link{color:inherit;text-decoration:none;font-weight:700}
 
