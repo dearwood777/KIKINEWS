@@ -778,17 +778,26 @@ def _llm_call(prompt: str) -> tuple[str, dict, str]:
     返回 (输出文本, token 用量, 提供商名)；两边都失败返回 ("", {}, "")。"""
     groq_key = os.environ.get("GROQ_API_KEY", "").strip()
     if groq_key:
-        try:
-            data = _post_json(
-                "https://api.groq.com/openai/v1/chat/completions",
-                {"model": os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b"),
-                 "max_tokens": 1200, "temperature": 0.2,
-                 "messages": [{"role": "user", "content": prompt}]},
-                {"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-            )
-            return data["choices"][0]["message"]["content"], (data.get("usage") or {}), "groq"
-        except Exception as exc:
-            print(f"[warn] Groq 复核失败：{exc}{_err_detail(exc)}")
+        auth = {"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"}
+        base = {"model": os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b"),
+                "max_tokens": 1600, "temperature": 0.2,
+                "messages": [{"role": "user", "content": prompt}]}
+        # gpt-oss 是推理模型：思考过程也占 token，吃光了 content 就是空的（只留 reasoning）。
+        # 先压低推理强度；万一该模型不认这个字段（400），再退回纯参数调用。
+        for extra in ({"reasoning_effort": "low"}, {}):
+            try:
+                data = _post_json("https://api.groq.com/openai/v1/chat/completions",
+                                  dict(base, **extra), auth)
+                msg = data["choices"][0]["message"]
+                return (msg.get("content") or "").strip(), (data.get("usage") or {}), "groq"
+            except urllib.error.HTTPError as exc:
+                if exc.code == 400 and extra:
+                    continue
+                print(f"[warn] Groq 复核失败：{exc}{_err_detail(exc)}")
+                break
+            except Exception as exc:
+                print(f"[warn] Groq 复核失败：{exc}{_err_detail(exc)}")
+                break
 
     gem_key = (os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY") or "").strip()
     if not gem_key:
