@@ -88,6 +88,26 @@ body{{
 }}
 .wrap{{max-width:720px;margin:0 auto;padding:0 16px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom));}}
 
+/* ---------- 横屏 / 平板宽屏：正文分两栏，别留一大片空白 ---------- */
+@media (min-width: 900px){{
+  .wrap{{max-width:1140px;padding:0 26px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom))}}
+  .hero{{margin:0 -26px 20px;padding:34px 30px 26px}}
+  .hero h1{{font-size:27px}}
+  .hero .meta{{font-size:13.5px}}
+  section[data-lang]{{column-count:2;column-gap:24px}}
+  .flow{{column-count:2;column-gap:24px}}
+  .flow > .summary,
+  .flow > .toc,
+  .flow > .group{{column-span:all}}
+  .flow > .card{{break-inside:avoid;page-break-inside:avoid}}
+  .card h3{{font-size:18.5px}}
+}}
+@media (min-width: 1400px){{
+  .wrap{{max-width:1320px}}
+  .flow{{column-gap:28px}}
+}}
+
+
 /* ---------- header ---------- */
 .hero{{
   margin:0 -16px 18px;padding:30px 22px 22px;color:#fff;
@@ -645,7 +665,7 @@ def render_bilingual(zh: dict | None, en: dict | None) -> str:
             blocks.append(_card(a, idx_en.get(a), idx_zh.get(a)))
             emitted.append(a)
 
-    return "".join(blocks)
+    return '<div class="flow">' + "".join(blocks) + "</div>"
 
 
 def main() -> None:

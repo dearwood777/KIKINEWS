@@ -631,6 +631,17 @@ body{{margin:0;background:var(--bg);color:var(--fg);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
   font-size:16px;line-height:1.6;overflow-x:hidden}}
 .wrap{{max-width:720px;margin:0 auto;padding:0 16px 60px}}
+/* 横屏 / 平板宽屏：词卡走两栏，别在两边留大片空白 */
+@media (min-width: 900px){{
+  .wrap{{max-width:1120px;padding:0 26px 60px}}
+  .cards{{column-count:2;column-gap:20px}}
+  .cards > .card{{break-inside:avoid;page-break-inside:avoid}}
+  .w{{font-size:20px}}
+}}
+@media (min-width: 1400px){{
+  .wrap{{max-width:1300px}}
+  .cards{{column-count:3;column-gap:20px}}
+}}
 .bar{{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;
   padding:12px 0;background:linear-gradient(180deg,var(--bg) 78%,transparent)}}
 .back{{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;
@@ -670,7 +681,7 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
     <span class="count">{count} 个词 · {day}</span>
   </div>
   <div class="intro">今日超纲词汇（已排除四六级等低于 C1 的高频词）。</div>
-  {cards}
+  <div class="cards">{cards}</div>
   <footer>KIKI 难点词汇 · 释义取自开源词库</footer>
 </div>
 <script>

@@ -1,5 +1,14 @@
 # 更新记录
 
+## 横屏/平板宽屏自适应（2026-11-16）
+
+平板上竖屏正常、横屏两边大片留白（正文 `max-width:720px` 居中，在 1554×1080 的横屏里两侧各空约 400px）。只改生成脚本里的 CSS，不动 APK。
+
+- **主页**：`@media (min-width:900px)` 把 `.wrap` 720 → 1140px、正文走 `column-count:2`（`.summary`/`.toc`/`.group` 用 `column-span:all` 横跨整行，`.card` 用 `break-inside:avoid` 不许拆断），hero 负边距与标题、meta 字号同步放大；`(min-width:1400px)` 再把 `.wrap` 拉到 1320px
+- **踩到的坑**：第一版把分栏规则挂在 `section[data-lang]` 上，线上截图里容器是变宽了但正文仍单列——`render_bilingual()` 实际返回的是纯拼接，页面里根本没有 `<section>`（那段是 `render_lang()` 的死代码）。改为给正文包一层 `<div class="flow">`，分栏才真正生效
+- **词汇页**：词卡包进 `<div class="cards">`，900px 起两栏、1400px 起三栏，`.wrap` 720 → 1120/1300px
+- 900px 以下（手机竖屏、APK WebView）样式与之前完全一致
+
 ## AI 复核为什么一直没跑起来（2026-11-16）
 
 早上那次 06:00 的流水线里，词表步骤确实调了模型，但 Groq 返回 403，日志只有一行 `[warn] AI 复核跳过：HTTP Error 403`，所以那期 25 个词是纯规则层的结果。
