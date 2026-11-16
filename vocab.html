@@ -13,6 +13,17 @@ body{margin:0;background:var(--bg);color:var(--fg);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
   font-size:16px;line-height:1.6;overflow-x:hidden}
 .wrap{max-width:720px;margin:0 auto;padding:0 16px 60px}
+/* 横屏 / 平板宽屏：词卡走两栏，别在两边留大片空白 */
+@media (min-width: 900px){
+  .wrap{max-width:1120px;padding:0 26px 60px}
+  .cards{column-count:2;column-gap:20px}
+  .cards > .card{break-inside:avoid;page-break-inside:avoid}
+  .w{font-size:20px}
+}
+@media (min-width: 1400px){
+  .wrap{max-width:1300px}
+  .cards{column-count:3;column-gap:20px}
+}
 .bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;
   padding:12px 0;background:linear-gradient(180deg,var(--bg) 78%,transparent)}
 .back{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;
@@ -52,7 +63,7 @@ footer{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line-
     <span class="count">25 个词 · 2026-11-16</span>
   </div>
   <div class="intro">今日超纲词汇（已排除四六级等低于 C1 的高频词）。</div>
-  <div class="card">
+  <div class="cards"><div class="card">
     <div class="hdr"><span class="w">phased out</span><button class="say" data-w="phased out" data-a="https://dict.youdao.com/dictvoice?audio=phased%20out&amp;type=2">🔊</button></div>
     <div class="meta"><span class="pos">短语</span><span class="streak">新闻常见说法</span></div>
     <div class="t">逐步淘汰、逐步取消</div><div class="ctx"><span class="lb">原文语境</span>telegram · zaihuapd · Nov 15, 16:03 「Prior Pangu 2.0 Discontinuation」 Huawei Cloud had previously offered Pangu 2.0 models \(openPangu-2.0-Flash and Pro\) on its MaaS platform, but announced on November 1 that these models would be discontinued and <b>phased out</b> by November 30, prompting users to transition to alternatives such as DeepSeek-V4.1-Flash-1017 and GLM-5.3.</div>
@@ -200,7 +211,7 @@ vt. 使汹涌奔腾, 急放</div><div class="sense"><span class="lb">新闻义</
     <div class="meta"><span class="pos">n.</span><span class="stars">★★</span></div>
     <div class="t">n. 抑制, 勒马绳, 边石
 vt. 抑制, 束缚, 勒住</div><div class="sense"><span class="lb">新闻义</span>遏制、限制（curb inflation）</div><div class="en">A concrete margin along the edge of a road; a kerb (UK, Australia, New Zealand)</div><div class="ctx"><span class="lb">原文语境</span>Estonia–Russia border - Wikipedia Hundreds of thousands of Czechs rallied in Prague to protest government attempts to <b>curb</b> media freedom and cut mandatory licence fees for public broadcasters.</div>
-  </div>
+  </div></div>
   <footer>KIKI 难点词汇 · 释义取自开源词库</footer>
 </div>
 <script>
