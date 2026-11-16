@@ -23,6 +23,7 @@ import json
 import os
 import re
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections import Counter
@@ -747,32 +748,79 @@ AI_PROMPT = """你是英语阅读教练。读者是中文母语者，英语水�
 {"items":[{"w":"单词或短语","cn":"它在本文这句话里的中文意思（8-20字）","kind":"word 或 phrase"}]}"""
 
 
+BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+              "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+
+
+def _post_json(url: str, payload: dict, headers: dict, timeout: int = 90) -> dict:
+    """发 POST 取 JSON，统一带上浏览器 UA —— Groq 前面有 Cloudflare，
+    默认的 Python-urllib UA 会被直接 403。"""
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={**headers, "User-Agent": BROWSER_UA, "Accept": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def _err_detail(exc: Exception) -> str:
+    if isinstance(exc, urllib.error.HTTPError):
+        try:
+            return " " + exc.read().decode("utf-8", "replace")[:160]
+        except Exception:
+            return ""
+    return ""
+
+
+def _llm_call(prompt: str) -> tuple[str, dict, str]:
+    """Groq 优先（免费额度大），不行再退到 Gemini（日报本身就在用）。
+    返回 (输出文本, token 用量, 提供商名)；两边都失败返回 ("", {}, "")。"""
+    groq_key = os.environ.get("GROQ_API_KEY", "").strip()
+    if groq_key:
+        try:
+            data = _post_json(
+                "https://api.groq.com/openai/v1/chat/completions",
+                {"model": os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b"),
+                 "max_tokens": 1200, "temperature": 0.2,
+                 "messages": [{"role": "user", "content": prompt}]},
+                {"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+            )
+            return data["choices"][0]["message"]["content"], (data.get("usage") or {}), "groq"
+        except Exception as exc:
+            print(f"[warn] Groq 复核失败：{exc}{_err_detail(exc)}")
+
+    gem_key = (os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY") or "").strip()
+    if not gem_key:
+        return "", {}, ""
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+    url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+           f"{urllib.parse.quote(model)}:generateContent?key={urllib.parse.quote(gem_key)}")
+    try:
+        data = _post_json(url,
+                          {"contents": [{"parts": [{"text": prompt}]}],
+                           "generationConfig": {"temperature": 0.2, "maxOutputTokens": 1200}},
+                          {"Content-Type": "application/json"}, timeout=120)
+        parts = ((data.get("candidates") or [{}])[0].get("content") or {}).get("parts") or []
+        return "".join(p.get("text", "") for p in parts), (data.get("usageMetadata") or {}), "gemini"
+    except Exception as exc:
+        print(f"[warn] Gemini 复核失败：{exc}{_err_detail(exc)}")
+        return "", {}, ""
+
+
 def ai_review(text: str, enabled: bool = True) -> dict:
     """让模型读正文挑超纲词/熟词生义。失败或未配置 key 时返回空字典，不影响页面生成。"""
-    key = os.environ.get("GROQ_API_KEY", "").strip()
-    if not enabled or not key:
+    if not enabled:
         return {}
-    body = json.dumps({
-        "model": os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b"),
-        "max_tokens": 1200,
-        "temperature": 0.2,
-        "messages": [{"role": "user", "content": AI_PROMPT + "\n\n正文：\n" + text[:7000]}],
-    }).encode("utf-8")
-    req = urllib.request.Request(
-        "https://api.groq.com/openai/v1/chat/completions",
-        data=body,
-        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=90) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-        content = payload["choices"][0]["message"]["content"]
-        usage = payload.get("usage") or {}
-        if usage:
-            print(f"[ai] tokens in={usage.get('prompt_tokens', 0)} out={usage.get('completion_tokens', 0)}")
-    except Exception as exc:  # 网络/额度/格式任何问题都不该拖垮日报
-        print(f"[warn] AI 复核跳过：{exc}")
+    if not (os.environ.get("GROQ_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+            or os.environ.get("GEMINI_API_KEY")):
         return {}
+    content, usage, provider = _llm_call(AI_PROMPT + "\n\n正文：\n" + text[:7000])
+    if not content:
+        return {}
+    if usage:
+        print(f"[ai] {provider} tokens in={usage.get('prompt_tokens') or usage.get('promptTokenCount', 0)} "
+              f"out={usage.get('completion_tokens') or usage.get('candidatesTokenCount', 0)}")
     start, end = content.find("{"), content.rfind("}")
     if start < 0 or end < start:
         print("[warn] AI 复核输出无法解析，已跳过")
@@ -783,7 +831,7 @@ def ai_review(text: str, enabled: bool = True) -> dict:
         print("[warn] AI 复核 JSON 解析失败，已跳过")
         return {}
     out = {"words": {}, "phrases": {}}
-    for item in data.get("items", [])[:24]:
+    for item in data.get("items", [])[:30]:
         w = str(item.get("w") or "").strip().lower()
         cn = str(item.get("cn") or "").strip()
         if not w or not cn:
