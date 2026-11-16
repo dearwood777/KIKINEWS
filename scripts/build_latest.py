@@ -128,20 +128,23 @@ body{{
 .summary b{{color:var(--fg)}}
 
 /* ---------- toc ---------- */
-/* 手机窄屏目录做成等宽等高的网格块：一律满宽、固定两行高度，超出两行省略，
-   长短高矮不再参差；底色用与正文同等暗度的深蓝（#0f1a2e），白字对比度不变 */
-.toc{{display:grid;grid-template-columns:1fr;gap:7px;margin-bottom:20px}}
-@media (min-width: 760px){{
-  .toc{{grid-template-columns:repeat(2,minmax(0,1fr))}}
-}}
+/* 目录条目一律单行、宽度随文字自适应（短的短、长的到容器满宽），
+   平板上一行自然并排三四个；手机放不下时由页面脚本加 .sc 类，
+   以约 30px/秒的慢速横向滚动，不做截断。高度统一 42px。 */
+.toc{{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}}
 .toc a{{
-  display:flex;align-items:center;min-height:46px;
+  display:flex;align-items:center;height:42px;max-width:100%;overflow:hidden;
   text-decoration:none;color:var(--fg);background:#0f1a2e;border:1px solid #25314b;
-  padding:6px 12px;border-radius:10px;font-size:13.5px;box-sizing:border-box;
+  padding:0 12px;border-radius:10px;font-size:13.5px;box-sizing:border-box;
 }}
-.toc a .tt{{
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
-  width:100%;text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto;
+.toc a .tt{{display:block;white-space:nowrap;min-width:0;overflow:hidden;text-align:left}}
+.toc a.sc .tt{{animation:tocscroll var(--dur,14s) linear infinite}}
+@keyframes tocscroll{{
+  0%,6%{{transform:translateX(0)}}
+  94%,100%{{transform:translateX(var(--dist,-80px))}}
+}}
+@media (prefers-reduced-motion: reduce){{
+  .toc a.sc .tt{{animation:none}}
 }}
 .toc a .n{{color:var(--muted);font-size:12px;margin-left:4px}}
 
@@ -341,10 +344,30 @@ window.addEventListener('scroll',function(){{
     clearTimeout(timer);
     timer=setTimeout(run,90);
   }}
+  // 目录条目：放不下一行的，改为慢速横向滚动（约 30px/秒），不截断文字
+  function tocScroll(){{
+    var links=document.querySelectorAll('.toc a');
+    for(var i=0;i<links.length;i++){{
+      var a=links[i], t=a.querySelector('.tt');
+      if(!t) continue;
+      a.classList.remove('sc');
+      a.style.removeProperty('--dist');
+      a.style.removeProperty('--dur');
+      var over=t.scrollWidth - t.clientWidth;
+      // 只溢出两三个字（<18px）不值得滚动，容易看着“抖”，交给容器裁掉即可
+      if(over>18){{
+        a.classList.add('sc');
+        a.style.setProperty('--dist', -(over+4)+'px');
+        a.style.setProperty('--dur', Math.max(9, Math.round((over+4)/30))+'s');
+      }}
+    }}
+  }}
   window.addEventListener('resize',later);
+  window.addEventListener('resize',function(){{ setTimeout(tocScroll,260); }});
   window.addEventListener('load',force);
   try{{ document.addEventListener('toggle',force,true); }}catch(e){{}}
   run();
+  tocScroll();
 }})();
 </script>
 </body>
