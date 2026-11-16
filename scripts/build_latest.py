@@ -365,6 +365,12 @@ def parse_post(path: str) -> dict:
     return {"day": day.group(1) if day else "", "summary": summary, "toc": toc, "items": items}
 
 
+def esc_url(u: str) -> str:
+    """链接里常带 RSS 的 &amp;（markdown 源码已经转义过一次），
+    直接再 escape 会变成 &amp;amp;，既难看又打坏查询参数：先还原再转义。"""
+    return html.escape(html.unescape(u or ""), quote=True)
+
+
 def clean_text(text: str) -> str:
     """原文里偶尔出现 &\\#x27; 这类被反斜杠挡住的实体，先还原再按 HTML 转义输出。
     同时去掉 markdown 的反斜杠转义（如标题里的 \\!），否则页面会显示成 "Jensen\\!"。"""
@@ -383,7 +389,7 @@ def inline_md(text: str) -> str:
         if m == 0:
             out.append(html.escape(chunk))
         elif m == 1:
-            href = html.escape(parts[i + 1])
+            href = esc_url(parts[i + 1])
             out.append(f'<a href="{href}" target="_blank" rel="noopener">{html.escape(chunk)}</a>')
     return "".join(out)
 
@@ -396,7 +402,7 @@ def render_lang(data: dict, lang: str) -> str:
         )
         plain_title = clean_text(it["title"])
         title_html = (
-            f'<a href="{html.escape(it["url"])}" target="_blank" rel="noopener">{plain_title}</a>'
+            f'<a href="{esc_url(it["url"])}" target="_blank" rel="noopener">{plain_title}</a>'
             if it["url"]
             else plain_title
         )
@@ -481,7 +487,7 @@ def _card(anchor: str, en_it: dict | None, zh_it: dict | None) -> str:
     score = (en_it or {}).get("score") or (zh_it or {}).get("score") or ""
     score_html = f'<span class="score">▍{html.escape(score)}/10</span>' if score else ""
     if en_it and en_it["url"]:
-        head = f'<a href="{html.escape(en_it["url"])}" target="_blank" rel="noopener">{clean_text(en_it["title"])}</a>'
+        head = f'<a href="{esc_url(en_it["url"])}" target="_blank" rel="noopener">{clean_text(en_it["title"])}</a>'
     else:
         head = clean_text(lead["title"])
 
@@ -506,7 +512,7 @@ def _card(anchor: str, en_it: dict | None, zh_it: dict | None) -> str:
             parts.append(f'<div class="zh"><span class="zhlabel">中文</span>{title_zh}{body_zh}</div>')
 
     if lead.get("url"):
-        url = html.escape(lead["url"])
+        url = esc_url(lead["url"])
         parts.append(
             f'<div class="srcurl">🔗 原文链接 · '
             f'<a href="{url}" target="_blank" rel="noopener">{url}</a></div>'
@@ -579,7 +585,7 @@ def render_candidates(cands: list[dict], src_count: str, generated_at: str = "")
     rows = []
     for i, c in enumerate(cands, 1):
         title = clean_text(c.get("title") or "")
-        url = html.escape(c.get("url") or "")
+        url = esc_url(c.get("url") or "")
         score = html.escape(str(c.get("score") or ""))
         meta = f'<span class="cm">{score}/10 · {html.escape(c.get("profile") or "")}</span>' if score else ""
         link = f'<a href="{url}" target="_blank" rel="noopener">{title}</a>' if url else title

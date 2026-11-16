@@ -1,5 +1,17 @@
 # 更新记录
 
+## 页面细节修复（2026-11-16）
+
+**词汇页与主页的历史修复对齐**
+- **撇号空隙**：主页 11-14 修过"中文页面里弯引号被交中文字体渲染、撇号前撑出全角空隙"，词汇页当时没跟上。现 `build_vocab.py` 复用 `build_latest.plain_quotes()`，写盘前整体把 `’ ‘` 换成 ASCII，两页行为一致
+- **长词不撑破卡片**：`.w` 加 `overflow-wrap:break-word`
+- **词汇页页脚**：`KIKI · 难点词汇 · 释义取自开源词库 ECDICT 与公开词典接口` → `KIKI 难点词汇 · 释义取自开源词库`（原文太长会折到第二行，末尾"口"字单独掉行），居中沿用既有 `footer{text-align:center}`
+- **主页链接双重转义**：RSS 链接里自带 `&amp;`，`html.escape` 后再转一次变成 `&amp;amp;`，页面上显示 `…RSS&amp;at_campaign=rss`，查询参数也被打成 `amp;at_campaign`。新增 `esc_url()`（先 `html.unescape` 再 `html.escape`），替换标题链接、英文页链接、原文链接、候选面板链接、`inline_md()` 里的 href 共 6 处
+
+**横向体检（把修过的问题在另一处复检一遍）**
+- 已确认两边一致：日期按 `candidates.json` 的 UTC 锚点换算北京时间（重建不漂移）、标题不用 `text-wrap:balance`、页面上没有"点 🔊 跟读"提示、"未调用模型"、"deployed on" 这类多余文案
+- 本轮同时纠正一次误覆盖：手工发布的词汇页是上一期（11-15）稿，已按当期 `2026-11-15-summary-en.md`（页面日期 11-16）重建为 25 词
+
 ## v1.4（2026-11-15）
 
 **APK**

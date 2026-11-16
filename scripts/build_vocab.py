@@ -28,7 +28,7 @@ import urllib.request
 from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from build_latest import DOCS, POSTS, digest_display  # noqa: E402
+from build_latest import DOCS, POSTS, digest_display, plain_quotes  # noqa: E402
 
 FRONT_MATTER = re.compile(r"^---\s*\n.*?\n---\s*\n", re.S)
 LINK_MD = re.compile(r"\[([^\]]*)\]\([^)]*\)")
@@ -639,7 +639,7 @@ body{{margin:0;background:var(--bg);color:var(--fg);
   padding:13px 16px 14px;box-shadow:var(--shadow);margin:0 0 10px;overflow:hidden}}
 .card::before{{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.55}}
 .hdr{{display:flex;align-items:center;gap:8px;flex-wrap:wrap}}
-.w{{font-size:19px;font-weight:700;letter-spacing:.2px}}
+.w{{font-size:19px;font-weight:700;letter-spacing:.2px;overflow-wrap:break-word}}
 .ph{{color:var(--muted);font-size:13px;font-weight:400}}
 .meta{{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap}}
 .pos{{font-size:11.5px;color:var(--fg);background:var(--chip);border-radius:6px;padding:2px 7px}}
@@ -670,7 +670,7 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
   </div>
   <div class="intro">今日超纲词汇（已排除四六级等低于 C1 的高频词）。</div>
   {cards}
-  <footer>KIKI · 难点词汇 · 释义取自开源词库 ECDICT 与公开词典接口</footer>
+  <footer>KIKI 难点词汇 · 释义取自开源词库</footer>
 </div>
 <script>
 (function(){{
@@ -1017,6 +1017,8 @@ def main() -> None:
         count=len(cards),
         cards="\n  ".join(cards) or '<div class="card">这一期没有挑出超纲词。</div>',
     )
+    # 与主页同一个坑：中文页面里弯引号会被交中文字体渲染，撇号两侧撑出全角空隙
+    page = plain_quotes(page)
     out = os.path.join(DOCS, "vocab.html")
     with open(out, "w", encoding="utf-8") as f:
         f.write(page)
