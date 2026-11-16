@@ -631,16 +631,16 @@ body{{margin:0;background:var(--bg);color:var(--fg);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
   font-size:16px;line-height:1.6;overflow-x:hidden}}
 .wrap{{max-width:720px;margin:0 auto;padding:0 16px 60px}}
-/* 横屏 / 平板宽屏：词卡走两栏，别在两边留大片空白 */
-@media (min-width: 900px){{
-  .wrap{{max-width:1120px;padding:0 26px 60px}}
-  .cards{{column-count:2;column-gap:20px}}
-  .cards > .card{{break-inside:avoid;page-break-inside:avoid}}
+/* 横屏 / 平板宽屏：词卡走两栏（宽屏三栏），别在两边留大片空白。
+   用 Grid 而不是多栏：Safari/WebKit 的多栏在 iPad 上重排不稳定。 */
+@media (min-width: 760px){{
+  .wrap{{max-width:1320px;padding:0 20px 60px}}
+  .cards{{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:18px;align-items:start}}
+  .cards > .card{{margin:0 0 14px}}
   .w{{font-size:20px}}
 }}
-@media (min-width: 1400px){{
-  .wrap{{max-width:1300px}}
-  .cards{{column-count:3;column-gap:20px}}
+@media (min-width: 1200px){{
+  .cards{{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:20px}}
 }}
 .bar{{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;
   padding:12px 0;background:linear-gradient(180deg,var(--bg) 78%,transparent)}}

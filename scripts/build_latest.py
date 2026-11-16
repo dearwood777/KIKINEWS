@@ -89,22 +89,17 @@ body{{
 .wrap{{max-width:720px;margin:0 auto;padding:0 16px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom));}}
 
 /* ---------- 横屏 / 平板宽屏：正文分两栏，别留一大片空白 ---------- */
-@media (min-width: 900px){{
-  .wrap{{max-width:1140px;padding:0 26px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom))}}
-  .hero{{margin:0 -26px 20px;padding:34px 30px 26px}}
+@media (min-width: 760px){{
+  .wrap{{max-width:1320px;padding:0 20px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom))}}
+  .hero{{margin:0 -20px 20px;padding:34px 26px 26px}}
   .hero h1{{font-size:27px}}
   .hero .meta{{font-size:13.5px}}
-  section[data-lang]{{column-count:2;column-gap:24px}}
-  .flow{{column-count:2;column-gap:24px}}
-  .flow > .summary,
-  .flow > .toc,
-  .flow > .group{{column-span:all}}
-  .flow > .card{{break-inside:avoid;page-break-inside:avoid}}
+  .cards{{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:22px;align-items:start}}
+  .cards > .card{{margin:0 0 16px}}
   .card h3{{font-size:18.5px}}
 }}
-@media (min-width: 1400px){{
-  .wrap{{max-width:1320px}}
-  .flow{{column-gap:28px}}
+@media (min-width: 1200px){{
+  .cards{{column-gap:28px}}
 }}
 
 
@@ -149,7 +144,7 @@ body{{
 .toc{{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}}
 .toc a{{
   text-decoration:none;color:var(--fg);background:var(--chip);border:1px solid var(--line);
-  padding:6px 12px;border-radius:999px;font-size:13.5px;
+  padding:6px 12px;border-radius:999px;font-size:13.5px;max-width:100%;
 }}
 .toc a .n{{color:var(--muted);font-size:12px;margin-left:4px}}
 
@@ -656,14 +651,22 @@ def render_bilingual(zh: dict | None, en: dict | None) -> str:
             continue
         label = titles[gi] if gi < len(titles) else g["group"]
         blocks.append(f'<div class="group">{clean_text(label)}<span>{len(anchors)} 条 / items</span></div>')
+        # 同一组卡片包进独立容器：宽屏时用 CSS Grid 平分两栏，窄屏时就是普通单列。
+        # 不用多栏（column-count）：WebKit/Safari 对 column-span:all 的重排不稳定，
+        # 会在 iPad 上出现"首次单列、往下划才变两栏"这类抖动。
+        cards: list[str] = []
         for a in anchors:
-            blocks.append(_card(a, idx_en.get(a), idx_zh.get(a)))
+            cards.append(_card(a, idx_en.get(a), idx_zh.get(a)))
             emitted.append(a)
+        blocks.append('<div class="cards">' + "".join(cards) + "</div>")
 
+    stray: list[str] = []
     for a in list(idx_zh) + list(idx_en):
         if a not in emitted:
-            blocks.append(_card(a, idx_en.get(a), idx_zh.get(a)))
+            stray.append(_card(a, idx_en.get(a), idx_zh.get(a)))
             emitted.append(a)
+    if stray:
+        blocks.append('<div class="cards">' + "".join(stray) + "</div>")
 
     return '<div class="flow">' + "".join(blocks) + "</div>"
 

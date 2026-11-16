@@ -2,12 +2,14 @@
 
 ## 横屏/平板宽屏自适应（2026-11-16）
 
-平板上竖屏正常、横屏两边大片留白（正文 `max-width:720px` 居中，在 1554×1080 的横屏里两侧各空约 400px）。只改生成脚本里的 CSS，不动 APK。
+平板上竖屏正常、横屏两边大片留白（正文 `max-width:720px` 居中，在横屏里两侧各空几百像素）。只改生成脚本里的 CSS，不动 APK。
 
-- **主页**：`@media (min-width:900px)` 把 `.wrap` 720 → 1140px、正文走 `column-count:2`（`.summary`/`.toc`/`.group` 用 `column-span:all` 横跨整行，`.card` 用 `break-inside:avoid` 不许拆断），hero 负边距与标题、meta 字号同步放大；`(min-width:1400px)` 再把 `.wrap` 拉到 1320px
-- **踩到的坑**：第一版把分栏规则挂在 `section[data-lang]` 上，线上截图里容器是变宽了但正文仍单列——`render_bilingual()` 实际返回的是纯拼接，页面里根本没有 `<section>`（那段是 `render_lang()` 的死代码）。改为给正文包一层 `<div class="flow">`，分栏才真正生效
-- **词汇页**：词卡包进 `<div class="cards">`，900px 起两栏、1400px 起三栏，`.wrap` 720 → 1120/1300px
-- 900px 以下（手机竖屏、APK WebView）样式与之前完全一致
+- **第一版（多栏方案，已废弃）**：`column-count:2` + `column-span:all` 让分组标题横跨整行。桌面 Edge 截图挺好看，但 iPad 上翻车：Safari 一直单列、使劲往下滑动才偶尔变成两栏；Edge/iPad 打开是两栏，切到别的 App 再切回来又退回单列，刷新才恢复。同一个 WebKit 内核在不同时刻给出不同结果 → 多栏 + spanner 在移动 Safari 上重排不稳定，不能留
+- **现在用的方案（CSS Grid）**：`render_bilingual()` 给每组卡片包一层 `<div class="cards">`，宽屏时 `.cards{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}`，分组标题天然独占整行，不再依赖 `column-span`
+- **断点放宽到 760px**：iPad 竖/横切换时 CSS 宽度常在 780–1024 之间，原 900 阈值会漏掉一部分；760–1199 两栏，≥1200 加宽间距（词汇页 ≥1200 三栏）
+- 主页 `.wrap` 720 → 1320px（≥760），hero 的负边距与标题字号同步放大；词汇页同样 1320 上限
+- 顺手修 `.toc a{max-width:100%}`：极窄屏下一个过长的目录胶囊会顶出屏幕右边被裁掉
+- 760px 以下（手机竖屏、APK WebView）样式与之前完全一致
 
 ## AI 复核为什么一直没跑起来（2026-11-16）
 
