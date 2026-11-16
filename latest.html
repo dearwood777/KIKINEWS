@@ -252,16 +252,19 @@ window.addEventListener('scroll',function(){
 
   function fill(b,kids,n){
     var gap=22, i;
-    b.style.display='flex';
-    b.style.alignItems='flex-start';
+    b.style.display='block';
     b.textContent='';
+    var box=document.createElement('div');
+    box.style.display='flex';
+    box.style.alignItems='flex-start';
+    b.appendChild(box);
     var cols=[];
     for(i=0;i<n;i++){
       var c=document.createElement('div');
       c.style.flex='1 1 0';
       c.style.minWidth='0';
       if(i<n-1) c.style.marginRight=gap+'px';
-      b.appendChild(c);
+      box.appendChild(c);
       cols.push(c);
     }
     kids.forEach(function(k){
@@ -272,10 +275,24 @@ window.addEventListener('scroll',function(){
       }
       best.appendChild(k);
     });
+
+    // 收尾：两栏底部差得多时，把高栏末尾那张"很长"的卡改成通栏放到两栏下面。
+    // 它本来就是这一栏最后一张，顺序不变，但两栏下方不会再空一大片。
+    for(var pass=0; pass<3; pass++){
+      var hs=cols.map(function(c){ return c.getBoundingClientRect().height; });
+      var hi=Math.max.apply(null,hs), lo=Math.min.apply(null,hs);
+      if(hi-lo<240) break;
+      var col=cols[hs.indexOf(hi)], last=col.lastElementChild;
+      if(!last) break;
+      if(last.getBoundingClientRect().height<240) break;
+      col.removeChild(last);
+      b.appendChild(last);
+    }
   }
 
   function run(){
     var n=colsFor(), i;
+    var sy=window.pageYOffset||document.documentElement.scrollTop||0;
     // 先把所有卡片摘回池子，恢复分组标题和容器
     boxes.forEach(function(b){
       pool.get(b).forEach(function(k){ if(k.parentNode) k.parentNode.removeChild(k); });
@@ -286,21 +303,38 @@ window.addEventListener('scroll',function(){
 
     if(n<2){
       boxes.forEach(function(b){ pool.get(b).forEach(function(k){ b.appendChild(k); }); });
-      return;
+    } else {
+      heads.forEach(function(h){ h.style.display='none'; });
+      var all=[];
+      boxes.forEach(function(b){ all=all.concat(pool.get(b)); });
+      boxes.forEach(function(b,idx){ if(idx) b.style.display='none'; });
+      fill(boxes[0], all, n);
     }
-
-    heads.forEach(function(h){ h.style.display='none'; });
-    var all=[];
-    boxes.forEach(function(b){ all=all.concat(pool.get(b)); });
-    boxes.forEach(function(b,idx){ if(idx) b.style.display='none'; });
-    fill(boxes[0], all, n);
+    // 重排会改变内容高度，浏览器可能把滚动位置夹回顶部；这里还原，避免"上滑一下就跳回开头"
+    if(sy>0){
+      window.scrollTo(0,sy);
+      requestAnimationFrame(function(){ window.scrollTo(0,sy); });
+    }
   }
 
-  var timer=null;
-  function later(){ clearTimeout(timer); timer=setTimeout(run,120); }
+  var timer=null, lastW=-1;
+  function later(){
+    // iPad 上下滑动时工具栏收放只改变高度、不改变宽度；宽度没变就不重排，
+    // 否则每次都拆了重建两栏，滚动位置会被弹回顶部。
+    var w=document.documentElement.clientWidth;
+    if(w===lastW) return;
+    lastW=w;
+    clearTimeout(timer);
+    timer=setTimeout(run,120);
+  }
+  function force(){
+    lastW=document.documentElement.clientWidth;
+    clearTimeout(timer);
+    timer=setTimeout(run,90);
+  }
   window.addEventListener('resize',later);
-  window.addEventListener('load',later);
-  try{ document.addEventListener('toggle',later,true); }catch(e){}
+  window.addEventListener('load',force);
+  try{ document.addEventListener('toggle',force,true); }catch(e){}
   run();
 })();
 </script>
