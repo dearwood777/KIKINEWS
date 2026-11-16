@@ -72,11 +72,11 @@ body{
 /* 目录条目一律单行、宽度随文字自适应（短的短、长的到容器满宽），
    平板上一行自然并排三四个；手机放不下时由页面脚本加 .sc 类，
    以约 30px/秒的慢速横向滚动，不做截断。高度统一 42px。 */
-.toc{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
 .toc a{
-  display:flex;align-items:center;height:42px;max-width:100%;overflow:hidden;
+  display:flex;align-items:center;height:32px;max-width:100%;overflow:hidden;
   text-decoration:none;color:var(--fg);background:#0f1a2e;border:1px solid #25314b;
-  padding:0 12px;border-radius:10px;font-size:13.5px;box-sizing:border-box;
+  padding:0 10px;border-radius:8px;font-size:13px;line-height:1;box-sizing:border-box;
 }
 .toc a .tt{display:block;white-space:nowrap;flex:0 0 auto;text-align:left}
 .toc a .tt.dup{margin-left:1.6em}
@@ -362,7 +362,7 @@ window.addEventListener('scroll',function(){
       a.classList.remove('sc','nudge');
       a.style.removeProperty('--dist');
       a.style.removeProperty('--dur');
-      var pavail=a.clientWidth-24;        // 去掉左右 padding 的可用宽度
+      var pavail=a.clientWidth-20;        // 去掉左右 padding 的可用宽度
       var tw=t.offsetWidth;               // 单行文本的完整宽度
       var over=tw-pavail;
       if(over<=4) continue;
