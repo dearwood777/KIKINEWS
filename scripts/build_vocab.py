@@ -632,15 +632,12 @@ body{{margin:0;background:var(--bg);color:var(--fg);
   font-size:16px;line-height:1.6;overflow-x:hidden}}
 .wrap{{max-width:720px;margin:0 auto;padding:0 16px 60px}}
 /* 横屏 / 平板宽屏：词卡走两栏（宽屏三栏），别在两边留大片空白。
-   用 Grid 而不是多栏：Safari/WebKit 的多栏在 iPad 上重排不稳定。 */
+   分栏由页面末尾的瀑布流脚本按卡片实际高度分配，不用多栏也不用 Grid，
+   多栏在 Safari/WebKit 上重排不稳、Grid 同行等高会在短卡下面留空档。 */
 @media (min-width: 760px){{
   .wrap{{max-width:1320px;padding:0 20px 60px}}
-  .cards{{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:18px;align-items:start}}
   .cards > .card{{margin:0 0 14px}}
   .w{{font-size:20px}}
-}}
-@media (min-width: 1200px){{
-  .cards{{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:20px}}
 }}
 .bar{{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;
   padding:12px 0;background:linear-gradient(180deg,var(--bg) 78%,transparent)}}
@@ -681,7 +678,7 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
     <span class="count">{count} 个词 · {day}</span>
   </div>
   <div class="intro">今日超纲词汇（已排除四六级等低于 C1 的高频词）。</div>
-  <div class="cards">{cards}</div>
+  <div class="cards" data-cols="3">{cards}</div>
   <footer>KIKI 难点词汇 · 释义取自开源词库</footer>
 </div>
 <script>
@@ -713,6 +710,57 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
     setTimeout(function(){{ btn.classList.remove('on'); }}, 600);
     speak(btn.getAttribute('data-w'), btn.getAttribute('data-a'));
   }}, false);
+}})();
+
+/* 宽屏瀑布流：词卡按实际高度放进"当前最短"的栏，避免短卡下面留空档。
+   760px 以下走单列；展开/字体加载后重排。 */
+(function(){{
+  var boxes = [].slice.call(document.querySelectorAll('.cards'));
+  if (!boxes.length) return;
+  var pool = new Map();
+  boxes.forEach(function(b){{ pool.set(b, [].slice.call(b.children)); }});
+
+  function colsFor(b){{
+    var w = document.documentElement.clientWidth || window.innerWidth;
+    if (w < 760) return 1;
+    if (b.getAttribute('data-cols') === '3' && w >= 1200) return 3;
+    return 2;
+  }}
+
+  function run(){{
+    boxes.forEach(function(b){{
+      var kids = pool.get(b), n = colsFor(b), gap = n === 3 ? 18 : 18;
+      kids.forEach(function(k){{ if (k.parentNode) k.parentNode.removeChild(k); }});
+      b.textContent = '';
+      if (n < 2) {{ b.style.display = 'block'; kids.forEach(function(k){{ b.appendChild(k); }}); return; }}
+      b.style.display = 'flex';
+      b.style.alignItems = 'flex-start';
+      var cols = [];
+      for (var i = 0; i < n; i++) {{
+        var c = document.createElement('div');
+        c.style.flex = '1 1 0';
+        c.style.minWidth = '0';
+        if (i < n - 1) c.style.marginRight = gap + 'px';
+        b.appendChild(c);
+        cols.push(c);
+      }}
+      kids.forEach(function(k){{
+        var best = cols[0], h = 1e9;
+        for (var j = 0; j < cols.length; j++) {{
+          var ch = cols[j].getBoundingClientRect().height;
+          if (ch < h) {{ h = ch; best = cols[j]; }}
+        }}
+        best.appendChild(k);
+      }});
+    }});
+  }}
+
+  var timer = null;
+  function later(){{ clearTimeout(timer); timer = setTimeout(run, 120); }}
+  window.addEventListener('resize', later);
+  window.addEventListener('load', later);
+  try {{ document.addEventListener('toggle', later, true); }} catch (e) {{}}
+  run();
 }})();
 </script>
 </html>

@@ -94,12 +94,8 @@ body{{
   .hero{{margin:0 -20px 20px;padding:34px 26px 26px}}
   .hero h1{{font-size:27px}}
   .hero .meta{{font-size:13.5px}}
-  .cards{{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:22px;align-items:start}}
   .cards > .card{{margin:0 0 16px}}
   .card h3{{font-size:18.5px}}
-}}
-@media (min-width: 1200px){{
-  .cards{{column-gap:28px}}
 }}
 
 
@@ -239,6 +235,57 @@ footer .dot{{opacity:.45;margin:0 6px}}
 window.addEventListener('scroll',function(){{
   document.getElementById('totop').classList.toggle('show',window.scrollY>600);
 }});
+
+/* 宽屏瀑布流：卡片依次放进"当前最短"的那一栏，避免 Grid 同行等高造成的空档。
+   760px 以下走普通单列；卡片高度变化（展开候选详情、字体加载）后重排。 */
+(function(){{
+  var boxes=[].slice.call(document.querySelectorAll('.cards'));
+  if(!boxes.length) return;
+  var pool=new Map();
+  boxes.forEach(function(b){{ pool.set(b,[].slice.call(b.children)); }});
+
+  function colsFor(b){{
+    var w=document.documentElement.clientWidth||window.innerWidth;
+    if(w<760) return 1;
+    if(b.getAttribute('data-cols')==='3'&&w>=1200) return 3;
+    return 2;
+  }}
+
+  function run(){{
+    boxes.forEach(function(b){{
+      var kids=pool.get(b), n=colsFor(b), gap=n===3?20:22;
+      kids.forEach(function(k){{ if(k.parentNode) k.parentNode.removeChild(k); }});
+      b.textContent='';
+      if(n<2){{ b.style.display='block'; kids.forEach(function(k){{ b.appendChild(k); }}); return; }}
+      b.style.display='flex';
+      b.style.alignItems='flex-start';
+      var cols=[];
+      for(var i=0;i<n;i++){{
+        var c=document.createElement('div');
+        c.style.flex='1 1 0';
+        c.style.minWidth='0';
+        if(i<n-1) c.style.marginRight=gap+'px';
+        b.appendChild(c);
+        cols.push(c);
+      }}
+      kids.forEach(function(k){{
+        var best=cols[0], h=1e9;
+        for(var j=0;j<cols.length;j++){{
+          var ch=cols[j].getBoundingClientRect().height;
+          if(ch<h){{ h=ch; best=cols[j]; }}
+        }}
+        best.appendChild(k);
+      }});
+    }});
+  }}
+
+  var timer=null;
+  function later(){{ clearTimeout(timer); timer=setTimeout(run,120); }}
+  window.addEventListener('resize',later);
+  window.addEventListener('load',later);
+  try{{ document.addEventListener('toggle',later,true); }}catch(e){{}}
+  run();
+}})();
 </script>
 </body>
 </html>
