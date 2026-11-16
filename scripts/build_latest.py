@@ -128,10 +128,15 @@ body{{
 .summary b{{color:var(--fg)}}
 
 /* ---------- toc ---------- */
+/* 目录条目原来用 --chip（#242e42）亮底 + 全圆角，在深色页里偏亮、标题折两行时圆弧发笨；
+   改成接近页面底色的底 + 12px 小圆角，折行也像整齐的短条 */
 .toc{{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}}
 .toc a{{
-  text-decoration:none;color:var(--fg);background:var(--chip);border:1px solid var(--line);
-  padding:6px 12px;border-radius:999px;font-size:13.5px;max-width:100%;
+  text-decoration:none;color:var(--fg);background:#151c29;border:1px solid #29324a;
+  padding:6px 12px;border-radius:12px;font-size:13.5px;max-width:100%;
+}}
+@media (max-width: 520px){{
+  .toc a{{background:#141b27;padding:6px 11px;border-radius:10px;font-size:13px}}
 }}
 .toc a .n{{color:var(--muted);font-size:12px;margin-left:4px}}
 
