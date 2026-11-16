@@ -237,46 +237,65 @@ window.addEventListener('scroll',function(){{
 }});
 
 /* 宽屏瀑布流：卡片依次放进"当前最短"的那一栏，避免 Grid 同行等高造成的空档。
-   760px 以下走普通单列；卡片高度变化（展开候选详情、字体加载）后重排。 */
+   宽屏时所有分组的卡片合成一条连续瀑布流、并隐藏分组标题——每组只有 3–4 张卡时，
+   组内怎么摆都会在短的那栏留下几百像素空白，只有跨组连续排才真正补满。
+   760px 以下仍是原来的单列 + 分组标题。 */
 (function(){{
   var boxes=[].slice.call(document.querySelectorAll('.cards'));
   if(!boxes.length) return;
   var pool=new Map();
   boxes.forEach(function(b){{ pool.set(b,[].slice.call(b.children)); }});
+  var heads=[].slice.call(document.querySelectorAll('.group'));
 
-  function colsFor(b){{
+  function colsFor(){{
     var w=document.documentElement.clientWidth||window.innerWidth;
-    if(w<760) return 1;
-    if(b.getAttribute('data-cols')==='3'&&w>=1200) return 3;
-    return 2;
+    return w<760?1:2;
+  }}
+
+  function fill(b,kids,n){{
+    var gap=22, i;
+    b.style.display='flex';
+    b.style.alignItems='flex-start';
+    b.textContent='';
+    var cols=[];
+    for(i=0;i<n;i++){{
+      var c=document.createElement('div');
+      c.style.flex='1 1 0';
+      c.style.minWidth='0';
+      if(i<n-1) c.style.marginRight=gap+'px';
+      b.appendChild(c);
+      cols.push(c);
+    }}
+    kids.forEach(function(k){{
+      var best=cols[0], h=1e9;
+      for(var j=0;j<cols.length;j++){{
+        var ch=cols[j].getBoundingClientRect().height;
+        if(ch<h){{ h=ch; best=cols[j]; }}
+      }}
+      best.appendChild(k);
+    }});
   }}
 
   function run(){{
+    var n=colsFor(), i;
+    // 先把所有卡片摘回池子，恢复分组标题和容器
     boxes.forEach(function(b){{
-      var kids=pool.get(b), n=colsFor(b), gap=n===3?20:22;
-      kids.forEach(function(k){{ if(k.parentNode) k.parentNode.removeChild(k); }});
+      pool.get(b).forEach(function(k){{ if(k.parentNode) k.parentNode.removeChild(k); }});
       b.textContent='';
-      if(n<2){{ b.style.display='block'; kids.forEach(function(k){{ b.appendChild(k); }}); return; }}
-      b.style.display='flex';
-      b.style.alignItems='flex-start';
-      var cols=[];
-      for(var i=0;i<n;i++){{
-        var c=document.createElement('div');
-        c.style.flex='1 1 0';
-        c.style.minWidth='0';
-        if(i<n-1) c.style.marginRight=gap+'px';
-        b.appendChild(c);
-        cols.push(c);
-      }}
-      kids.forEach(function(k){{
-        var best=cols[0], h=1e9;
-        for(var j=0;j<cols.length;j++){{
-          var ch=cols[j].getBoundingClientRect().height;
-          if(ch<h){{ h=ch; best=cols[j]; }}
-        }}
-        best.appendChild(k);
-      }});
+      b.style.display='';
     }});
+    heads.forEach(function(h){{ h.style.display=''; }});
+
+    if(n<2){{
+      boxes.forEach(function(b){{ pool.get(b).forEach(function(k){{ b.appendChild(k); }}); }});
+      return;
+    }}
+
+    heads.forEach(function(h){{ h.style.display='none'; }});
+    var all=[];
+    boxes.forEach(function(b){{ all=all.concat(pool.get(b)); }});
+    boxes.forEach(function(b,idx){{ if(idx) b.style.display='none'; }});
+    fill(boxes[0], all, n);
   }}
 
   var timer=null;
