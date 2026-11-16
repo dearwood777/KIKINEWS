@@ -3,21 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1320">
 <title>KIKI 每日速递 2026-11-16</title>
 <style>
+/* 固定深色皮肤：词汇页本来就是深色，主页原来跟随系统（浅色设备上白底），
+   两页在平板/手机上会一明一暗。现统一成同一套深色 token，亮度偏柔和不刺眼。 */
 :root{
-  --bg:#f5f7fb; --fg:#141821; --muted:#6d7789; --line:#e3e8f0;
-  --card:#ffffff; --soft:#f0f3f9; --accent:#2563eb; --accent2:#0ea5a4;
-  --score:#0f766e; --chip:#eef2f8; --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#0b1220; --fg:#e8edf6; --muted:#93a0b6; --line:#1d2738;
-    --card:#121a29; --soft:#16202f; --accent:#6ba4ff; --accent2:#2dd4bf;
-    --score:#2dd4bf; --chip:#1a2436; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
-  }
+  --bg:#0e1320; --fg:#e2e8f4; --muted:#8b93a7; --line:#242d40;
+  --card:#161d2b; --soft:#1b2334; --accent:#5aa6ff; --accent2:#4fd1c5;
+  --score:#4fd1c5; --chip:#242e42; --shadow:0 8px 24px rgba(0,0,0,.28);
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;overflow-x:hidden}
@@ -43,11 +37,8 @@ body{
 /* ---------- header ---------- */
 .hero{
   margin:0 -16px 18px;padding:30px 22px 22px;color:#fff;
-  background:linear-gradient(135deg,#2563eb 0%,#0ea5a4 100%);
+  background:linear-gradient(135deg,#1b3f78 0%,#0f6560 100%);
   border-radius:0 0 22px 22px;
-}
-@media (prefers-color-scheme: dark){
-  .hero{background:linear-gradient(135deg,#1e40af 0%,#0f766e 100%)}
 }
 .hero .brand{font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
 .hero h1{margin:6px 0 8px;font-size:23px;line-height:1.35;font-weight:700;letter-spacing:.2px}
