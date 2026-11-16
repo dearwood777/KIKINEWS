@@ -69,16 +69,16 @@ body{
 .summary b{color:var(--fg)}
 
 /* ---------- toc ---------- */
-/* 目录条目：比正文卡片亮一档的底 + 12px 小圆角，与「近页面底色」的正文卡片形成层次；
-   英文长句允许断词，减少折行后右侧大片留白 */
+/* 目录条目：与正文卡片同样的暗度，但改用深蓝底色（#15223c）拉开色相，
+   白字对比度不变、两者又能分开；文字两端对齐，折行后行尾不再空一大片 */
 .toc{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
 .toc a{
-  text-decoration:none;color:var(--fg);background:#1b2436;border:1px solid #333e59;
+  text-decoration:none;color:var(--fg);background:#15223c;border:1px solid #34486f;
   padding:6px 12px;border-radius:12px;font-size:13.5px;max-width:100%;
-  hyphens:auto;-webkit-hyphens:auto;
+  text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto;
 }
 @media (max-width: 520px){
-  .toc a{background:#1a2334;padding:6px 11px;border-radius:10px;font-size:13px}
+  .toc a{background:#131f38;padding:6px 11px;border-radius:10px;font-size:13px}
 }
 .toc a .n{color:var(--muted);font-size:12px;margin-left:4px}
 
@@ -110,7 +110,7 @@ body{
   border-radius:999px;padding:2px 8px;margin-left:6px;
 }
 .src{font-size:12.5px;color:var(--muted);margin:-2px 0 10px}
-.card p{margin:0 0 12px;font-size:15.5px;color:var(--fg);hyphens:auto;-webkit-hyphens:auto}
+.card p{margin:0 0 12px;font-size:15.5px;color:var(--fg);text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto}
 .card a{color:var(--accent);text-decoration:none;word-break:break-word}
 .note{
   border-radius:12px;padding:10px 12px 2px;font-size:14.5px;background:var(--soft);
