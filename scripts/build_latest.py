@@ -128,16 +128,20 @@ body{{
 .summary b{{color:var(--fg)}}
 
 /* ---------- toc ---------- */
-/* 目录条目：与正文卡片同样的暗度，但改用深蓝底色（#15223c）拉开色相，
-   白字对比度不变、两者又能分开；文字两端对齐，折行后行尾不再空一大片 */
-.toc{{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}}
-.toc a{{
-  text-decoration:none;color:var(--fg);background:#15223c;border:1px solid #34486f;
-  padding:6px 12px;border-radius:12px;font-size:13.5px;max-width:100%;
-  text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto;
+/* 手机窄屏目录做成等宽等高的网格块：一律满宽、固定两行高度，超出两行省略，
+   长短高矮不再参差；底色用与正文同等暗度的深蓝（#0f1a2e），白字对比度不变 */
+.toc{{display:grid;grid-template-columns:1fr;gap:7px;margin-bottom:20px}}
+@media (min-width: 760px){{
+  .toc{{grid-template-columns:repeat(2,minmax(0,1fr))}}
 }}
-@media (max-width: 520px){{
-  .toc a{{background:#131f38;padding:6px 11px;border-radius:10px;font-size:13px}}
+.toc a{{
+  display:flex;align-items:center;min-height:46px;
+  text-decoration:none;color:var(--fg);background:#0f1a2e;border:1px solid #25314b;
+  padding:6px 12px;border-radius:10px;font-size:13.5px;box-sizing:border-box;
+}}
+.toc a .tt{{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  width:100%;text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto;
 }}
 .toc a .n{{color:var(--muted);font-size:12px;margin-left:4px}}
 
@@ -548,7 +552,7 @@ def render_lang(data: dict, lang: str) -> str:
 
     if data["toc"]:
         nav = "".join(
-            f'<a href="#{i["anchor"]}">{clean_text(i["title"])}</a>'
+            f'<a href="#{i["anchor"]}"{en_attr(i["title"])}><span class="tt">{clean_text(i["title"])}</span></a>'
             for g in data["toc"] for i in g["items"] if i["anchor"] in anchor_to_card
         )
         if nav:
@@ -754,7 +758,7 @@ def render_bilingual(zh: dict | None, en: dict | None) -> str:
     source_toc = (zh or {}).get("toc") or (en or {}).get("toc") or []
     if source_toc:
         nav = "".join(
-            f'<a href="#{i["anchor"]}"{en_attr(i["title"])}>{clean_text((idx_zh.get(i["anchor"]) or idx_en.get(i["anchor"]) or i)["title"])}</a>'
+            f'<a href="#{i["anchor"]}"{en_attr((idx_zh.get(i["anchor"]) or idx_en.get(i["anchor"]) or i)["title"])}><span class="tt">{clean_text((idx_zh.get(i["anchor"]) or idx_en.get(i["anchor"]) or i)["title"])}</span></a>'
             for g in source_toc for i in g["items"]
             if i["anchor"] in idx_zh or i["anchor"] in idx_en
         )
