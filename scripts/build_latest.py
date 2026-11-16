@@ -128,15 +128,16 @@ body{{
 .summary b{{color:var(--fg)}}
 
 /* ---------- toc ---------- */
-/* 目录条目原来用 --chip（#242e42）亮底 + 全圆角，在深色页里偏亮、标题折两行时圆弧发笨；
-   改成接近页面底色的底 + 12px 小圆角，折行也像整齐的短条 */
+/* 目录条目：比正文卡片亮一档的底 + 12px 小圆角，与「近页面底色」的正文卡片形成层次；
+   英文长句允许断词，减少折行后右侧大片留白 */
 .toc{{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}}
 .toc a{{
-  text-decoration:none;color:var(--fg);background:#151c29;border:1px solid #29324a;
+  text-decoration:none;color:var(--fg);background:#1b2436;border:1px solid #333e59;
   padding:6px 12px;border-radius:12px;font-size:13.5px;max-width:100%;
+  hyphens:auto;-webkit-hyphens:auto;
 }}
 @media (max-width: 520px){{
-  .toc a{{background:#141b27;padding:6px 11px;border-radius:10px;font-size:13px}}
+  .toc a{{background:#1a2334;padding:6px 11px;border-radius:10px;font-size:13px}}
 }}
 .toc a .n{{color:var(--muted);font-size:12px;margin-left:4px}}
 
@@ -168,7 +169,7 @@ body{{
   border-radius:999px;padding:2px 8px;margin-left:6px;
 }}
 .src{{font-size:12.5px;color:var(--muted);margin:-2px 0 10px}}
-.card p{{margin:0 0 12px;font-size:15.5px;color:var(--fg)}}
+.card p{{margin:0 0 12px;font-size:15.5px;color:var(--fg);hyphens:auto;-webkit-hyphens:auto}}
 .card a{{color:var(--accent);text-decoration:none;word-break:break-word}}
 .note{{
   border-radius:12px;padding:10px 12px 2px;font-size:14.5px;background:var(--soft);
@@ -599,6 +600,19 @@ def _group_titles(zh: dict | None, en: dict | None) -> list[str]:
     return groups
 
 
+def en_attr(text: str) -> str:
+    """文本基本是英文时返回 lang="en"，让 CSS 断词（hyphens）生效。
+
+    页面是 lang="zh-CN"，不加这个属性时浏览器不会对英文词组断词，
+    窄屏下长词（如 1.6-trillion-parameter）只能整体换行，右侧留一大片空白。
+    """
+    letters = [c for c in (text or "") if c.isalpha()]
+    if not letters:
+        return ""
+    cjk = sum(1 for c in letters if "\u4e00" <= c <= "\u9fff")
+    return ' lang="en"' if cjk / len(letters) < 0.2 else ""
+
+
 def _card(anchor: str, en_it: dict | None, zh_it: dict | None) -> str:
     lead = en_it or zh_it
     score = (en_it or {}).get("score") or (zh_it or {}).get("score") or ""
@@ -608,7 +622,7 @@ def _card(anchor: str, en_it: dict | None, zh_it: dict | None) -> str:
     else:
         head = clean_text(lead["title"])
 
-    parts: list[str] = [f'<article class="card" id="{anchor}"><h3>{head}{score_html}</h3>']
+    parts: list[str] = [f'<article class="card" id="{anchor}"{en_attr(lead["title"])}><h3>{head}{score_html}</h3>']
 
     if en_it:
         if en_it["src"]:
@@ -740,7 +754,7 @@ def render_bilingual(zh: dict | None, en: dict | None) -> str:
     source_toc = (zh or {}).get("toc") or (en or {}).get("toc") or []
     if source_toc:
         nav = "".join(
-            f'<a href="#{i["anchor"]}">{clean_text((idx_zh.get(i["anchor"]) or idx_en.get(i["anchor"]) or i)["title"])}</a>'
+            f'<a href="#{i["anchor"]}"{en_attr(i["title"])}>{clean_text((idx_zh.get(i["anchor"]) or idx_en.get(i["anchor"]) or i)["title"])}</a>'
             for g in source_toc for i in g["items"]
             if i["anchor"] in idx_zh or i["anchor"] in idx_en
         )
