@@ -621,10 +621,12 @@ PAGE = """<!DOCTYPE html>
 <title>{title}</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1320">
 <style>
 :root{{
-  --bg:#0e1320;--card:#171d2c;--fg:#e8ecf6;--muted:#8b93a7;--line:#2a3245;
-  --accent:#4ea1ff;--chip:#232c3f;--shadow:0 10px 30px rgba(0,0,0,.35);
+  /* 与主页共用同一套深色 token，两页明暗一致 */
+  --bg:#0e1320;--card:#161d2b;--fg:#e2e8f4;--muted:#8b93a7;--line:#242d40;
+  --accent:#5aa6ff;--chip:#242e42;--shadow:0 8px 24px rgba(0,0,0,.28);
 }}
 *{{box-sizing:border-box;-webkit-tap-highlight-color:transparent}}
 body{{margin:0;background:var(--bg);color:var(--fg);
