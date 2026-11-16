@@ -131,20 +131,27 @@ body{{
 /* 目录条目一律单行、宽度随文字自适应（短的短、长的到容器满宽），
    平板上一行自然并排三四个；手机放不下时由页面脚本加 .sc 类，
    以约 30px/秒的慢速横向滚动，不做截断。高度统一 42px。 */
-.toc{{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}}
+.toc{{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}}
 .toc a{{
-  display:flex;align-items:center;height:42px;max-width:100%;overflow:hidden;
+  display:flex;align-items:center;height:32px;max-width:100%;overflow:hidden;
   text-decoration:none;color:var(--fg);background:#0f1a2e;border:1px solid #25314b;
-  padding:0 12px;border-radius:10px;font-size:13.5px;box-sizing:border-box;
+  padding:0 10px;border-radius:8px;font-size:13px;line-height:1;box-sizing:border-box;
 }}
-.toc a .tt{{display:block;white-space:nowrap;min-width:0;overflow:hidden;text-align:left}}
-.toc a.sc .tt{{animation:tocscroll var(--dur,14s) linear infinite}}
+.toc a .tt{{display:block;white-space:nowrap;flex:0 0 auto;text-align:left}}
+.toc a .tt.dup{{margin-left:1.6em}}
+.toc a.sc .tt{{animation:tocscroll var(--dur,16s) linear infinite}}
+.toc a.nudge .tt{{animation:tocnudge var(--dur,7s) ease-in-out infinite}}
 @keyframes tocscroll{{
-  0%,6%{{transform:translateX(0)}}
-  94%,100%{{transform:translateX(var(--dist,-80px))}}
+  from{{transform:translateX(0)}}
+  to{{transform:translateX(var(--dist,-100px))}}
+}}
+@keyframes tocnudge{{
+  0%,12%{{transform:translateX(0)}}
+  46%,58%{{transform:translateX(var(--dist,-30px))}}
+  92%,100%{{transform:translateX(0)}}
 }}
 @media (prefers-reduced-motion: reduce){{
-  .toc a.sc .tt{{animation:none}}
+  .toc a.sc .tt,.toc a.nudge .tt{{animation:none}}
 }}
 .toc a .n{{color:var(--muted);font-size:12px;margin-left:4px}}
 
@@ -344,21 +351,36 @@ window.addEventListener('scroll',function(){{
     clearTimeout(timer);
     timer=setTimeout(run,90);
   }}
-  // 目录条目：放不下一行的，改为慢速横向滚动（约 30px/秒），不截断文字
+  // 目录条目：放不下一行时不做截断
+  //   - 只溢出一两个字：左右轻移，露出那截再移回来
+  //   - 溢出较多：尾部接一份副本，整条按 25px/秒向左滚，滚到副本接上时无缝循环
   function tocScroll(){{
     var links=document.querySelectorAll('.toc a');
     for(var i=0;i<links.length;i++){{
       var a=links[i], t=a.querySelector('.tt');
       if(!t) continue;
-      a.classList.remove('sc');
+      var dup=a.querySelector('.tt.dup');
+      if(dup) a.removeChild(dup);
+      a.classList.remove('sc','nudge');
       a.style.removeProperty('--dist');
       a.style.removeProperty('--dur');
-      var over=t.scrollWidth - t.clientWidth;
-      // 只溢出两三个字（<18px）不值得滚动，容易看着“抖”，交给容器裁掉即可
-      if(over>18){{
+      var pavail=a.clientWidth-20;        // 去掉左右 padding 的可用宽度
+      var tw=t.offsetWidth;               // 单行文本的完整宽度
+      var over=tw-pavail;
+      if(over<=4) continue;
+      if(over<=44){{
+        a.classList.add('nudge');
+        a.style.setProperty('--dist', (-over-2)+'px');
+        a.style.setProperty('--dur', '7s');
+      }} else {{
+        var c=t.cloneNode(true);
+        c.className='tt dup';
+        c.setAttribute('aria-hidden','true');
+        a.appendChild(c);
         a.classList.add('sc');
-        a.style.setProperty('--dist', -(over+4)+'px');
-        a.style.setProperty('--dur', Math.max(9, Math.round((over+4)/30))+'s');
+        var dist=tw+28;                   // 副本与首份之间的空隙，正好补齐循环
+        a.style.setProperty('--dist', (-dist)+'px');
+        a.style.setProperty('--dur', Math.max(8, Math.round(dist/25))+'s');
       }}
     }}
   }}
