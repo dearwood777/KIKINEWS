@@ -728,8 +728,9 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
   }}
 
   function run(){{
+    var sy = window.pageYOffset || document.documentElement.scrollTop || 0;
     boxes.forEach(function(b){{
-      var kids = pool.get(b), n = colsFor(b), gap = n === 3 ? 18 : 18;
+      var kids = pool.get(b), n = colsFor(b), gap = 18;
       kids.forEach(function(k){{ if (k.parentNode) k.parentNode.removeChild(k); }});
       b.textContent = '';
       if (n < 2) {{ b.style.display = 'block'; kids.forEach(function(k){{ b.appendChild(k); }}); return; }}
@@ -753,13 +754,26 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
         best.appendChild(k);
       }});
     }});
+    if (sy > 0) {{
+      window.scrollTo(0, sy);
+      requestAnimationFrame(function(){{ window.scrollTo(0, sy); }});
+    }}
   }}
 
-  var timer = null;
-  function later(){{ clearTimeout(timer); timer = setTimeout(run, 120); }}
+  var timer = null, lastW = -1;
+  function later(){{
+    var w = document.documentElement.clientWidth;
+    if (w === lastW) return;
+    lastW = w;
+    clearTimeout(timer); timer = setTimeout(run, 120);
+  }}
+  function force(){{
+    lastW = document.documentElement.clientWidth;
+    clearTimeout(timer); timer = setTimeout(run, 90);
+  }}
   window.addEventListener('resize', later);
-  window.addEventListener('load', later);
-  try {{ document.addEventListener('toggle', later, true); }} catch (e) {{}}
+  window.addEventListener('load', force);
+  try {{ document.addEventListener('toggle', force, true); }} catch (e) {{}}
   run();
 }})();
 </script>
