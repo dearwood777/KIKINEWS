@@ -352,7 +352,8 @@ window.addEventListener('scroll',function(){
       a.style.removeProperty('--dist');
       a.style.removeProperty('--dur');
       var over=t.scrollWidth - t.clientWidth;
-      if(over>6){
+      // 只溢出两三个字（<18px）不值得滚动，容易看着“抖”，交给容器裁掉即可
+      if(over>18){
         a.classList.add('sc');
         a.style.setProperty('--dist', -(over+4)+'px');
         a.style.setProperty('--dur', Math.max(9, Math.round((over+4)/30))+'s');
