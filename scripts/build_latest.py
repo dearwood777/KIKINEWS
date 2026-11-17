@@ -85,9 +85,10 @@ body{{
 /* ---------- 横屏 / 平板宽屏：正文分两栏，别留一大片空白 ---------- */
 @media (min-width: 760px){{
   .wrap{{max-width:1320px;padding:0 20px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom))}}
-  .hero{{margin:0 -20px 20px;padding:30px 26px 24px}}
+  .hero{{margin:0 -20px 20px;padding:28px 26px 24px}}
   .hero h1{{font-size:30px}}
-  .hero .meta{{font-size:12.5px}}
+  .hero .topline{{padding-right:66px}}
+  .hero .day{{font-size:11.5px}}
   .cards > .card{{margin:0 0 16px}}
   .card h3{{font-size:18.5px}}
 }}
@@ -95,15 +96,14 @@ body{{
 
 /* ---------- header ---------- */
 .hero{{
-  margin:0 -16px 18px;padding:24px 20px 20px;color:#fff;
-  background:linear-gradient(160deg,#16294a 0%,#0c1526 100%);
+  margin:0 -16px 18px;padding:22px 20px 20px;color:#fff;
+  background:linear-gradient(180deg,#152847 0%,#070d18 100%);
   border-radius:0 0 16px 16px;
 }}
-.hero .topline{{display:flex;align-items:baseline;justify-content:space-between;gap:10px}}
-.hero .brand{{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}}
-.hero .day{{font-size:11.5px;letter-spacing:.04em;opacity:.7;white-space:nowrap}}
-.hero h1{{margin:11px 0 7px;font-size:23px;line-height:1.3;font-weight:700;letter-spacing:.3px}}
-.hero .meta{{font-size:11.5px;opacity:.7}}
+.hero .topline{{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding-right:60px}}
+.hero .brand{{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.7}}
+.hero .day{{font-size:11px;letter-spacing:0;opacity:.7;white-space:nowrap;flex:0 0 auto}}
+.hero h1{{margin:13px 0 0;font-size:23px;line-height:1.3;font-weight:700;letter-spacing:.3px}}
 .pillrow{{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}}
 .pill{{
   font-size:12px;padding:4px 10px;border-radius:999px;white-space:nowrap;
@@ -256,11 +256,10 @@ footer .dot{{opacity:.45;margin:0 6px}}
 <div class="wrap">
   <div class="hero">
     <div class="topline">
-      <div class="brand">KIKI DAILY · 每日速递</div>
+      <div class="brand">KIKI DAILY·每日速递</div>
       <div class="day">{hero_date}</div>
     </div>
     <h1>{hero_title}</h1>
-    <div class="meta">{updated} · 自动生成</div>
     <div class="pillrow">{pills}</div>
   </div>
   {cands}
@@ -937,15 +936,15 @@ def main() -> None:
     # 不随构建时刻漂移（重建不会把日期改回前一天）。
     # 注意：latest.json 里的 generated_at 仍是 UTC，guard 用它算小时数，不受影响。
     display_day, updated_text = digest_display(DOCS)
-    # 日期已挪到报头右上角，时间行只留时分，避免同一行出现两次日期
-    updated_clock = updated_text.split(" ", 1)[1] if " " in updated_text else updated_text
+    # 日期与时间并到报头右上角一行：2026-11-17 · 北京时间 06:05
+    hm = updated_text.split(" ")[1] if " " in updated_text else ""
+    hero_date = f"{display_day} · 北京时间 {hm}" if hm else display_day
     bj_now = now + timedelta(hours=8)
 
     page = TEMPLATE.format(
         title=f"KIKI 每日速递 {display_day}",
-        hero_date=display_day,
+        hero_date=hero_date,
         hero_title="科技 · 财经 · 国际速递",
-        updated=updated_clock,
         updated_short=display_day,
         pills=pills,
         cands=cand_block,
@@ -959,9 +958,8 @@ def main() -> None:
     if "en" in posts:
         en_page = TEMPLATE.format(
             title=f"KIKI Daily {display_day}",
-            hero_date=display_day,
+            hero_date=hero_date,
             hero_title="Tech · Finance · World",
-            updated=updated_clock,
             updated_short=display_day,
             pills=pills,
             cands=cand_block,
