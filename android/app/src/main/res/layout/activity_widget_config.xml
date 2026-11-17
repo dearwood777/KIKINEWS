@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#0E1520">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_config_title"
+            android:textColor="#E2E8F4"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/widget_config_desc"
+            android:textColor="#8B93A7"
+            android:textSize="13sp" />
+
+        <!-- 预览块：直接显示当前档位的背景 -->
+        <FrameLayout
+            android:id="@+id/cfg_preview"
+            android:layout_width="match_parent"
+            android:layout_height="88dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_widget_a090">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="20dp"
+                android:text="@string/widget_config_preview"
+                android:textColor="#E2E8F4"
+                android:textSize="13sp" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/cfg_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textColor="#4FD1C5"
+            android:textSize="15sp" />
+
+        <SeekBar
+            android:id="@+id/cfg_seek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:max="100" />
+
+        <Button
+            android:id="@+id/cfg_save"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#1F3A5F"
+            android:text="@string/widget_config_save"
+            android:textColor="#E2E8F4"
+            android:textSize="15sp" />
+    </LinearLayout>
+</ScrollView>

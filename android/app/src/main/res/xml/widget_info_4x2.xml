@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 4×2：默认三条，拉高会自动增加到六条 -->
+<!--
+  4×2：
+  targetCellWidth/Height 是 Android 12+ 的“按格子声明”属性，launcher 直接用 4×2 标注，
+  不再拿 minWidth 反推，所以手机和平板在 picker 里显示一致；
+  minWidth/minHeight 只给 Android 11 及以下兜底。
+  configure 指向透明度设置页，长按组件 → 组件设置 可以重新调整。
+-->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.kiki.horizonbrief.WidgetConfigActivity"
     android:description="@string/widget_desc_4x2"
     android:initialLayout="@layout/widget_card"
+    android:maxResizeHeight="480dp"
+    android:maxResizeWidth="560dp"
     android:minHeight="110dp"
-    android:minResizeHeight="110dp"
+    android:minResizeHeight="90dp"
     android:minResizeWidth="250dp"
     android:minWidth="340dp"
     android:previewLayout="@layout/widget_card"
     android:resizeMode="horizontal|vertical"
+    android:targetCellHeight="2"
+    android:targetCellWidth="4"
     android:updatePeriodMillis="1800000"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable" />

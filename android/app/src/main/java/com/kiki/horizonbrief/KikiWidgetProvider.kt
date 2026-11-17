@@ -16,10 +16,15 @@ import java.net.URL
 /**
  * 桌面小组件：4×1 与 4×2 两个独立条目，共用一套渲染逻辑。
  *
- * 每页显示几条 = 组件实际高度能放下几行（行高按 24dp 估）：
- *   高度只够一行 → 单行紧凑模式；够两三行 → 顶部日期/页码/箭头 + 若干条标题，行高按权重填满整块，
- *   所以平板上不会出现「三条挤在上边、下边空一大片」。
- * 页内用 ‹ › 手动翻，跟随系统 30 分钟刷新时自动翻一页。
+ * 尺寸适配（1.6.000 起）：
+ *   1. widget_info_*.xml 用 targetCellWidth/targetCellHeight 按“格子”声明大小，
+ *      手机和平板上 picker 都标 4×1 / 4×2（Android 12+；11 及以下退回 minWidth）。
+ *   2. 布局里每一行是**固定行高**，能放几行由组件的真实高度算出来，放不下的行隐藏。
+ *      所以把组件拉高只会多显示几条，不会再把行距撑开。
+ *   3. 宽度 ≥300dp（平板）换用 widget_card_wide：行高 30dp、标题 14.5sp，
+ *      手机上用 26dp / 12.5sp 的紧凑版。
+ * 透明度：0–100%，11 档预制背景（bg_widget_a000…a100），点组件上的 ⚙ 调整。
+ * 页内用 ‹ › 手动翻页，跟随系统 30 分钟刷新时自动翻一页。
  * 数据来自 GitHub Pages 上的 widget.json（约 2KB），取不到就退回本地缓存，
  * 再取不到就用安装包里内置的快照。
  */
@@ -59,7 +64,7 @@ open class KikiWidgetProvider : AppWidgetProvider() {
         appWidgetId: Int,
         newOptions: android.os.Bundle
     ) {
-        // 用户拉了尺寸，重新按新的行数渲染，页码保持不变
+        // 用户拉了尺寸，按新的高度重新决定显示几行，页码保持不变
         WidgetRenderer.render(
             context, appWidgetManager, appWidgetId, WidgetStore.cached(context), step = 0,
             providerClass = javaClass, baseSlots = baseSlots
@@ -69,6 +74,18 @@ open class KikiWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         val action = intent.action ?: return
+
+        if (action == ACTION_CONFIG) {
+            val id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
+            if (id == -1) return
+            context.startActivity(
+                Intent(context, WidgetConfigActivity::class.java)
+                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+            return
+        }
+
         if (action != ACTION_NEXT && action != ACTION_PREV) return
         val id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
         if (id == -1) return
@@ -92,6 +109,7 @@ open class KikiWidgetProvider : AppWidgetProvider() {
         private const val TAG = "KikiWidget"
         const val ACTION_NEXT = "com.kiki.horizonbrief.WIDGET_NEXT"
         const val ACTION_PREV = "com.kiki.horizonbrief.WIDGET_PREV"
+        const val ACTION_CONFIG = "com.kiki.horizonbrief.WIDGET_CONFIG"
     }
 }
 
@@ -105,6 +123,22 @@ class KikiWidgetProvider4x2 : KikiWidgetProvider() {
     override val baseSlots: Int get() = 3
 }
 
+/** 组件面板里的统一刷新入口（透明度改完、或用户点了设置里的按钮）。 */
+object WidgetUpdater {
+    fun refreshAll(context: Context) {
+        val mgr = AppWidgetManager.getInstance(context)
+        for (cls in listOf(KikiWidgetProvider4x1::class.java, KikiWidgetProvider4x2::class.java)) {
+            val ids = mgr.getAppWidgetIds(android.content.ComponentName(context, cls))
+            ids?.forEach { id ->
+                WidgetRenderer.render(
+                    context, mgr, id, WidgetStore.cached(context), step = 0,
+                    providerClass = cls, baseSlots = if (cls == KikiWidgetProvider4x1::class.java) 1 else 3
+                )
+            }
+        }
+    }
+}
+
 data class WidgetItem(val title: String, val score: String, val anchor: String, val sec: String)
 
 data class WidgetFeed(val date: String, val updated: String, val items: List<WidgetItem>)
@@ -115,6 +149,17 @@ object WidgetStore {
     private const val PREF = "widget"
     private const val KEY_FEED = "feed"
     private const val KEY_AT = "fetched_at"
+    private const val KEY_ALPHA = "bg_alpha"
+
+    /** 背景不透明度，0–100；默认 90（暗色但能透出一点壁纸）。 */
+    fun alpha(context: Context): Int =
+        context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+            .getInt(KEY_ALPHA, 90).coerceIn(0, 100)
+
+    fun setAlpha(context: Context, pct: Int) {
+        context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit()
+            .putInt(KEY_ALPHA, pct.coerceIn(0, 100)).apply()
+    }
 
     /**
      * 免翻墙的取数顺序：先取 GitHub Pages 上的静态文件（和网页同一个域名，
@@ -223,14 +268,34 @@ object WidgetStore {
     }
 }
 
-/** 按组件尺寸算 slots，再按 page 填内容。 */
+/**
+ * 按组件真实尺寸选布局、算行数、填内容。
+ * 行高是写死的（窄 26dp / 宽 30dp），所以高度变大只会多显示条目。
+ */
 object WidgetRenderer {
 
-    private const val ROW_DP = 24
-    /** 顶部日期行 + 上下内边距占掉的高度 */
-    private const val HEAD_DP = 28
-    private const val MAX_ROWS = 6
+    private const val MAX_ROWS = 8
     const val EMPTY_HINT = "打开 App 同步今日新闻"
+
+    private val THUMB = intArrayOf(
+        R.drawable.bg_widget_a000, R.drawable.bg_widget_a010, R.drawable.bg_widget_a020,
+        R.drawable.bg_widget_a030, R.drawable.bg_widget_a040, R.drawable.bg_widget_a050,
+        R.drawable.bg_widget_a060, R.drawable.bg_widget_a070, R.drawable.bg_widget_a080,
+        R.drawable.bg_widget_a090, R.drawable.bg_widget_a100
+    )
+
+    private val ROW_IDS = intArrayOf(
+        R.id.w_r1, R.id.w_r2, R.id.w_r3, R.id.w_r4,
+        R.id.w_r5, R.id.w_r6, R.id.w_r7, R.id.w_r8
+    )
+    private val TITLE_IDS = intArrayOf(
+        R.id.w_t1, R.id.w_t2, R.id.w_t3, R.id.w_t4,
+        R.id.w_t5, R.id.w_t6, R.id.w_t7, R.id.w_t8
+    )
+    private val SCORE_IDS = intArrayOf(
+        R.id.w_s1, R.id.w_s2, R.id.w_s3, R.id.w_s4,
+        R.id.w_s5, R.id.w_s6, R.id.w_s7, R.id.w_s8
+    )
 
     fun render(
         context: Context,
@@ -241,8 +306,15 @@ object WidgetRenderer {
         providerClass: Class<*>,
         baseSlots: Int
     ) {
-        val views = RemoteViews(context.packageName, R.layout.widget_card)
-        val slots = slotsFor(context, manager, id, baseSlots)
+        val opts = manager.getAppWidgetOptions(id)
+        val widthDp = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+        val wide = widthDp >= 300
+        val layout = if (wide) R.layout.widget_card_wide else R.layout.widget_card
+
+        val views = RemoteViews(context.packageName, layout)
+        applyAlpha(context, views)
+
+        val slots = slotsFor(context, opts, wide, baseSlots)
 
         if (feed == null || feed.items.isEmpty()) {
             renderEmpty(context, views, id)
@@ -264,7 +336,10 @@ object WidgetRenderer {
         val dateText = listOf(feed.date.takeLast(5), feed.updated)
             .filter { it.isNotBlank() }.joinToString(" ")
 
-        if (slots == 1) {
+        bindConfig(context, views, id, providerClass, R.id.w_set)
+        bindConfig(context, views, id, providerClass, R.id.w_sset)
+
+        if (slots <= 1) {
             views.setViewVisibility(R.id.w_single, android.view.View.VISIBLE)
             views.setViewVisibility(R.id.w_multi, android.view.View.GONE)
             val it = items[page.coerceAtMost(total - 1)]
@@ -291,27 +366,18 @@ object WidgetRenderer {
                 views.setViewVisibility(R.id.w_next, android.view.View.GONE)
             }
 
-            val rowIds = intArrayOf(
-                R.id.w_r1, R.id.w_r2, R.id.w_r3, R.id.w_r4, R.id.w_r5, R.id.w_r6
-            )
-            val titleIds = intArrayOf(
-                R.id.w_t1, R.id.w_t2, R.id.w_t3, R.id.w_t4, R.id.w_t5, R.id.w_t6
-            )
-            val scoreIds = intArrayOf(
-                R.id.w_s1, R.id.w_s2, R.id.w_s3, R.id.w_s4, R.id.w_s5, R.id.w_s6
-            )
             for (i in 0 until MAX_ROWS) {
                 val idx = page * slots + i
                 if (i < slots && idx < total) {
                     val it = items[idx]
-                    views.setViewVisibility(rowIds[i], android.view.View.VISIBLE)
-                    views.setTextViewText(titleIds[i], it.title)
-                    views.setTextViewText(scoreIds[i], it.score)
+                    views.setViewVisibility(ROW_IDS[i], android.view.View.VISIBLE)
+                    views.setTextViewText(TITLE_IDS[i], it.title)
+                    views.setTextViewText(SCORE_IDS[i], it.score)
                     views.setOnClickPendingIntent(
-                        rowIds[i], openApp(context, id, it.anchor, 30 + i)
+                        ROW_IDS[i], openApp(context, id, it.anchor, 30 + i)
                     )
                 } else {
-                    views.setViewVisibility(rowIds[i], android.view.View.GONE)
+                    views.setViewVisibility(ROW_IDS[i], android.view.View.GONE)
                 }
             }
         }
@@ -319,21 +385,29 @@ object WidgetRenderer {
         manager.updateAppWidget(id, views)
     }
 
+    /** 11 档预制背景，按 10% 取整切换，避免每帧画位图（也避开 RemoteViews 的位图大小限制）。 */
+    private fun applyAlpha(context: Context, views: RemoteViews) {
+        val pct = WidgetStore.alpha(context)
+        val index = (pct / 10).coerceIn(0, 10)
+        views.setInt(R.id.w_root, "setBackgroundResource", THUMB[index])
+    }
+
     /**
-     * 单位是 dp。OPTION_APPWIDGET_MIN_HEIGHT 是当前高度下限，够几行就显示几行；
-     * 刚添加到桌面时 launcher 可能还没回传尺寸，这时退回 provider 自带的 baseSlots，
-     * 避免 4×2 被渲染成一条。
-     *
-     * 平板上一个格子比手机高得多（同样 2 格能到 180dp 以上），而 launcher 回传的
-     * 高度下限往往还停在手机尺度，按它算就会「只给 4 行、每行拉得很开」。所以平板上
-     * 把估算值放大 1.6 倍，行数才能跟上真实高度。
+     * 行数 = 组件真实高度能放下几行（固定行高，绝不拉伸）。
+     * OPTION_APPWIDGET_MIN_HEIGHT 是当前高度下限，取它最安全：宁可少一行，也不裁切。
      */
-    private fun slotsFor(context: Context, manager: AppWidgetManager, id: Int, baseSlots: Int): Int {
-        val h = manager.getAppWidgetOptions(id)
-            .getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
-        val tablet = context.resources.configuration.smallestScreenWidthDp >= 600
-        val hEst = if (tablet) (h * 16) / 10 else h
-        val fit = (hEst - HEAD_DP) / ROW_DP
+    private fun slotsFor(
+        context: Context,
+        opts: android.os.Bundle,
+        wide: Boolean,
+        baseSlots: Int
+    ): Int {
+        val h = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+        val rowDp = if (wide) 30 else 26
+        val headDp = if (wide) 24 else 20
+        val padDp = 10
+        val fit = (h - headDp - padDp) / rowDp
+        // 刚放到桌面时尺寸可能还没回传，用 provider 自带的 baseSlots 兜底
         return maxOf(fit, baseSlots).coerceIn(1, MAX_ROWS)
     }
 
@@ -345,6 +419,25 @@ object WidgetRenderer {
         views.setViewVisibility(R.id.w_sprev, android.view.View.GONE)
         views.setViewVisibility(R.id.w_snext, android.view.View.GONE)
         views.setOnClickPendingIntent(R.id.w_stitle, openApp(context, id, null, 40))
+    }
+
+    private fun bindConfig(
+        context: Context,
+        views: RemoteViews,
+        id: Int,
+        providerClass: Class<*>,
+        viewId: Int
+    ) {
+        views.setOnClickPendingIntent(
+            viewId, PendingIntent.getBroadcast(
+                context,
+                50,
+                Intent(context, providerClass)
+                    .setAction(KikiWidgetProvider.ACTION_CONFIG)
+                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        )
     }
 
     private fun bindArrow(

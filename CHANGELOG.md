@@ -1,5 +1,20 @@
 # 更新记录
 
+## v1.6.000 小组件重写：按格子声明尺寸、固定行高自适应、透明度可调、花边外框（2026-11-17）
+
+**问题**（用户真机反馈）：手机上 picker 标 5×1 / 5×2，平板上标 4×1 / 4×2，且平板条目下方小字是 3×1 / 3×2；平板上把 4×2 拉高后行距被撑开、只显示 4 条却空一半；浅色壁纸上黑底突兀；平板字号偏小。
+
+**为什么不是 Glance**：Glance 能声明响应式尺寸，但要引入整套 Compose 工具链（Compose 编译器 + runtime），APK 体积与编译链风险上升，且对 9-patch 花边、整块透明度的支持不如现有 RemoteViews 直接。这次改的其实是「按格子声明 + 固定行高」，这两点 RemoteViews 都能做到，收益相同而代价小得多。
+
+- **picker 标签统一**：`widget_info_4x1/4x2.xml` 加 `android:targetCellWidth="4"` / `targetCellHeight="1|2"`（Android 12+）。launcher 直接用格子数标注，不再拿 `minWidth` 反推，手机与平板都读 4×1 / 4×2；Android 11 及以下仍走 `minWidth=340dp` 兜底。另加 `maxResizeWidth/Height`，免得被拉到超出布局上限。
+- **行距不再撑开**：每行改为**固定行高**（手机 26dp、平板 30dp），删掉 `layout_weight` 平分。能显示几行由组件真实高度算：`slots = (高度 − 头部 − 内边距) / 行高`，上限 8 行（布局里补齐到 8 行，多出来的隐藏）。**拉高组件只会多显示条目**，不会再把行距拉大；平板 4×2 一格约 220dp 时能放 6 条。
+- **窄/宽两套布局**：`OPTION_APPWIDGET_MIN_WIDTH ≥ 300dp` 用 `widget_card_wide.xml`（行高 30dp、标题 14.5sp、评分 11sp、头部 24dp），否则用 `widget_card.xml`（26dp / 12.5sp / 9.5sp）。平板字号偏小的问题就是靠这一层解决。
+- **透明度可调（0–100%，10% 一档）**：预制 11 个背景 `bg_widget_a000…a100`（底板 `#0E1520` 带 alpha + 描边 + 内层细线），渲染时按偏好切换 `setBackgroundResource`，不画位图（避开 RemoteViews 位图大小限制）。入口：组件右上角新增 `⚙`，点开 `WidgetConfigActivity`（滑杆 + 预览块 + 保存），保存后立即重绘所有组件；provider 里也配了 `android:configure` + `widgetFeatures="reconfigurable"`，部分 launcher 长按组件可直接进设置。默认 90%。
+- **现代花边外框**：新增 `ic_corner_curl.xml` 向量（两段弧 + 两个圆点），四角各放一个 ImageView 用 `android:rotation` 拼出完整边框，矢量缩放不糊。这也就是天气组件那种「小花边」的通行做法——要么 9-patch，要么四角装饰件拼。
+- **行为保持**：`‹ ›` 手动翻页、系统 30 分钟刷新自动翻一页、点标题进 App 定位、点日期开 App。左右滑动翻页仍然做不了（RemoteViews 无手势）。
+- 版本 1.6.000（versionCode 160000）。
+
+
 ## v1.5.002 小组件：picker 标签对齐 4 列、平板行距收紧（2026-11-17）
 
 - **尺寸标签为什么显示 3×1 / 3×2**：picker 下面那行小字不是我们写的，是 launcher 拿 `minWidth` / `minHeight` 按自己的格子大小换算出来的。原来 `minWidth` 写 250dp，手机和平板都被算成 3 列（系统不认「4×1」这个名字，只认 dp）。现在 `minWidth` 提到 340dp（`minResizeWidth` 仍是 250dp，放上去以后可以往回拉窄），标签应该读成 4×1 / 4×2。

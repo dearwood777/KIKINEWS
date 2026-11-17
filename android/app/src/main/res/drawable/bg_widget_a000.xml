@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 透明度 0%：底板 alpha=00 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="18dp" />
+            <solid android:color="#000E1520" />
+            <stroke android:width="1dp" android:color="#1A2C364A" />
+        </shape>
+    </item>
+    <item android:left="5dp" android:top="5dp" android:right="5dp" android:bottom="5dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="14dp" />
+            <solid android:color="#00000000" />
+            <stroke android:width="0.7dp" android:color="#006FE3D4" />
+        </shape>
+    </item>
+</layer-list>
