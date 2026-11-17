@@ -85,9 +85,9 @@ body{{
 /* ---------- 横屏 / 平板宽屏：正文分两栏，别留一大片空白 ---------- */
 @media (min-width: 760px){{
   .wrap{{max-width:1320px;padding:0 20px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom))}}
-  .hero{{margin:0 -20px 20px;padding:34px 26px 26px}}
-  .hero h1{{font-size:27px}}
-  .hero .meta{{font-size:13.5px}}
+  .hero{{margin:0 -20px 20px;padding:30px 26px 24px}}
+  .hero h1{{font-size:30px}}
+  .hero .meta{{font-size:12.5px}}
   .cards > .card{{margin:0 0 16px}}
   .card h3{{font-size:18.5px}}
 }}
@@ -95,17 +95,19 @@ body{{
 
 /* ---------- header ---------- */
 .hero{{
-  margin:0 -16px 18px;padding:30px 22px 22px;color:#fff;
-  background:linear-gradient(135deg,#1b3f78 0%,#0f6560 100%);
-  border-radius:0 0 22px 22px;
+  margin:0 -16px 18px;padding:24px 20px 20px;color:#fff;
+  background:linear-gradient(160deg,#16294a 0%,#0c1526 100%);
+  border-radius:0 0 16px 16px;
 }}
-.hero .brand{{font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}}
-.hero h1{{margin:6px 0 8px;font-size:23px;line-height:1.35;font-weight:700;letter-spacing:.2px}}
-.hero .meta{{font-size:12.5px;opacity:.9}}
-.pillrow{{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}}
+.hero .topline{{display:flex;align-items:baseline;justify-content:space-between;gap:10px}}
+.hero .brand{{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}}
+.hero .day{{font-size:11.5px;letter-spacing:.04em;opacity:.7;white-space:nowrap}}
+.hero h1{{margin:11px 0 7px;font-size:23px;line-height:1.3;font-weight:700;letter-spacing:.3px}}
+.hero .meta{{font-size:11.5px;opacity:.7}}
+.pillrow{{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}}
 .pill{{
-  font-size:12.5px;padding:5px 11px;border-radius:999px;
-  background:rgba(255,255,255,.18);backdrop-filter:blur(6px);white-space:nowrap;
+  font-size:12px;padding:4px 10px;border-radius:999px;white-space:nowrap;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);
 }}
 .pill-link{{color:inherit;text-decoration:none;font-weight:700}}
 
@@ -253,7 +255,10 @@ footer .dot{{opacity:.45;margin:0 6px}}
 <body>
 <div class="wrap">
   <div class="hero">
-    <div class="brand">KIKI DAILY · 每日速递</div>
+    <div class="topline">
+      <div class="brand">KIKI DAILY · 每日速递</div>
+      <div class="day">{hero_date}</div>
+    </div>
     <h1>{hero_title}</h1>
     <div class="meta">{updated} · 自动生成</div>
     <div class="pillrow">{pills}</div>
@@ -932,12 +937,15 @@ def main() -> None:
     # 不随构建时刻漂移（重建不会把日期改回前一天）。
     # 注意：latest.json 里的 generated_at 仍是 UTC，guard 用它算小时数，不受影响。
     display_day, updated_text = digest_display(DOCS)
+    # 日期已挪到报头右上角，时间行只留时分，避免同一行出现两次日期
+    updated_clock = updated_text.split(" ", 1)[1] if " " in updated_text else updated_text
     bj_now = now + timedelta(hours=8)
 
     page = TEMPLATE.format(
         title=f"KIKI 每日速递 {display_day}",
-        hero_title=f"{display_day} 科技 · 财经 · 国际速递",
-        updated=updated_text,
+        hero_date=display_day,
+        hero_title="科技 · 财经 · 国际速递",
+        updated=updated_clock,
         updated_short=display_day,
         pills=pills,
         cands=cand_block,
@@ -951,8 +959,9 @@ def main() -> None:
     if "en" in posts:
         en_page = TEMPLATE.format(
             title=f"KIKI Daily {display_day}",
-            hero_title=f"{display_day} Tech · Finance · World",
-            updated=updated_text,
+            hero_date=display_day,
+            hero_title="Tech · Finance · World",
+            updated=updated_clock,
             updated_short=display_day,
             pills=pills,
             cands=cand_block,
