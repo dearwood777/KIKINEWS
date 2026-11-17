@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">KIKINEWS 日报</string>
-    <string name="widget_desc">今日速递头条：三条一组，跟随每日更新自动轮换</string>
+    <string name="widget_desc">今日速递头条：按块大小自动决定显示几条，跟随每日更新轮换</string>
+    <string name="widget_4x1_label">KIKINEWS 4×1</string>
+    <string name="widget_4x2_label">KIKINEWS 4×2</string>
+    <string name="widget_desc_4x1">一行一条头条，桌面横向一条就能扫到今天的重点</string>
+    <string name="widget_desc_4x2">三条一组，一屏扫完今天的重点，可按块大小自动增减</string>
+    <string name="widget_picker_desc">桌面小组件</string>
 </resources>

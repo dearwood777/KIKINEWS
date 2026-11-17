@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 4×1：手机上一行标题，平板上会按实际高度自动多显示几条 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:description="@string/widget_desc"
+    android:description="@string/widget_desc_4x1"
     android:initialLayout="@layout/widget_card"
     android:minHeight="40dp"
     android:minResizeHeight="40dp"
-    android:minResizeWidth="110dp"
-    android:minWidth="110dp"
+    android:minResizeWidth="180dp"
+    android:minWidth="250dp"
     android:previewLayout="@layout/widget_card"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="1800000"
