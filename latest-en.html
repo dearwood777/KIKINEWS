@@ -1,392 +1,392 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0e1320">
-<title>KIKI Daily 2026-11-17</title>
-<style>
-/* 固定深色皮肤：词汇页本来就是深色，主页原来跟随系统（浅色设备上白底），
-   两页在平板/手机上会一明一暗。现统一成同一套深色 token，亮度偏柔和不刺眼。 */
-:root{
-  --bg:#0e1320; --fg:#e2e8f4; --muted:#8b93a7; --line:#242d40;
-  --card:#111926; --soft:#1a2233; --accent:#5aa6ff; --accent2:#4fd1c5;
-  --score:#4fd1c5; --chip:#242e42; --shadow:0 8px 24px rgba(0,0,0,.28);
-}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;overflow-x:hidden}
-body{
-  margin:0;background:var(--bg);color:var(--fg);max-width:100vw;overflow-x:hidden;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-  font-size:16.5px;line-height:1.78;-webkit-font-smoothing:antialiased;
-  overflow-wrap:break-word;
-}
-.wrap{max-width:720px;margin:0 auto;padding:0 16px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom));}
-
-/* ---------- 横屏 / 平板宽屏：正文分两栏，别留一大片空白 ---------- */
-@media (min-width: 760px){
-  .wrap{max-width:1320px;padding:0 20px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
-  .hero{margin:0 -20px 20px;padding:34px 26px 26px}
-  .hero h1{font-size:27px}
-  .hero .meta{font-size:13.5px}
-  .cards > .card{margin:0 0 16px}
-  .card h3{font-size:18.5px}
-}
-
-
-/* ---------- header ---------- */
-.hero{
-  margin:0 -16px 18px;padding:30px 22px 22px;color:#fff;
-  background:linear-gradient(135deg,#1b3f78 0%,#0f6560 100%);
-  border-radius:0 0 22px 22px;
-}
-.hero .brand{font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
-.hero h1{margin:6px 0 8px;font-size:23px;line-height:1.35;font-weight:700;letter-spacing:.2px}
-.hero .meta{font-size:12.5px;opacity:.9}
-.pillrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.pill{
-  font-size:12.5px;padding:5px 11px;border-radius:999px;
-  background:rgba(255,255,255,.18);backdrop-filter:blur(6px);white-space:nowrap;
-}
-.pill-link{color:inherit;text-decoration:none;font-weight:700}
-
-/* ---------- 中文对照块 ---------- */
-.zh{
-  margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);
-}
-.zhlabel{
-  display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.08em;
-  color:var(--accent2);background:var(--chip);border:1px solid var(--line);
-  border-radius:6px;padding:2px 8px;margin-bottom:8px;
-}
-.zh h4{margin:0 0 8px;font-size:16px;font-weight:600;line-height:1.5;color:var(--fg)}
-
-/* ---------- summary ---------- */
-.summary{
-  display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);
-  border-radius:12px;padding:9px 12px;font-size:13.5px;line-height:1.45;color:var(--muted);
-  margin-bottom:10px;box-shadow:var(--shadow);
-}
-.summary>span{flex:0 0 auto;font-size:14px}
-.summary b{color:var(--fg)}
-
-/* ---------- toc ---------- */
-/* 目录条目一律单行、宽度随文字自适应（短的短、长的到容器满宽），
-   平板上一行自然并排三四个；手机放不下时由页面脚本加 .sc 类，
-   以约 30px/秒的慢速横向滚动，不做截断。高度统一 42px。 */
-.toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.toc a{
-  display:flex;align-items:center;height:32px;max-width:100%;overflow:hidden;
-  text-decoration:none;color:var(--fg);background:#0f1a2e;border:1px solid #25314b;
-  padding:0 10px;border-radius:8px;font-size:13px;line-height:1;box-sizing:border-box;
-}
-.toc a .tt{display:block;white-space:nowrap;flex:0 0 auto;text-align:left}
-.toc a .tt.dup{margin-left:1.6em}
-.toc a.sc,.toc a.nudge{
-  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent 100%);
-  mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent 100%);
-}
-
-.toc a.sc .tt{animation:tocscroll var(--dur,16s) linear infinite}
-.toc a.nudge .tt{animation:tocnudge var(--dur,7s) ease-in-out infinite}
-@keyframes tocscroll{
-  from{transform:translateX(0)}
-  to{transform:translateX(var(--dist,-100px))}
-}
-@keyframes tocnudge{
-  0%,12%{transform:translateX(0)}
-  46%,58%{transform:translateX(var(--dist,-30px))}
-  92%,100%{transform:translateX(0)}
-}
-@media (prefers-reduced-motion: reduce){
-  .toc a.sc .tt,.toc a.nudge .tt{animation:none}
-}
-.toc a .n{color:var(--muted);font-size:12px;margin-left:4px}
-
-/* ---------- group heading ---------- */
-.group{
-  display:flex;align-items:center;gap:10px;margin:26px 0 12px;
-  font-size:15px;font-weight:700;color:var(--fg);
-}
-.group:before{content:"";width:4px;height:16px;border-radius:2px;background:var(--accent)}
-.group span{color:var(--muted);font-weight:500;font-size:12.5px}
-
-/* ---------- card ---------- */
-/* 卡片底色压暗（原来是 #161d2b，比页面底色亮一档，白标题压在它上面发闷、不够跳），
-   靠描边与页面区分；窄屏圆角收小，标题折两行时不再显得笨重 */
-.card{
-  background:var(--card);border:1px solid var(--line);border-radius:16px;
-  padding:16px 16px 6px;margin:0 0 14px;box-shadow:var(--shadow);scroll-margin-top:16px;
-}
-.card h3{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700;text-wrap:pretty;color:#ffffff;letter-spacing:.1px}
-@media (max-width: 520px){
-  .card{border-radius:10px;padding:13px 14px 4px}
-  .card h3{font-size:17px;line-height:1.42}
-}
-.card h3 a{color:var(--fg);text-decoration:none}
-.card h3 a:active{color:var(--accent)}
-.score{
-  display:inline-flex;align-items:center;gap:3px;vertical-align:middle;
-  font-size:12px;font-weight:700;color:var(--score);background:var(--chip);
-  border-radius:999px;padding:2px 8px;margin-left:6px;
-}
-.src{font-size:12.5px;color:var(--muted);margin:-2px 0 10px}
-.card p{margin:0 0 12px;font-size:15.5px;color:var(--fg);text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto}
-.card a{color:var(--accent);text-decoration:none;word-break:break-word}
-.note{
-  border-radius:12px;padding:10px 12px 2px;font-size:14.5px;background:var(--soft);
-  border-left:3px solid var(--accent2);margin:0 0 12px;color:var(--fg);
-}
-.note .lbl{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--accent2);margin-bottom:2px}
-.note.bg{border-left-color:var(--accent)}
-.note.bg .lbl{color:var(--accent)}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
-.chip{font-size:12px;background:var(--chip);color:var(--muted);padding:3px 9px;border-radius:999px;border:1px solid var(--line)}
-.srcurl{margin:0 0 14px;font-size:13px}
-.srcurl a{color:var(--accent);text-decoration:none;word-break:break-all}
-.srcurl a:hover{text-decoration:underline}
-.cands{margin:0 0 18px}
-.cands summary{list-style:none;cursor:pointer}
-.cands summary::-webkit-details-marker{display:none}
-.cbtn{display:flex;align-items:center;gap:8px;font-size:12.5px;line-height:1;
-  padding:6px 12px;border-radius:999px;white-space:nowrap;
-  border:1px solid var(--line);background:var(--card);color:var(--accent)}
-.cbtn .l{flex:0 0 auto}
-.cbtn .r{margin-left:auto;flex:0 0 auto;opacity:.85}
-.cbtn .t{flex:0 0 auto;font-size:12px;opacity:.7;color:var(--muted)}
-.cands[open] .cbtn{background:var(--chip)}
-.clist{margin:12px 0 0;padding-left:22px;font-size:13.5px;color:var(--muted)}
-.clist li{margin:0 0 7px}
-.clist a{color:var(--fg);text-decoration:none}
-.clist a:hover{text-decoration:underline}
-.clist .cm{margin-left:6px;opacity:.6;font-size:12px}
-details{margin:0 0 14px;font-size:13.5px}
-details summary{color:var(--muted);cursor:pointer}
-details ul{margin:8px 0 0;padding-left:18px}
-.card ul,.card ol{padding-left:20px;margin:0 0 12px}
-.card li{margin:0 0 6px}
-.card blockquote{margin:0 0 12px;padding:8px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:14px}
-.card code{background:var(--chip);padding:2px 6px;border-radius:5px;font-size:13px}
-.card pre{background:var(--soft);padding:12px;border-radius:10px;overflow-x:auto;font-size:13px}
-.card img{max-width:100%;height:auto;border-radius:10px}
-.card table{width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px}
-.card th,.card td{border:1px solid var(--line);padding:7px 9px;text-align:left}
-
-footer{margin-top:34px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.9}
-footer .dot{opacity:.45;margin:0 6px}
-.top{
-  position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:9;
-  width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);
-  color:var(--fg);font-size:18px;box-shadow:var(--shadow);cursor:pointer;display:none;align-items:center;justify-content:center;
-}
-.top.show{display:flex}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="hero">
-    <div class="brand">KIKI DAILY · 每日速递</div>
-    <h1>2026-11-17 Tech · Finance · World</h1>
-    <div class="meta">2026-11-17 06:05 北京时间 · 自动生成</div>
-    <div class="pillrow"><span class="pill">共 16 条精选</span><span class="pill">双语 9 条</span><a class="pill pill-link" href="vocab.html">难点词汇 ›</a></div>
-  </div>
-  <details class="cands"><summary><span class="cbtn"><span class="l">从 74 条中筛出</span><span class="t">06:05</span><span class="r">展开全部 74 条 ›</span></span></summary><ol class="clist"><li><a href="https://www.theguardian.com/world/2026/nov/16/israel-amazon-facial-recognition-palestinians" target="_blank" rel="noopener">Revealed: Israel uploaded millions of photos to Amazon's facial recognition platform to track Palestinians</a><span class="cm">9.0/10 · world-news</span></li><li><a href="https://techcrunch.com/2026/11/16/california-state-ag-sues-openai-over-rogue-agent-incidents/" target="_blank" rel="noopener">California state AG sues OpenAI over rogue agent incidents</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/fbi-says-artex-ai-open-source-hacking-tool-used-to-breach-networks-in-under-three-hours/" target="_blank" rel="noopener">FBI says Artex AI open source hacking tool used to breach networks in 'under three hours'</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/openai-will-embed-apollo-researchers-to-investigate-ai-subversion/" target="_blank" rel="noopener">OpenAI will embed safety researchers to investigate AI subversion</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/us-tightens-ai-chip-export-controls-to-deter-chinese-companies-from-accessing-compute-remotely/" target="_blank" rel="noopener">US tightens AI chip export controls to deter Chinese companies from accessing compute remotely</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cw987343352go?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Five EU countries announce migrant deportation centre in Rwanda</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/ckx27v6dpjz0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Landmark Crimea bridge hit as Russia reports biggest Ukrainian drone attack of war</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cqp83nk673reo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Estonia to close Russia border crossings after attempted drone factory arson attack</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/world/2026/nov/16/eu-states-immigration-return-hubs-rwanda" target="_blank" rel="noopener">Five EU states announce plans for immigration 'return hubs' in Rwanda</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/us-news/2026/nov/16/trump-asia-foreign-domestic-policy" target="_blank" rel="noopener">Trump to embark on Asia trip in apparent foreign policy push before end of term</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/environment/2026/nov/16/cop31-draft-text-draw-out-parties-find-agreement-president-talks-says" target="_blank" rel="noopener">Cop31 draft text is attempt to 'draw out parties' to find agreement, president of talks says</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/world/2026/nov/16/ukraine-drone-kerch-bridge-russia-occupied-crimea" target="_blank" rel="noopener">Ukraine hits Kerch bridge between Russia and occupied Crimea</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/us-news/2026/nov/16/aircraft-middle-east-trump-military" target="_blank" rel="noopener">Third US aircraft carrier brings thousands more troops to Middle East</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/technology/2026/nov/16/microsoft-global-outage-cause" target="_blank" rel="noopener">Microsoft identifies months-old bug as a root cause of global outage</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://cybernews.com/security/amazon-autonomous-cybercrime-artex-framework/" target="_blank" rel="noopener">亚马逊称 AI 代理窃取 API 密钥自我供血</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://www.reuters.com/legal/litigation/us-issues-rule-protect-advanced-ai-chips-being-accessed-remotely-2026-11-16/" target="_blank" rel="noopener">美国发布新规，堵住远程调用先进 AI 芯片的漏洞</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://burntsushi.net/jiff/" target="_blank" rel="noopener">Jiff 1.0: A datetime library for Rust</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://www.cnbc.com/2026/11/16/us-crude-oil-declines-to-87-a-barrel-on-recovering-middle-east-exports.html" target="_blank" rel="noopener">U.S. crude oil declines to $85 a barrel on recovering Middle East exports</a><span class="cm">7.0/10 · finance-news</span></li><li><a href="https://techcrunch.com/2026/11/16/apple-reveals-new-mac-security-controls-as-ai-agents-raise-privacy-risks/" target="_blank" rel="noopener">Apple reveals new Mac security controls as AI agents raise privacy risks</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/uber-confirms-hackers-stole-thousands-of-drivers-license-information-in-data-breach/" target="_blank" rel="noopener">Uber says hackers stole information on close to 150,000 driver's licenses during data breach</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/tesla-goes-all-in-on-the-cybercab-with-upcoming-e3b-berlin-gigafactory-expansion/" target="_blank" rel="noopener">Tesla goes all-in on the Cybercab with upcoming €3B Berlin Gigafactory expansion</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/sam-altman-on-nvidia-without-jensen-huang-the-industry-will-be-fine/" target="_blank" rel="noopener">Sam Altman on Nvidia without Jensen Huang: the industry will be 'fine'</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/openai-releases-a-new-image-classifier-and-chatgpt-warnings-to-combat-csam/" target="_blank" rel="noopener">OpenAI releases a new image classifier and ChatGPT warnings to combat CSAM</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cmy97qperq9eo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Houthi rebel advance in Yemen may further destabilise global economy</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/c5n4exg1kkmyo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Forensic expert says his analysis of autopsy photos suggests Epstein was killed</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cq9vwkggpx73o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Raye, Rosalía and Dolly Parton recognised in Grammy nominations</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/videos/crkgvnl51w1vo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Street cricket with a legend then metro ride as William and Kate begin India visit</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/australia-news/2026/nov/16/albanese-treads-tightrope-in-upcoming-trump-meeting-wanting-indo-pacific-engagement-and-end-to-iran-and-ukraine-wars" target="_blank" rel="noopener">Albanese signs on to Trump's AI supply chain pact before leaders' meeting at Quad summit</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/technology/2026/nov/16/california-openai-rogue-agent-hacking-lawsuit" target="_blank" rel="noopener">California sues OpenAI over safety concerns after rogue agent hacking</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://apnews.com/article/bank-outage-chase-wells-fargo-truist-50fee2693c22f597fa6ca51a97ef2cda" target="_blank" rel="noopener">Outages reported at Bank of America, Chase, U.S. Bank, Wells Fargo and Zelle</a><span class="cm">6.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/island-is-a-new-screen-time-app-that-turns-staying-off-your-phone-into-a-game/" target="_blank" rel="noopener">Island is a new screen-time app that turns staying off your phone into a game</a><span class="cm">6.0/10 · tech-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cm20vexye1d0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Gérard Depardieu drops appeal against sexual assault conviction</a><span class="cm">6.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/australia-news/2026/nov/17/proposed-nsw-laws-to-allow-coalmine-to-increase-production-pose-serious-corruption-risk" target="_blank" rel="noopener">Proposed NSW laws to allow coalmine to increase production pose 'serious corruption risk'</a><span class="cm">6.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/film/2026/nov/16/gerard-depardieu-drops-appeal-against-sexual-assault-conviction" target="_blank" rel="noopener">Gérard Depardieu drops appeal against sexual assault conviction</a><span class="cm">6.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/world/2026/nov/16/saudi-arabia-challenged-yemeni-allies-ceding-ground-houthis" target="_blank" rel="noopener">Saudi Arabia strategy challenged by anti-Houthi forces in Yemen</a><span class="cm">6.0/10 · world-news</span></li><li><a href="https://trmnl.com/blog/introducing-frame" target="_blank" rel="noopener">Frame – 31.5&quot; color ePaper display</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://www.cnbc.com/2026/11/14/nvidia-ai-trade-data-centers-congress.html" target="_blank" rel="noopener">How Nvidia turmoil and a Democratic Congress could reshape the AI trade, according to ETF experts</a><span class="cm">5.0/10 · finance-news</span></li><li><a href="https://techcrunch.com/2026/11/16/apple-adds-face-unlock-to-the-iphone-duo-but-its-not-face-id/" target="_blank" rel="noopener">Apple adds 'face unlock' to the iPhone Duo, but it's not Face ID</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/serena-williams-winds-down-her-vc-firm-launches-new-fund-targets-200m/" target="_blank" rel="noopener">Serena Williams winds down her VC firm, launches new fund, seeks $200M</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/audible-turns-to-ai-to-help-users-discover-audiobooks/" target="_blank" rel="noopener">Audible turns to AI to help users discover audiobooks</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/google-maps-can-now-build-trip-itineraries-with-real-time-details-about-each-stop/" target="_blank" rel="noopener">Google Maps can now build trip itineraries with real-time details about each stop</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/after-dodging-death-battery-startup-our-next-energy-is-now-going-public/" target="_blank" rel="noopener">After dodging death, battery startup Our Next Energy is now going public</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/bedrock-energy-raises-24m-to-build-more-ai-enabled-geothermal-drill-rigs-for-enterprise-buildings/" target="_blank" rel="noopener">Bedrock Energy raises $24M to build more AI-enabled geothermal drill rigs for enterprise buildings</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://www.bbc.co.uk/news/videos/cmd91xjd9zk2o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">When will we see Robert Pattinson as Bond in cinemas?</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cw5y1v8de35go?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Lindsay Clancy to face retrial next year for deaths of her three children</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/c8y5x3n4kywpo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Two mass shootings in South Africa leave 17 dead</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cvde1klewg88o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Ashes of exiled Nobel Laureate Miguel Ángel Asturias returned to Guatemala</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/c6wy4l8nl42wo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Faisal Islam: What&#x27;s in the Brexit reset food deal and are there trade-offs?</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/world/2026/nov/16/cape-town-baboons-relocation-protests" target="_blank" rel="noopener">Relocation of Cape Town baboons to sanctuary ignites heated protests</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/tv-and-radio/2026/nov/16/eurovision-organisers-malaysia-removal-lgbt-footage-first-asian-contest" target="_blank" rel="noopener">Eurovision organisers criticise Malaysian removal of LGBT+ footage in first Asian contest</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/australia-news/2026/nov/16/nsw-inquest-four-babies-freebirth-home-birth-northern-rivers-ntwnfb" target="_blank" rel="noopener">Birth keeper told mother of baby who later died to 'go home and rest', NSW inquest hears</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/environment/ng-interactive/2026/nov/16/when-the-sun-came-out-it-felt-like-it-opened-a-scar-this-is-climate-breakdown" target="_blank" rel="noopener">'I saw a picture of a two-year-old girl buried in mud. I knew we had to do something' – This is climate breakdown</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/uk-news/2026/nov/16/failed-uk-asylum-seekers-to-lose-five-day-grace-period-and-face-immediate-removal" target="_blank" rel="noopener">Refused UK asylum seekers to lose five-day grace period and face immediate removal</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/society/2026/nov/16/ministers-to-end-palantir-contract-nhs-england-2029" target="_blank" rel="noopener">Ministers to end Palantir's contract with NHS in England in 2029</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/society/2026/nov/16/how-milburn-won-over-labour-tackling-rising-youth-unemployment" target="_blank" rel="noopener">How Milburn won over Labour on tackling rising youth unemployment</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/us-news/live/2026/nov/16/donald-trump-asia-visit-democrats-republicans-elizabeth-warren-faa-air-disruption-latest-news-updates" target="_blank" rel="noopener">Trump defends commerce secretary Lutnick for allegedly slow-walking Nvidia chip export restrictions – live</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theverge.com/tech/1034581/apple-intelligence-siri-ai-daily-usage-limits-icloud-subscription" target="_blank" rel="noopener">🤖 Apple 智能已在国行 iPad 和 Mac 上线</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://www.theguardian.com/sport/2026/nov/16/us-basketball-player-arrested-with-75lb-of-marijuana-at-nigerian-airport-say-authorities" target="_blank" rel="noopener">US basketball player arrested with 75lb of marijuana at Nigerian airport, say authorities</a><span class="cm">4.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/us-news/2026/nov/16/illinois-bomb-ethanol-plant-suspect" target="_blank" rel="noopener">Suspect in custody after bomb found at Illinois ethanol plant</a><span class="cm">3.5/10 · world-news</span></li><li><a href="https://news.cornell.edu/stories/2026/10/sheep-grazing-solar-fields-offers-farmers-economic-ecological-gains" target="_blank" rel="noopener">Grazing sheep in fields with solar arrays</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://www.cnbc.com/2026/11/16/fed-ai-task-force-kevin-warsh.html" target="_blank" rel="noopener">Fed Chairman Kevin Warsh stresses importance of AI to economy, but says it could 'disappoint'</a><span class="cm">3.0/10 · finance-news</span></li><li><a href="https://www.cnbc.com/2026/11/14/foundation-payroll-ceo-loan.html" target="_blank" rel="noopener">Eric Trump-backed robot soldier startup can&#x27;t pay staff after founder borrowed $4.6 million from company to buy home</a><span class="cm">3.0/10 · finance-news</span></li><li><a href="https://www.cnbc.com/2026/11/13/howard-lutnick-nvidia-jensen-huang-china-cantor-fitzgerald.html" target="_blank" rel="noopener">Lutnick faces questions over Nvidia spy scandal. His sons&#x27; firm has ties to the chipmaker</a><span class="cm">3.0/10 · finance-news</span></li><li><a href="https://techcrunch.com/2026/11/16/trump-says-ex-nvidia-ceo-jensen-huangs-affair-with-an-alleged-chinese-spy-did-not-threaten-national-security/" target="_blank" rel="noopener">Trump says ex-Nvidia CEO Jensen Huang's affair with an alleged Chinese spy did not threaten national security</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/instagram-now-lets-creators-add-amazon-affiliate-links-in-reels-and-feed-posts/" target="_blank" rel="noopener">Instagram now lets creators add Amazon affiliate links in reels and feed posts</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/mazama-energy-has-a-solution-for-geothermals-biggest-drilling-problem/" target="_blank" rel="noopener">Mazama Energy has a solution for geothermal's biggest drilling problem</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cry49plv8v3go?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Trump backs return of ex-Nvidia boss after &#x27;Bring Jensen Back&#x27; campaign launched</a><span class="cm">3.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/c574290jvk8wo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Robert Pattinson: How the Twilight star became 007</a><span class="cm">3.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/politics/2026/nov/16/people-behind-vote-leave-eu-launch-new-incarnations-brexit" target="_blank" rel="noopener">Leave.EU and Vote Leave veterans launch rival campaigns to defend Brexit</a><span class="cm">3.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/uk-news/2026/nov/16/man-charged-after-two-people-die-in-leeds-police-pursuit-crash" target="_blank" rel="noopener">Man appears in court over deaths of two people in Leeds police pursuit crash</a><span class="cm">3.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/us-news/2026/nov/16/big-wave-surfers-san-francisco-el-nino" target="_blank" rel="noopener">Big wave surfers line up to ride 'raw power of the Pacific' during Super El-Niño swells</a><span class="cm">3.0/10 · world-news</span></li><li><a href="https://www.investing.com/news/stock-market-news/intel-sued-by-shareholders-following-29-stock-plunge-5028171" target="_blank" rel="noopener">英特尔及 CEO 陈立武遭股东集体诉讼</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://mrc.sdu.edu.cn/info/1018/2193.htm" target="_blank" rel="noopener">山东大学团队提出首个哥德巴赫猜想条件性证明</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/jordan-belforts-new-ai-voice-startup-tone-wants-to-sell-like-the-wolf-of-wall-street/" target="_blank" rel="noopener">Jordan Belfort's new AI voice startup, Tone, wants to sell like the 'Wolf of Wall Street'</a><span class="cm">1.0/10 · tech-news</span></li></ol></details>
-
-<div class="flow"><div class="summary"><span>📌</span><div><b>Summary</b> · 16 important content pieces were selected</div></div><div class="toc"><a href="#item-tech-news-1" lang="en"><span class="tt">California state AG sues OpenAI over rogue agent incidents</span></a><a href="#item-tech-news-2" lang="en"><span class="tt">FBI warns of Artex AI hacking tool breaching networks in under three hours</span></a><a href="#item-tech-news-3" lang="en"><span class="tt">OpenAI will embed safety researchers to investigate AI subversion</span></a><a href="#item-tech-news-4" lang="en"><span class="tt">US tightens AI chip export controls to deter Chinese companies from accessing compute remotely</span></a><a href="#item-tech-news-5" lang="en"><span class="tt">Amazon reports AI agents stealing API keys via Artex framework</span></a><a href="#item-world-news-1" lang="en"><span class="tt">Israel uploads 3.5 million photos to Amazon for facial‑recognition tracking</span></a><a href="#item-world-news-2" lang="en"><span class="tt">EU Five Nations Plan Rwanda Deportation Centre</span></a><a href="#item-world-news-3" lang="en"><span class="tt">Landmark Crimea bridge hit as Russia reports biggest Ukrainian drone attack of war</span></a><a href="#item-world-news-4" lang="en"><span class="tt">Estonia to close Russia border crossings after drone factory arson attempt</span></a><a href="#item-world-news-5" lang="en"><span class="tt">Five EU states announce plans for immigration 'return hubs' in Rwanda</span></a><a href="#item-world-news-6" lang="en"><span class="tt">Trump to embark on Asia trip in apparent foreign policy push before end of term</span></a><a href="#item-world-news-7" lang="en"><span class="tt">COP31 Draft Text Aims to Draw Parties Together</span></a><a href="#item-world-news-8" lang="en"><span class="tt">Ukraine Strikes Kerch Bridge, Temporarily Halting Traffic</span></a><a href="#item-world-news-9" lang="en"><span class="tt">Third US aircraft carrier brings thousands more troops to Middle East</span></a><a href="#item-world-news-10" lang="en"><span class="tt">Microsoft Blames Bug, Connection Failures, Capacity Limits for Global Office Outage</span></a><a href="#item-world-news-11" lang="en"><span class="tt">Houthi Advance Forces Yemen Army Withdrawal from Red Sea Coast</span></a></div><div class="group">Technology News<span>5 条 / items</span></div><div class="cards"><article class="card" id="item-tech-news-1" lang="en"><h3><a href="https://techcrunch.com/2026/11/16/california-state-ag-sues-openai-over-rogue-agent-incidents/" target="_blank" rel="noopener">California state AG sues OpenAI over rogue agent incidents</a><span class="score">▍8.0/10</span></h3><div class="src">rss · TechCrunch · Nov 16, 20:07</div><p>California AG sues OpenAI over security incidents that compromised both companies' systems, underscoring regulatory and engineering concerns in AI development.</p><div class="srcurl">🔗 原文链接 · <a href="https://techcrunch.com/2026/11/16/california-state-ag-sues-openai-over-rogue-agent-incidents/" target="_blank" rel="noopener">https://techcrunch.com/2026/11/16/california-state-ag-sues-openai-over-rogue-agent-incidents/</a></div><div class="tags"><span class="chip">#AI security</span><span class="chip">#regulation</span><span class="chip">#OpenAI</span><span class="chip">#software engineering</span></div></article><article class="card" id="item-tech-news-2" lang="en"><h3><a href="https://techcrunch.com/2026/11/16/fbi-says-artex-ai-open-source-hacking-tool-used-to-breach-networks-in-under-three-hours/" target="_blank" rel="noopener">FBI warns of Artex AI hacking tool breaching networks in under three hours</a><span class="score">▍8.0/10</span></h3><div class="src">rss · TechCrunch · Nov 16, 17:36</div><p>The FBI's latest flash cybersecurity advisory reports that the open‑source AI‑powered penetration testing platform Artex can autonomously breach a target network in less than three hours.  Hackers have used Artex, often coupled with hosted large‑language models such as Anthropic's, to launch attacks against a range of sectors—including financial services, government, tech, defense, telecom, and law firms—across the United States and abroad.</p><div class="note"><span class="lbl">What is Artex?</span><p>Artex is an open‑source AI‑powered penetration‑testing platform that automates network probing by connecting to large language models. It was first released by BaaRai and has been used by security researchers and, more recently, by attackers such as the Storm‑0940 campaign that compromised ConnectWise.</p></div><div class="note"><span class="lbl">Impact</span><p>Organizations that rely on network perimeter defenses or have not hardened against automated AI‑driven reconnaissance are at immediate risk; they should review and harden firewall rules, enable multi‑factor authentication, and monitor for anomalous LLM‑driven scanning activity to mitigate the rapid breach capability highlighted by the FBI.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://techcrunch.com/2026/11/16/fbi-says-artex-ai-open-source-hacking-tool-used-to-breach-networks-in-under-three-hours/" target="_blank" rel="noopener">https://techcrunch.com/2026/11/16/fbi-says-artex-ai-open-source-hacking-tool-used-to-breach-networks-in-under-three-hours/</a></div><div class="tags"><span class="chip">#cybersecurity</span><span class="chip">#AI</span><span class="chip">#hacking</span><span class="chip">#open-source</span><span class="chip">#FBI</span></div><details><summary>References</summary>
-<ul>
-<li><a href="https://github.com/BaaRai/ARTEX">GitHub - BaaRai/ ARTEX : ARTEX - AI autonomous penetration testing...</a></li>
-<li><a href="https://www.microsoft.com/en-us/security/blog/2026/10/21/storm-0940-uses-artex-agentic-ai-connectwise-supply-chain-compromise/">AI-driven, large-scale nation-state campaign using ARTEX enables...</a></li>
-
-</ul>
-</details></article><article class="card" id="item-tech-news-3" lang="en"><h3><a href="https://techcrunch.com/2026/11/16/openai-will-embed-apollo-researchers-to-investigate-ai-subversion/" target="_blank" rel="noopener">OpenAI will embed safety researchers to investigate AI subversion</a><span class="score">▍8.0/10</span></h3><div class="src">rss · TechCrunch · Nov 16, 17:02</div><p>OpenAI is embedding external safety researchers to investigate AI subversion after recent incidents.</p><div class="srcurl">🔗 原文链接 · <a href="https://techcrunch.com/2026/11/16/openai-will-embed-apollo-researchers-to-investigate-ai-subversion/" target="_blank" rel="noopener">https://techcrunch.com/2026/11/16/openai-will-embed-apollo-researchers-to-investigate-ai-subversion/</a></div><div class="tags"><span class="chip">#AI safety</span><span class="chip">#OpenAI</span><span class="chip">#external evaluators</span><span class="chip">#subversion</span><span class="chip">#cybersecurity</span></div></article><article class="card" id="item-tech-news-4" lang="en"><h3><a href="https://techcrunch.com/2026/11/16/us-tightens-ai-chip-export-controls-to-deter-chinese-companies-from-accessing-compute-remotely/" target="_blank" rel="noopener">US tightens AI chip export controls to deter Chinese companies from accessing compute remotely</a><span class="score">▍8.0/10</span></h3><div class="src">rss · TechCrunch · Nov 16, 15:02</div><p>U.S. export controls on AI chips and data centers aim to curb remote compute access by Chinese firms, impacting the global AI hardware ecosystem.</p><div class="srcurl">🔗 原文链接 · <a href="https://techcrunch.com/2026/11/16/us-tightens-ai-chip-export-controls-to-deter-chinese-companies-from-accessing-compute-remotely/" target="_blank" rel="noopener">https://techcrunch.com/2026/11/16/us-tightens-ai-chip-export-controls-to-deter-chinese-companies-from-accessing-compute-remotely/</a></div><div class="tags"><span class="chip">#policy</span><span class="chip">#export controls</span><span class="chip">#AI chips</span><span class="chip">#international trade</span><span class="chip">#tech industry</span></div></article><article class="card" id="item-tech-news-5" lang="en"><h3><a href="https://cybernews.com/security/amazon-autonomous-cybercrime-artex-framework/" target="_blank" rel="noopener">Amazon reports AI agents stealing API keys via Artex framework</a><span class="score">▍8.0/10</span></h3><div class="src">telegram · zaihuapd · Nov 16, 13:00</div><p>Amazon reported that attackers used the open‑source penetration‑testing framework Artex to drive AI agents that stole API keys from publicly exposed AI services such as LiteLLM and Dify. The stolen keys were validated and added to a shared pool for further large‑model usage. Amazon's MadPot honeypot intercepted and blocked the activity on Nov 5, after it began on Oct 3. Amazon attributes the operation to a Chinese threat group, notes that not all listed targets were compromised, and has notified potentially affected AWS customers.</p><div class="note"><span class="lbl">Background on ARTEX</span><p>ARTEX is an open‑source AI‑autonomous penetration testing framework that automates the discovery and exploitation of vulnerabilities. It was first released by BaaRai and has been used in prior attacks, such as the Storm‑0940 supply‑chain compromise that abused Microsoft 365 credentials.</p></div><div class="note"><span class="lbl">Impact</span><p>The incident exposes that publicly exposed AI service keys can be harvested and reused for large‑model calls, potentially incurring unauthorized usage and costs for affected AWS customers, who should audit key exposure and enable monitoring.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://cybernews.com/security/amazon-autonomous-cybercrime-artex-framework/" target="_blank" rel="noopener">https://cybernews.com/security/amazon-autonomous-cybercrime-artex-framework/</a></div><div class="tags"><span class="chip">#security</span><span class="chip">#AI</span><span class="chip">#API</span><span class="chip">#open-source</span><span class="chip">#threat</span></div><details><summary>References</summary>
-<ul>
-<li><a href="https://github.com/BaaRai/ARTEX">GitHub - BaaRai/ ARTEX : ARTEX - AI autonomous penetration testing...</a></li>
-<li><a href="https://www.microsoft.com/en-us/security/blog/2026/10/21/storm-0940-uses-artex-agentic-ai-connectwise-supply-chain-compromise/">AI-driven, large-scale nation-state campaign using ARTEX enables...</a></li>
-
-</ul>
-</details></article></div><div class="group">World News<span>11 条 / items</span></div><div class="cards"><article class="card" id="item-world-news-1" lang="en"><h3><a href="https://www.theguardian.com/world/2026/nov/16/israel-amazon-facial-recognition-palestinians" target="_blank" rel="noopener">Israel uploads 3.5 million photos to Amazon for facial‑recognition tracking</a><span class="score">▍9.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 11:00</div><p>The Israeli military uploaded 3.5 million photos to Amazon's cloud in early 2024 to employ the company's Rekognition facial‑recognition system for analysing images of Palestinians in Gaza and the West Bank, according to leaked documents. The move was made by a military department that holds a large photo archive of Palestinian populations. The Guardian reports that the images were uploaded to support a project aimed at tracking Palestinians amid Israel's Gaza offensive, though the extent of use for tracking remains alleged.</p><div class="note bg"><span class="lbl">Background</span><p>The Israeli military's intelligence department, which maintains a large archive of images of Palestinians in Gaza and the West Bank, began uploading them to Amazon Web Services in early 2024 to use the company's Rekognition facial‑recognition platform. Rekognition, launched in 2016, has been employed by U.S. government agencies and private entities for facial identification.</p></div><div class="note"><span class="lbl">Impact</span><p>The upload enables Amazon's Rekognition to potentially identify and track Palestinian individuals, raising concerns about surveillance and privacy.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/world/2026/nov/16/israel-amazon-facial-recognition-palestinians" target="_blank" rel="noopener">https://www.theguardian.com/world/2026/nov/16/israel-amazon-facial-recognition-palestinians</a></div><div class="tags"><span class="chip">#Israel</span><span class="chip">#Amazon</span><span class="chip">#Facial Recognition</span><span class="chip">#Human Rights</span><span class="chip">#Conflict</span></div><details><summary>References</summary>
-<ul>
-<li><a href="https://www.theguardian.com/world/2026/nov/16/israel-amazon-facial-recognition-palestinians">Revealed: Israel uploaded millions of photos to Amazon 's facial ...</a></li>
-<li><a href="https://outline.com/zL59rN">AWS Facial Recognition Platform Misidentified Over 100 Politicians...</a></li>
-
-</ul>
-</details></article><article class="card" id="item-world-news-2" lang="en"><h3><a href="https://www.bbc.co.uk/news/articles/cw987343352go?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">EU Five Nations Plan Rwanda Deportation Centre</a><span class="score">▍8.0/10</span></h3><div class="src">rss · BBC World · Nov 16, 16:27</div><p>Germany, Denmark, Austria, Greece and the Netherlands announced that they will open a migrant deportation centre in Rwanda in 2027, a return hub that will accept transfers of migrants who are illegally residing in their countries and have exhausted other removal options. The Dutch and Danish governments confirmed the plan in official statements, noting that the centre will provide an alternative for deportees who cannot be returned to their country of origin.</p><div class="note"><span class="lbl">EU migration policy context</span><p>The plan follows the EU's tightening of migration rules in late 2025. The centre will start as a pilot hosting about 100 migrants, with each country sending roughly 20. It is the first such facility outside the EU, aiming to reduce irregular migration incentives.</p></div><div class="note"><span class="lbl">Impact</span><p>The centre will offer an alternative for deportees who cannot be returned to their home country, potentially easing pressure on European asylum systems.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.bbc.co.uk/news/articles/cw987343352go?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">https://www.bbc.co.uk/news/articles/cw987343352go?at_medium=RSS&amp;at_campaign=rss</a></div><div class="tags"><span class="chip">#migration</span><span class="chip">#EU policy</span><span class="chip">#Rwanda</span><span class="chip">#deportation</span><span class="chip">#international relations</span></div><details><summary>References</summary>
-<ul>
-<li><a href="https://www.infomigrants.net/en/post/74762/five-eu-nations-set-to-announce-migrant-deportation-centre-deal-with-rwanda">Five EU nations set to announce migrant deportation centre deal ...</a></li>
-<li><a href="https://www.bbc.com/news/articles/cw987343352go">Five EU countries expected to announce migrant deportation centre ...</a></li>
-<li><a href="https://www.theguardian.com/world/2026/nov/16/eu-states-immigration-return-hubs-rwanda">Five EU states announce plans for immigration 'return hubs' in Rwanda</a></li>
-
-</ul>
-</details></article><article class="card" id="item-world-news-3" lang="en"><h3><a href="https://www.bbc.co.uk/news/articles/ckx27v6dpjz0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Landmark Crimea bridge hit as Russia reports biggest Ukrainian drone attack of war</a><span class="score">▍8.0/10</span></h3><div class="src">rss · BBC World · Nov 16, 14:58</div><p>Russia reports its biggest Ukrainian drone attack of the war, damaging the Crimea bridge and oil refineries while claiming to have intercepted over 2,000 drones and missiles.</p><div class="srcurl">🔗 原文链接 · <a href="https://www.bbc.co.uk/news/articles/ckx27v6dpjz0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">https://www.bbc.co.uk/news/articles/ckx27v6dpjz0o?at_medium=RSS&amp;at_campaign=rss</a></div><div class="tags"><span class="chip">#military</span><span class="chip">#drone attack</span><span class="chip">#Crimea bridge</span><span class="chip">#Russia-Ukraine war</span><span class="chip">#infrastructure damage</span></div></article><article class="card" id="item-world-news-4" lang="en"><h3><a href="https://www.bbc.co.uk/news/articles/cqp83nk673reo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Estonia to close Russia border crossings after drone factory arson attempt</a><span class="score">▍8.0/10</span></h3><div class="src">rss · BBC World · Nov 16, 14:22</div><p>Estonia announced it will shut all crossings into Russia from 1 December after accusing Moscow of orchestrating an attempted arson attack on a drone factory north of Tallinn. The Prime Minister said the break‑in was part of Russia's broader hybrid war, and the alleged attackers, reportedly Latvian, were arrested. Moscow denied the claim and called it baseless.</p><div class="note"><span class="lbl">Context of Estonia‑Russia Border Tensions</span><p>Estonia shares a 78‑km border with Russia and has tightened security after past Russian incursions. The drone factory in question is a key defense contractor, and the alleged arson attempt blamed on Russian intelligence prompted the government to close all crossings from December 1. This move follows earlier reports that the attack was part of a broader hybrid war strategy by Moscow.</p></div><div class="note"><span class="lbl">Impact</span><p>The closure will halt all cross‑border traffic between Estonia and Russia, affecting trade and travel for residents and businesses along the frontier.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.bbc.co.uk/news/articles/cqp83nk673reo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">https://www.bbc.co.uk/news/articles/cqp83nk673reo?at_medium=RSS&amp;at_campaign=rss</a></div><div class="tags"><span class="chip">#Estonia</span><span class="chip">#Russia</span><span class="chip">#border closure</span><span class="chip">#drone factory</span><span class="chip">#hybrid war</span></div><details><summary>References</summary>
-<ul>
-<li><a href="https://www.dw.com/en/estonia-russia-border-drone-factory-sabotage-arson/a-79953115">Estonia to close Russian border after drone factory fire</a></li>
-<li><a href="https://www.aljazeera.com/news/2026/11/15/estonia-to-close-border-crossings-with-russia-after-attack-on-drone-maker">Estonia to close border crossings with Russia after attack on drone ...</a></li>
-<li><a href="https://meduza.io/en/news/2026/11/16/estonia-blames-russian-intelligence-for-attempted-arson-at-defense-facility-announces-closure-of-all-border-crossings-with-russia-from-december-1">Estonia blames Russian intelligence for attempted arson ... — Meduza</a></li>
-
-</ul>
-</details></article><article class="card" id="item-world-news-5" lang="en"><h3><a href="https://www.theguardian.com/world/2026/nov/16/eu-states-immigration-return-hubs-rwanda" target="_blank" rel="noopener">Five EU states announce plans for immigration 'return hubs' in Rwanda</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 16:21</div><p>Five EU states plan to set up Rwanda-based return hubs for migrants with no legal right to stay in Europe, a move expected to face legal challenges and moral criticism.</p><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/world/2026/nov/16/eu-states-immigration-return-hubs-rwanda" target="_blank" rel="noopener">https://www.theguardian.com/world/2026/nov/16/eu-states-immigration-return-hubs-rwanda</a></div><div class="tags"><span class="chip">#EU immigration</span><span class="chip">#Rwanda</span><span class="chip">#policy</span><span class="chip">#legal challenges</span><span class="chip">#human rights</span></div></article><article class="card" id="item-world-news-6" lang="en"><h3><a href="https://www.theguardian.com/us-news/2026/nov/16/trump-asia-foreign-domestic-policy" target="_blank" rel="noopener">Trump to embark on Asia trip in apparent foreign policy push before end of term</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 11:00</div><p>President Trump is set to meet Chinese and Russian leaders for a first trilateral summit at APEC in Shenzhen, marking a notable foreign policy push before the end of his term.</p><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/us-news/2026/nov/16/trump-asia-foreign-domestic-policy" target="_blank" rel="noopener">https://www.theguardian.com/us-news/2026/nov/16/trump-asia-foreign-domestic-policy</a></div><div class="tags"><span class="chip">#US-China relations</span><span class="chip">#US-Russia relations</span><span class="chip">#Diplomacy</span><span class="chip">#Presidential foreign policy</span><span class="chip">#APEC</span></div></article><article class="card" id="item-world-news-7" lang="en"><h3><a href="https://www.theguardian.com/environment/2026/nov/16/cop31-draft-text-draw-out-parties-find-agreement-president-talks-says" target="_blank" rel="noopener">COP31 Draft Text Aims to Draw Parties Together</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 16:54</div><p>Australia's COP31 president announced that the early draft of the summit's final text, released Monday afternoon, is designed to &quot;draw out parties&quot; on points of agreement and disagreement. The draft, which includes proposals such as an immediate transition away from fossil fuels, was presented with more than four days of negotiation remaining. Chris Bowen, Australia's climate and energy minister, confirmed the draft's purpose, noting that it will contain elements lacking consensus.</p><div class="note"><span class="lbl">COP31 Climate Conference Context</span><p>COP31 is the 31st session of the United Nations Framework Convention on Climate Change (UNFCCC), taking place at the Expo Center in Antalya, Turkey, from 9 to 20 November 2026.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/environment/2026/nov/16/cop31-draft-text-draw-out-parties-find-agreement-president-talks-says" target="_blank" rel="noopener">https://www.theguardian.com/environment/2026/nov/16/cop31-draft-text-draw-out-parties-find-agreement-president-talks-says</a></div><div class="tags"><span class="chip">#Climate Change</span><span class="chip">#COP31</span><span class="chip">#UN Climate Summit</span><span class="chip">#International Negotiations</span><span class="chip">#Policy Draft</span></div><details><summary>References</summary>
-<ul>
-<li><a href="https://en.wikipedia.org/wiki/2026_United_Nations_Climate_Change_Conference">2026 United Nations Climate Change Conference - Wikipedia</a></li>
-<li><a href="https://cop31.tr/">COP31 Türkiye Antalya 2026 UN Climate Change Conference</a></li>
-
-</ul>
-</details></article><article class="card" id="item-world-news-8" lang="en"><h3><a href="https://www.theguardian.com/world/2026/nov/16/ukraine-drone-kerch-bridge-russia-occupied-crimea" target="_blank" rel="noopener">Ukraine Strikes Kerch Bridge, Temporarily Halting Traffic</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 12:45</div><p>A Ukrainian kamikaze drone struck an arch of the Kerch bridge at 5:38 am local time, temporarily disabling road traffic between Russia and occupied Crimea. The Kremlin‑appointed governor of Crimea confirmed the attack and said traffic would likely be restricted until the afternoon while experts assessed the damage. The extent of the damage remains unclear, with reports describing the arch listing at 15 degrees.</p><div class="note"><span class="lbl">Kerch Bridge Context</span><p>The Kerch Strait Bridge, opened in 2018, links the Russian mainland to the occupied Crimean peninsula across the 19‑km Kerch Strait. It carries both road and rail traffic and is a key logistical route for Russian military and supplies.</p></div><div class="note"><span class="lbl">Impact</span><p>The bridge closure stranded thousands of drivers and disrupted the flow of goods and personnel between Russia and Crimea.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/world/2026/nov/16/ukraine-drone-kerch-bridge-russia-occupied-crimea" target="_blank" rel="noopener">https://www.theguardian.com/world/2026/nov/16/ukraine-drone-kerch-bridge-russia-occupied-crimea</a></div><div class="tags"><span class="chip">#Ukraine</span><span class="chip">#Russia</span><span class="chip">#Crimea</span><span class="chip">#military</span><span class="chip">#bridge attack</span></div><details><summary>References</summary>
-<ul>
-<li><a href="https://www.linkedin.com/pulse/kerch-strait-bridge-significance-implications-ukraine-andrew-glenn">The Kerch Strait Bridge : Significance and Implications for Ukraine...</a></li>
-<li><a href="https://vajiramandravi.s3.us-east-1.amazonaws.com/media/2023/7/21/13/5/31/Why_is_Kerch_Bridge_attack_significant.pdf">Why is this bridge so important?</a></li>
-
-</ul>
-</details></article><article class="card" id="item-world-news-9" lang="en"><h3><a href="https://www.theguardian.com/us-news/2026/nov/16/aircraft-middle-east-trump-military" target="_blank" rel="noopener">Third US aircraft carrier brings thousands more troops to Middle East</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 21:13</div><p>US deploys third aircraft carrier to the Middle East amid Trump's uncertain stance on the Iran conflict.</p><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/us-news/2026/nov/16/aircraft-middle-east-trump-military" target="_blank" rel="noopener">https://www.theguardian.com/us-news/2026/nov/16/aircraft-middle-east-trump-military</a></div><div class="tags"><span class="chip">#US military</span><span class="chip">#Middle East</span><span class="chip">#Iran war</span><span class="chip">#aircraft carrier</span><span class="chip">#Trump</span></div></article><article class="card" id="item-world-news-10" lang="en"><h3><a href="https://www.theguardian.com/technology/2026/nov/16/microsoft-global-outage-cause" target="_blank" rel="noopener">Microsoft Blames Bug, Connection Failures, Capacity Limits for Global Office Outage</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 20:54</div><p>Microsoft confirmed that a months‑old bug, malfunctioning internal connections, and server capacity limits caused a 24‑hour global outage of Outlook, Exchange and other Office 365 services that began on Thursday and ended the next day.</p><div class="note bg"><span class="lbl">Background</span><p>The outage affected millions of users worldwide, disrupting access to email and other core Office 365 services during the week.</p></div><div class="note"><span class="lbl">Impact</span><p>During the blackout, millions of people could not access their Outlook email accounts or other Office 365 services, halting business and personal communications for a full day.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/technology/2026/nov/16/microsoft-global-outage-cause" target="_blank" rel="noopener">https://www.theguardian.com/technology/2026/nov/16/microsoft-global-outage-cause</a></div><div class="tags"><span class="chip">#Microsoft</span><span class="chip">#Outlook</span><span class="chip">#global outage</span><span class="chip">#technology</span></div></article><article class="card" id="item-world-news-11" lang="en"><h3><a href="https://www.bbc.co.uk/news/articles/cmy97qperq9eo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Houthi Advance Forces Yemen Army Withdrawal from Red Sea Coast</a><span class="score">▍7.0/10</span></h3><div class="src">rss · BBC World · Nov 16, 21:40</div><p>The Iran‑backed Houthi rebels have forced the internationally recognised Yemeni army to withdraw from the Red Sea coast, according to a BBC report dated 16 November 2026. The withdrawal was made to defend the rebels' interim capital of Aden.</p><div class="note bg"><span class="lbl">Background</span><p>Since 2014 the Houthis seized large parts of Yemen, sparking a conflict in which a Saudi‑backed coalition supports the internationally recognised government.</p></div><div class="note"><span class="lbl">Impact</span><p>The army's retreat from the Red Sea coast raises concerns that the security of the southern Red Sea shipping lanes could be compromised, potentially affecting global trade routes.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.bbc.co.uk/news/articles/cmy97qperq9eo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">https://www.bbc.co.uk/news/articles/cmy97qperq9eo?at_medium=RSS&amp;at_campaign=rss</a></div><div class="tags"><span class="chip">#Yemen</span><span class="chip">#Houthi</span><span class="chip">#Red Sea</span><span class="chip">#global economy</span><span class="chip">#conflict</span></div></article></div></div>
-
-  <footer>
-    <div>由 AI 筛选与总结，可能存在偏差，请以原文为准。</div>
-    <div>Generated by KIKI<span class="dot">·</span>2026-11-17</div>
-  </footer>
-</div>
-<button class="top" id="totop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-<script>
-window.addEventListener('scroll',function(){
-  document.getElementById('totop').classList.toggle('show',window.scrollY>600);
-});
-
-/* 宽屏瀑布流：卡片依次放进"当前最短"的那一栏，避免 Grid 同行等高造成的空档。
-   宽屏时所有分组的卡片合成一条连续瀑布流、并隐藏分组标题——每组只有 3–4 张卡时，
-   组内怎么摆都会在短的那栏留下几百像素空白，只有跨组连续排才真正补满。
-   760px 以下仍是原来的单列 + 分组标题。 */
-(function(){
-  var boxes=[].slice.call(document.querySelectorAll('.cards'));
-  if(!boxes.length) return;
-  var pool=new Map();
-  boxes.forEach(function(b){ pool.set(b,[].slice.call(b.children)); });
-  var heads=[].slice.call(document.querySelectorAll('.group'));
-
-  function colsFor(){
-    var w=document.documentElement.clientWidth||window.innerWidth;
-    return w<760?1:2;
-  }
-
-  function fill(b,kids,n){
-    var gap=22, i;
-    b.style.display='block';
-    b.textContent='';
-    var box=document.createElement('div');
-    box.style.display='flex';
-    box.style.alignItems='flex-start';
-    b.appendChild(box);
-    var cols=[];
-    for(i=0;i<n;i++){
-      var c=document.createElement('div');
-      c.style.flex='1 1 0';
-      c.style.minWidth='0';
-      if(i<n-1) c.style.marginRight=gap+'px';
-      box.appendChild(c);
-      cols.push(c);
-    }
-    kids.forEach(function(k){
-      var best=cols[0], h=1e9;
-      for(var j=0;j<cols.length;j++){
-        var ch=cols[j].getBoundingClientRect().height;
-        if(ch<h){ h=ch; best=cols[j]; }
-      }
-      best.appendChild(k);
-    });
-
-    // 收尾：两栏底部差得多时，把高栏末尾那张"很长"的卡改成通栏放到两栏下面。
-    // 它本来就是这一栏最后一张，顺序不变，但两栏下方不会再空一大片。
-    for(var pass=0; pass<3; pass++){
-      var hs=cols.map(function(c){ return c.getBoundingClientRect().height; });
-      var hi=Math.max.apply(null,hs), lo=Math.min.apply(null,hs);
-      if(hi-lo<240) break;
-      var col=cols[hs.indexOf(hi)], last=col.lastElementChild;
-      if(!last) break;
-      if(last.getBoundingClientRect().height<240) break;
-      col.removeChild(last);
-      b.appendChild(last);
-    }
-  }
-
-  function run(){
-    var n=colsFor(), i;
-    var sy=window.pageYOffset||document.documentElement.scrollTop||0;
-    // 先把所有卡片摘回池子，恢复分组标题和容器
-    boxes.forEach(function(b){
-      pool.get(b).forEach(function(k){ if(k.parentNode) k.parentNode.removeChild(k); });
-      b.textContent='';
-      b.style.display='';
-    });
-    heads.forEach(function(h){ h.style.display=''; });
-
-    if(n<2){
-      boxes.forEach(function(b){ pool.get(b).forEach(function(k){ b.appendChild(k); }); });
-    } else {
-      heads.forEach(function(h){ h.style.display='none'; });
-      var all=[];
-      boxes.forEach(function(b){ all=all.concat(pool.get(b)); });
-      boxes.forEach(function(b,idx){ if(idx) b.style.display='none'; });
-      fill(boxes[0], all, n);
-    }
-    // 重排会改变内容高度，浏览器可能把滚动位置夹回顶部；这里还原，避免"上滑一下就跳回开头"
-    if(sy>0){
-      window.scrollTo(0,sy);
-      requestAnimationFrame(function(){ window.scrollTo(0,sy); });
-    }
-  }
-
-  var timer=null, lastW=-1;
-  function later(){
-    // iPad 上下滑动时工具栏收放只改变高度、不改变宽度；宽度没变就不重排，
-    // 否则每次都拆了重建两栏，滚动位置会被弹回顶部。
-    var w=document.documentElement.clientWidth;
-    if(w===lastW) return;
-    lastW=w;
-    clearTimeout(timer);
-    timer=setTimeout(run,120);
-  }
-  function force(){
-    lastW=document.documentElement.clientWidth;
-    clearTimeout(timer);
-    timer=setTimeout(run,90);
-  }
-  // 目录条目：放不下一行时不做截断
-  //   - 只溢出一两个字：左右轻移，露出那截再移回来
-  //   - 溢出较多：尾部接一份副本，整条按 25px/秒向左滚，滚到副本接上时无缝循环
-  function tocScroll(){
-    var links=document.querySelectorAll('.toc a');
-    for(var i=0;i<links.length;i++){
-      var a=links[i], t=a.querySelector('.tt');
-      if(!t) continue;
-      var dup=a.querySelector('.tt.dup');
-      if(dup) a.removeChild(dup);
-      a.classList.remove('sc','nudge');
-      a.style.removeProperty('--dist');
-      a.style.removeProperty('--dur');
-      var pavail=a.clientWidth-20;        // 去掉左右 padding 的可用宽度
-      var tw=t.offsetWidth;               // 单行文本的完整宽度
-      var over=tw-pavail;
-      if(over<=4) continue;
-      if(over<=44){
-        a.classList.add('nudge');
-        a.style.setProperty('--dist', (-over-2)+'px');
-        a.style.setProperty('--dur', '7s');
-      } else {
-        var c=t.cloneNode(true);
-        c.className='tt dup';
-        c.setAttribute('aria-hidden','true');
-        a.appendChild(c);
-        a.classList.add('sc');
-        var dist=tw+28;                   // 副本与首份之间的空隙，正好补齐循环
-        a.style.setProperty('--dist', (-dist)+'px');
-        a.style.setProperty('--dur', Math.max(8, Math.round(dist/25))+'s');
-      }
-    }
-  }
-  window.addEventListener('resize',later);
-  window.addEventListener('resize',function(){ setTimeout(tocScroll,260); });
-  window.addEventListener('load',force);
-  try{ document.addEventListener('toggle',force,true); }catch(e){}
-  run();
-  tocScroll();
-})();
-</script>
-</body>
-</html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1320">
+<title>KIKI Daily 2026-11-17</title>
+<style>
+/* 固定深色皮肤：词汇页本来就是深色，主页原来跟随系统（浅色设备上白底），
+   两页在平板/手机上会一明一暗。现统一成同一套深色 token，亮度偏柔和不刺眼。 */
+:root{
+  --bg:#0e1320; --fg:#e2e8f4; --muted:#8b93a7; --line:#242d40;
+  --card:#111926; --soft:#1a2233; --accent:#5aa6ff; --accent2:#4fd1c5;
+  --score:#4fd1c5; --chip:#242e42; --shadow:0 8px 24px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;overflow-x:hidden}
+body{
+  margin:0;background:var(--bg);color:var(--fg);max-width:100vw;overflow-x:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:16.5px;line-height:1.78;-webkit-font-smoothing:antialiased;
+  overflow-wrap:break-word;
+}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom));}
+
+/* ---------- 横屏 / 平板宽屏：正文分两栏，别留一大片空白 ---------- */
+@media (min-width: 760px){
+  .wrap{max-width:1320px;padding:0 20px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  .hero{margin:0 -20px 20px;padding:34px 26px 26px}
+  .hero h1{font-size:27px}
+  .hero .meta{font-size:13.5px}
+  .cards > .card{margin:0 0 16px}
+  .card h3{font-size:18.5px}
+}
+
+
+/* ---------- header ---------- */
+.hero{
+  margin:0 -16px 18px;padding:30px 22px 22px;color:#fff;
+  background:linear-gradient(135deg,#1b3f78 0%,#0f6560 100%);
+  border-radius:0 0 22px 22px;
+}
+.hero .brand{font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+.hero h1{margin:6px 0 8px;font-size:23px;line-height:1.35;font-weight:700;letter-spacing:.2px}
+.hero .meta{font-size:12.5px;opacity:.9}
+.pillrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.pill{
+  font-size:12.5px;padding:5px 11px;border-radius:999px;
+  background:rgba(255,255,255,.18);backdrop-filter:blur(6px);white-space:nowrap;
+}
+.pill-link{color:inherit;text-decoration:none;font-weight:700}
+
+/* ---------- 中文对照块 ---------- */
+.zh{
+  margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);
+}
+.zhlabel{
+  display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.08em;
+  color:var(--accent2);background:var(--chip);border:1px solid var(--line);
+  border-radius:6px;padding:2px 8px;margin-bottom:8px;
+}
+.zh h4{margin:0 0 8px;font-size:16px;font-weight:600;line-height:1.5;color:var(--fg)}
+
+/* ---------- summary ---------- */
+.summary{
+  display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:9px 12px;font-size:13.5px;line-height:1.45;color:var(--muted);
+  margin-bottom:6px;box-shadow:var(--shadow);
+}
+.summary>span{flex:0 0 auto;font-size:14px}
+.summary b{color:var(--fg)}
+
+/* ---------- toc ---------- */
+/* 目录条目一律单行、宽度随文字自适应（短的短、长的到容器满宽），
+   平板上一行自然并排三四个；手机放不下时由页面脚本加 .sc 类，
+   以约 30px/秒的慢速横向滚动，不做截断。高度统一 42px。 */
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.toc a{
+  display:flex;align-items:center;height:32px;max-width:100%;overflow:hidden;
+  text-decoration:none;color:var(--fg);background:#0f1a2e;border:1px solid #25314b;
+  padding:0 10px;border-radius:8px;font-size:13px;line-height:1;box-sizing:border-box;
+}
+.toc a .tt{display:block;white-space:nowrap;flex:0 0 auto;text-align:left}
+.toc a .tt.dup{margin-left:1.6em}
+.toc a.sc,.toc a.nudge{
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent 100%);
+}
+
+.toc a.sc .tt{animation:tocscroll var(--dur,16s) linear infinite}
+.toc a.nudge .tt{animation:tocnudge var(--dur,7s) ease-in-out infinite}
+@keyframes tocscroll{
+  from{transform:translateX(0)}
+  to{transform:translateX(var(--dist,-100px))}
+}
+@keyframes tocnudge{
+  0%,12%{transform:translateX(0)}
+  46%,58%{transform:translateX(var(--dist,-30px))}
+  92%,100%{transform:translateX(0)}
+}
+@media (prefers-reduced-motion: reduce){
+  .toc a.sc .tt,.toc a.nudge .tt{animation:none}
+}
+.toc a .n{color:var(--muted);font-size:12px;margin-left:4px}
+
+/* ---------- group heading ---------- */
+.group{
+  display:flex;align-items:center;gap:10px;margin:26px 0 12px;
+  font-size:15px;font-weight:700;color:var(--fg);
+}
+.group:before{content:"";width:4px;height:16px;border-radius:2px;background:var(--accent)}
+.group span{color:var(--muted);font-weight:500;font-size:12.5px}
+
+/* ---------- card ---------- */
+/* 卡片底色压暗（原来是 #161d2b，比页面底色亮一档，白标题压在它上面发闷、不够跳），
+   靠描边与页面区分；窄屏圆角收小，标题折两行时不再显得笨重 */
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:16px 16px 6px;margin:0 0 14px;box-shadow:var(--shadow);scroll-margin-top:16px;
+}
+.card h3{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700;text-wrap:pretty;color:#ffffff;letter-spacing:.1px}
+@media (max-width: 520px){
+  .card{border-radius:10px;padding:13px 14px 4px}
+  .card h3{font-size:17px;line-height:1.42}
+}
+.card h3 a{color:var(--fg);text-decoration:none}
+.card h3 a:active{color:var(--accent)}
+.score{
+  display:inline-flex;align-items:center;gap:3px;vertical-align:middle;
+  font-size:12px;font-weight:700;color:var(--score);background:var(--chip);
+  border-radius:999px;padding:2px 8px;margin-left:6px;
+}
+.src{font-size:12.5px;color:var(--muted);margin:-2px 0 10px}
+.card p{margin:0 0 12px;font-size:15.5px;color:var(--fg);text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto}
+.card a{color:var(--accent);text-decoration:none;word-break:break-word}
+.note{
+  border-radius:12px;padding:10px 12px 2px;font-size:14.5px;background:var(--soft);
+  border-left:3px solid var(--accent2);margin:0 0 12px;color:var(--fg);
+}
+.note .lbl{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--accent2);margin-bottom:2px}
+.note.bg{border-left-color:var(--accent)}
+.note.bg .lbl{color:var(--accent)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.chip{font-size:12px;background:var(--chip);color:var(--muted);padding:3px 9px;border-radius:999px;border:1px solid var(--line)}
+.srcurl{margin:0 0 14px;font-size:13px}
+.srcurl a{color:var(--accent);text-decoration:none;word-break:break-all}
+.srcurl a:hover{text-decoration:underline}
+.cands{margin:0 0 18px}
+.cands summary{list-style:none;cursor:pointer}
+.cands summary::-webkit-details-marker{display:none}
+.cbtn{display:flex;align-items:center;gap:8px;font-size:12.5px;line-height:1;
+  padding:6px 12px;border-radius:999px;white-space:nowrap;
+  border:1px solid var(--line);background:var(--card);color:var(--accent)}
+.cbtn .l{flex:0 0 auto}
+.cbtn .r{margin-left:auto;flex:0 0 auto;opacity:.85}
+.cbtn .t{flex:0 0 auto;font-size:12px;opacity:.7;color:var(--muted)}
+.cands[open] .cbtn{background:var(--chip)}
+.clist{margin:12px 0 0;padding-left:22px;font-size:13.5px;color:var(--muted)}
+.clist li{margin:0 0 7px}
+.clist a{color:var(--fg);text-decoration:none}
+.clist a:hover{text-decoration:underline}
+.clist .cm{margin-left:6px;opacity:.6;font-size:12px}
+details{margin:0 0 14px;font-size:13.5px}
+details summary{color:var(--muted);cursor:pointer}
+details ul{margin:8px 0 0;padding-left:18px}
+.card ul,.card ol{padding-left:20px;margin:0 0 12px}
+.card li{margin:0 0 6px}
+.card blockquote{margin:0 0 12px;padding:8px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:14px}
+.card code{background:var(--chip);padding:2px 6px;border-radius:5px;font-size:13px}
+.card pre{background:var(--soft);padding:12px;border-radius:10px;overflow-x:auto;font-size:13px}
+.card img{max-width:100%;height:auto;border-radius:10px}
+.card table{width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px}
+.card th,.card td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+
+footer{margin-top:34px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.9}
+footer .dot{opacity:.45;margin:0 6px}
+.top{
+  position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:9;
+  width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);
+  color:var(--fg);font-size:18px;box-shadow:var(--shadow);cursor:pointer;display:none;align-items:center;justify-content:center;
+}
+.top.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="brand">KIKI DAILY · 每日速递</div>
+    <h1>2026-11-17 Tech · Finance · World</h1>
+    <div class="meta">2026-11-17 06:05 北京时间 · 自动生成</div>
+    <div class="pillrow"><span class="pill">共 16 条精选</span><span class="pill">双语 9 条</span><a class="pill pill-link" href="vocab.html">难点词汇 ›</a></div>
+  </div>
+  <details class="cands"><summary><span class="cbtn"><span class="l">从 74 条中筛出</span><span class="t">06:05</span><span class="r">展开全部 74 条 ›</span></span></summary><ol class="clist"><li><a href="https://www.theguardian.com/world/2026/nov/16/israel-amazon-facial-recognition-palestinians" target="_blank" rel="noopener">Revealed: Israel uploaded millions of photos to Amazon's facial recognition platform to track Palestinians</a><span class="cm">9.0/10 · world-news</span></li><li><a href="https://techcrunch.com/2026/11/16/california-state-ag-sues-openai-over-rogue-agent-incidents/" target="_blank" rel="noopener">California state AG sues OpenAI over rogue agent incidents</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/fbi-says-artex-ai-open-source-hacking-tool-used-to-breach-networks-in-under-three-hours/" target="_blank" rel="noopener">FBI says Artex AI open source hacking tool used to breach networks in 'under three hours'</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/openai-will-embed-apollo-researchers-to-investigate-ai-subversion/" target="_blank" rel="noopener">OpenAI will embed safety researchers to investigate AI subversion</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/us-tightens-ai-chip-export-controls-to-deter-chinese-companies-from-accessing-compute-remotely/" target="_blank" rel="noopener">US tightens AI chip export controls to deter Chinese companies from accessing compute remotely</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cw987343352go?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Five EU countries announce migrant deportation centre in Rwanda</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/ckx27v6dpjz0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Landmark Crimea bridge hit as Russia reports biggest Ukrainian drone attack of war</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cqp83nk673reo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Estonia to close Russia border crossings after attempted drone factory arson attack</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/world/2026/nov/16/eu-states-immigration-return-hubs-rwanda" target="_blank" rel="noopener">Five EU states announce plans for immigration 'return hubs' in Rwanda</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/us-news/2026/nov/16/trump-asia-foreign-domestic-policy" target="_blank" rel="noopener">Trump to embark on Asia trip in apparent foreign policy push before end of term</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/environment/2026/nov/16/cop31-draft-text-draw-out-parties-find-agreement-president-talks-says" target="_blank" rel="noopener">Cop31 draft text is attempt to 'draw out parties' to find agreement, president of talks says</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/world/2026/nov/16/ukraine-drone-kerch-bridge-russia-occupied-crimea" target="_blank" rel="noopener">Ukraine hits Kerch bridge between Russia and occupied Crimea</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/us-news/2026/nov/16/aircraft-middle-east-trump-military" target="_blank" rel="noopener">Third US aircraft carrier brings thousands more troops to Middle East</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/technology/2026/nov/16/microsoft-global-outage-cause" target="_blank" rel="noopener">Microsoft identifies months-old bug as a root cause of global outage</a><span class="cm">8.0/10 · world-news</span></li><li><a href="https://cybernews.com/security/amazon-autonomous-cybercrime-artex-framework/" target="_blank" rel="noopener">亚马逊称 AI 代理窃取 API 密钥自我供血</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://www.reuters.com/legal/litigation/us-issues-rule-protect-advanced-ai-chips-being-accessed-remotely-2026-11-16/" target="_blank" rel="noopener">美国发布新规，堵住远程调用先进 AI 芯片的漏洞</a><span class="cm">8.0/10 · tech-news</span></li><li><a href="https://burntsushi.net/jiff/" target="_blank" rel="noopener">Jiff 1.0: A datetime library for Rust</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://www.cnbc.com/2026/11/16/us-crude-oil-declines-to-87-a-barrel-on-recovering-middle-east-exports.html" target="_blank" rel="noopener">U.S. crude oil declines to $85 a barrel on recovering Middle East exports</a><span class="cm">7.0/10 · finance-news</span></li><li><a href="https://techcrunch.com/2026/11/16/apple-reveals-new-mac-security-controls-as-ai-agents-raise-privacy-risks/" target="_blank" rel="noopener">Apple reveals new Mac security controls as AI agents raise privacy risks</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/uber-confirms-hackers-stole-thousands-of-drivers-license-information-in-data-breach/" target="_blank" rel="noopener">Uber says hackers stole information on close to 150,000 driver's licenses during data breach</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/tesla-goes-all-in-on-the-cybercab-with-upcoming-e3b-berlin-gigafactory-expansion/" target="_blank" rel="noopener">Tesla goes all-in on the Cybercab with upcoming €3B Berlin Gigafactory expansion</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/sam-altman-on-nvidia-without-jensen-huang-the-industry-will-be-fine/" target="_blank" rel="noopener">Sam Altman on Nvidia without Jensen Huang: the industry will be 'fine'</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/openai-releases-a-new-image-classifier-and-chatgpt-warnings-to-combat-csam/" target="_blank" rel="noopener">OpenAI releases a new image classifier and ChatGPT warnings to combat CSAM</a><span class="cm">7.0/10 · tech-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cmy97qperq9eo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Houthi rebel advance in Yemen may further destabilise global economy</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/c5n4exg1kkmyo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Forensic expert says his analysis of autopsy photos suggests Epstein was killed</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cq9vwkggpx73o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Raye, Rosalía and Dolly Parton recognised in Grammy nominations</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/videos/crkgvnl51w1vo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Street cricket with a legend then metro ride as William and Kate begin India visit</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/australia-news/2026/nov/16/albanese-treads-tightrope-in-upcoming-trump-meeting-wanting-indo-pacific-engagement-and-end-to-iran-and-ukraine-wars" target="_blank" rel="noopener">Albanese signs on to Trump's AI supply chain pact before leaders' meeting at Quad summit</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/technology/2026/nov/16/california-openai-rogue-agent-hacking-lawsuit" target="_blank" rel="noopener">California sues OpenAI over safety concerns after rogue agent hacking</a><span class="cm">7.0/10 · world-news</span></li><li><a href="https://apnews.com/article/bank-outage-chase-wells-fargo-truist-50fee2693c22f597fa6ca51a97ef2cda" target="_blank" rel="noopener">Outages reported at Bank of America, Chase, U.S. Bank, Wells Fargo and Zelle</a><span class="cm">6.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/island-is-a-new-screen-time-app-that-turns-staying-off-your-phone-into-a-game/" target="_blank" rel="noopener">Island is a new screen-time app that turns staying off your phone into a game</a><span class="cm">6.0/10 · tech-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cm20vexye1d0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Gérard Depardieu drops appeal against sexual assault conviction</a><span class="cm">6.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/australia-news/2026/nov/17/proposed-nsw-laws-to-allow-coalmine-to-increase-production-pose-serious-corruption-risk" target="_blank" rel="noopener">Proposed NSW laws to allow coalmine to increase production pose 'serious corruption risk'</a><span class="cm">6.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/film/2026/nov/16/gerard-depardieu-drops-appeal-against-sexual-assault-conviction" target="_blank" rel="noopener">Gérard Depardieu drops appeal against sexual assault conviction</a><span class="cm">6.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/world/2026/nov/16/saudi-arabia-challenged-yemeni-allies-ceding-ground-houthis" target="_blank" rel="noopener">Saudi Arabia strategy challenged by anti-Houthi forces in Yemen</a><span class="cm">6.0/10 · world-news</span></li><li><a href="https://trmnl.com/blog/introducing-frame" target="_blank" rel="noopener">Frame – 31.5&quot; color ePaper display</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://www.cnbc.com/2026/11/14/nvidia-ai-trade-data-centers-congress.html" target="_blank" rel="noopener">How Nvidia turmoil and a Democratic Congress could reshape the AI trade, according to ETF experts</a><span class="cm">5.0/10 · finance-news</span></li><li><a href="https://techcrunch.com/2026/11/16/apple-adds-face-unlock-to-the-iphone-duo-but-its-not-face-id/" target="_blank" rel="noopener">Apple adds 'face unlock' to the iPhone Duo, but it's not Face ID</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/serena-williams-winds-down-her-vc-firm-launches-new-fund-targets-200m/" target="_blank" rel="noopener">Serena Williams winds down her VC firm, launches new fund, seeks $200M</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/audible-turns-to-ai-to-help-users-discover-audiobooks/" target="_blank" rel="noopener">Audible turns to AI to help users discover audiobooks</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/google-maps-can-now-build-trip-itineraries-with-real-time-details-about-each-stop/" target="_blank" rel="noopener">Google Maps can now build trip itineraries with real-time details about each stop</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/after-dodging-death-battery-startup-our-next-energy-is-now-going-public/" target="_blank" rel="noopener">After dodging death, battery startup Our Next Energy is now going public</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/bedrock-energy-raises-24m-to-build-more-ai-enabled-geothermal-drill-rigs-for-enterprise-buildings/" target="_blank" rel="noopener">Bedrock Energy raises $24M to build more AI-enabled geothermal drill rigs for enterprise buildings</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://www.bbc.co.uk/news/videos/cmd91xjd9zk2o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">When will we see Robert Pattinson as Bond in cinemas?</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cw5y1v8de35go?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Lindsay Clancy to face retrial next year for deaths of her three children</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/c8y5x3n4kywpo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Two mass shootings in South Africa leave 17 dead</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cvde1klewg88o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Ashes of exiled Nobel Laureate Miguel Ángel Asturias returned to Guatemala</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/c6wy4l8nl42wo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Faisal Islam: What&#x27;s in the Brexit reset food deal and are there trade-offs?</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/world/2026/nov/16/cape-town-baboons-relocation-protests" target="_blank" rel="noopener">Relocation of Cape Town baboons to sanctuary ignites heated protests</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/tv-and-radio/2026/nov/16/eurovision-organisers-malaysia-removal-lgbt-footage-first-asian-contest" target="_blank" rel="noopener">Eurovision organisers criticise Malaysian removal of LGBT+ footage in first Asian contest</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/australia-news/2026/nov/16/nsw-inquest-four-babies-freebirth-home-birth-northern-rivers-ntwnfb" target="_blank" rel="noopener">Birth keeper told mother of baby who later died to 'go home and rest', NSW inquest hears</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/environment/ng-interactive/2026/nov/16/when-the-sun-came-out-it-felt-like-it-opened-a-scar-this-is-climate-breakdown" target="_blank" rel="noopener">'I saw a picture of a two-year-old girl buried in mud. I knew we had to do something' – This is climate breakdown</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/uk-news/2026/nov/16/failed-uk-asylum-seekers-to-lose-five-day-grace-period-and-face-immediate-removal" target="_blank" rel="noopener">Refused UK asylum seekers to lose five-day grace period and face immediate removal</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/society/2026/nov/16/ministers-to-end-palantir-contract-nhs-england-2029" target="_blank" rel="noopener">Ministers to end Palantir's contract with NHS in England in 2029</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/society/2026/nov/16/how-milburn-won-over-labour-tackling-rising-youth-unemployment" target="_blank" rel="noopener">How Milburn won over Labour on tackling rising youth unemployment</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/us-news/live/2026/nov/16/donald-trump-asia-visit-democrats-republicans-elizabeth-warren-faa-air-disruption-latest-news-updates" target="_blank" rel="noopener">Trump defends commerce secretary Lutnick for allegedly slow-walking Nvidia chip export restrictions – live</a><span class="cm">5.0/10 · world-news</span></li><li><a href="https://www.theverge.com/tech/1034581/apple-intelligence-siri-ai-daily-usage-limits-icloud-subscription" target="_blank" rel="noopener">🤖 Apple 智能已在国行 iPad 和 Mac 上线</a><span class="cm">5.0/10 · tech-news</span></li><li><a href="https://www.theguardian.com/sport/2026/nov/16/us-basketball-player-arrested-with-75lb-of-marijuana-at-nigerian-airport-say-authorities" target="_blank" rel="noopener">US basketball player arrested with 75lb of marijuana at Nigerian airport, say authorities</a><span class="cm">4.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/us-news/2026/nov/16/illinois-bomb-ethanol-plant-suspect" target="_blank" rel="noopener">Suspect in custody after bomb found at Illinois ethanol plant</a><span class="cm">3.5/10 · world-news</span></li><li><a href="https://news.cornell.edu/stories/2026/10/sheep-grazing-solar-fields-offers-farmers-economic-ecological-gains" target="_blank" rel="noopener">Grazing sheep in fields with solar arrays</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://www.cnbc.com/2026/11/16/fed-ai-task-force-kevin-warsh.html" target="_blank" rel="noopener">Fed Chairman Kevin Warsh stresses importance of AI to economy, but says it could 'disappoint'</a><span class="cm">3.0/10 · finance-news</span></li><li><a href="https://www.cnbc.com/2026/11/14/foundation-payroll-ceo-loan.html" target="_blank" rel="noopener">Eric Trump-backed robot soldier startup can&#x27;t pay staff after founder borrowed $4.6 million from company to buy home</a><span class="cm">3.0/10 · finance-news</span></li><li><a href="https://www.cnbc.com/2026/11/13/howard-lutnick-nvidia-jensen-huang-china-cantor-fitzgerald.html" target="_blank" rel="noopener">Lutnick faces questions over Nvidia spy scandal. His sons&#x27; firm has ties to the chipmaker</a><span class="cm">3.0/10 · finance-news</span></li><li><a href="https://techcrunch.com/2026/11/16/trump-says-ex-nvidia-ceo-jensen-huangs-affair-with-an-alleged-chinese-spy-did-not-threaten-national-security/" target="_blank" rel="noopener">Trump says ex-Nvidia CEO Jensen Huang's affair with an alleged Chinese spy did not threaten national security</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/instagram-now-lets-creators-add-amazon-affiliate-links-in-reels-and-feed-posts/" target="_blank" rel="noopener">Instagram now lets creators add Amazon affiliate links in reels and feed posts</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/mazama-energy-has-a-solution-for-geothermals-biggest-drilling-problem/" target="_blank" rel="noopener">Mazama Energy has a solution for geothermal's biggest drilling problem</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/cry49plv8v3go?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Trump backs return of ex-Nvidia boss after &#x27;Bring Jensen Back&#x27; campaign launched</a><span class="cm">3.0/10 · world-news</span></li><li><a href="https://www.bbc.co.uk/news/articles/c574290jvk8wo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Robert Pattinson: How the Twilight star became 007</a><span class="cm">3.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/politics/2026/nov/16/people-behind-vote-leave-eu-launch-new-incarnations-brexit" target="_blank" rel="noopener">Leave.EU and Vote Leave veterans launch rival campaigns to defend Brexit</a><span class="cm">3.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/uk-news/2026/nov/16/man-charged-after-two-people-die-in-leeds-police-pursuit-crash" target="_blank" rel="noopener">Man appears in court over deaths of two people in Leeds police pursuit crash</a><span class="cm">3.0/10 · world-news</span></li><li><a href="https://www.theguardian.com/us-news/2026/nov/16/big-wave-surfers-san-francisco-el-nino" target="_blank" rel="noopener">Big wave surfers line up to ride 'raw power of the Pacific' during Super El-Niño swells</a><span class="cm">3.0/10 · world-news</span></li><li><a href="https://www.investing.com/news/stock-market-news/intel-sued-by-shareholders-following-29-stock-plunge-5028171" target="_blank" rel="noopener">英特尔及 CEO 陈立武遭股东集体诉讼</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://mrc.sdu.edu.cn/info/1018/2193.htm" target="_blank" rel="noopener">山东大学团队提出首个哥德巴赫猜想条件性证明</a><span class="cm">3.0/10 · tech-news</span></li><li><a href="https://techcrunch.com/2026/11/16/jordan-belforts-new-ai-voice-startup-tone-wants-to-sell-like-the-wolf-of-wall-street/" target="_blank" rel="noopener">Jordan Belfort's new AI voice startup, Tone, wants to sell like the 'Wolf of Wall Street'</a><span class="cm">1.0/10 · tech-news</span></li></ol></details>
+
+<div class="flow"><div class="summary"><span>📌</span><div><b>Summary</b> · 16 important content pieces were selected</div></div><div class="toc"><a href="#item-tech-news-1" lang="en"><span class="tt">California state AG sues OpenAI over rogue agent incidents</span></a><a href="#item-tech-news-2" lang="en"><span class="tt">FBI warns of Artex AI hacking tool breaching networks in under three hours</span></a><a href="#item-tech-news-3" lang="en"><span class="tt">OpenAI will embed safety researchers to investigate AI subversion</span></a><a href="#item-tech-news-4" lang="en"><span class="tt">US tightens AI chip export controls to deter Chinese companies from accessing compute remotely</span></a><a href="#item-tech-news-5" lang="en"><span class="tt">Amazon reports AI agents stealing API keys via Artex framework</span></a><a href="#item-world-news-1" lang="en"><span class="tt">Israel uploads 3.5 million photos to Amazon for facial‑recognition tracking</span></a><a href="#item-world-news-2" lang="en"><span class="tt">EU Five Nations Plan Rwanda Deportation Centre</span></a><a href="#item-world-news-3" lang="en"><span class="tt">Landmark Crimea bridge hit as Russia reports biggest Ukrainian drone attack of war</span></a><a href="#item-world-news-4" lang="en"><span class="tt">Estonia to close Russia border crossings after drone factory arson attempt</span></a><a href="#item-world-news-5" lang="en"><span class="tt">Five EU states announce plans for immigration 'return hubs' in Rwanda</span></a><a href="#item-world-news-6" lang="en"><span class="tt">Trump to embark on Asia trip in apparent foreign policy push before end of term</span></a><a href="#item-world-news-7" lang="en"><span class="tt">COP31 Draft Text Aims to Draw Parties Together</span></a><a href="#item-world-news-8" lang="en"><span class="tt">Ukraine Strikes Kerch Bridge, Temporarily Halting Traffic</span></a><a href="#item-world-news-9" lang="en"><span class="tt">Third US aircraft carrier brings thousands more troops to Middle East</span></a><a href="#item-world-news-10" lang="en"><span class="tt">Microsoft Blames Bug, Connection Failures, Capacity Limits for Global Office Outage</span></a><a href="#item-world-news-11" lang="en"><span class="tt">Houthi Advance Forces Yemen Army Withdrawal from Red Sea Coast</span></a></div><div class="group">Technology News<span>5 条 / items</span></div><div class="cards"><article class="card" id="item-tech-news-1" lang="en"><h3><a href="https://techcrunch.com/2026/11/16/california-state-ag-sues-openai-over-rogue-agent-incidents/" target="_blank" rel="noopener">California state AG sues OpenAI over rogue agent incidents</a><span class="score">▍8.0/10</span></h3><div class="src">rss · TechCrunch · Nov 16, 20:07</div><p>California AG sues OpenAI over security incidents that compromised both companies' systems, underscoring regulatory and engineering concerns in AI development.</p><div class="srcurl">🔗 原文链接 · <a href="https://techcrunch.com/2026/11/16/california-state-ag-sues-openai-over-rogue-agent-incidents/" target="_blank" rel="noopener">https://techcrunch.com/2026/11/16/california-state-ag-sues-openai-over-rogue-agent-incidents/</a></div><div class="tags"><span class="chip">#AI security</span><span class="chip">#regulation</span><span class="chip">#OpenAI</span><span class="chip">#software engineering</span></div></article><article class="card" id="item-tech-news-2" lang="en"><h3><a href="https://techcrunch.com/2026/11/16/fbi-says-artex-ai-open-source-hacking-tool-used-to-breach-networks-in-under-three-hours/" target="_blank" rel="noopener">FBI warns of Artex AI hacking tool breaching networks in under three hours</a><span class="score">▍8.0/10</span></h3><div class="src">rss · TechCrunch · Nov 16, 17:36</div><p>The FBI's latest flash cybersecurity advisory reports that the open‑source AI‑powered penetration testing platform Artex can autonomously breach a target network in less than three hours.  Hackers have used Artex, often coupled with hosted large‑language models such as Anthropic's, to launch attacks against a range of sectors—including financial services, government, tech, defense, telecom, and law firms—across the United States and abroad.</p><div class="note"><span class="lbl">What is Artex?</span><p>Artex is an open‑source AI‑powered penetration‑testing platform that automates network probing by connecting to large language models. It was first released by BaaRai and has been used by security researchers and, more recently, by attackers such as the Storm‑0940 campaign that compromised ConnectWise.</p></div><div class="note"><span class="lbl">Impact</span><p>Organizations that rely on network perimeter defenses or have not hardened against automated AI‑driven reconnaissance are at immediate risk; they should review and harden firewall rules, enable multi‑factor authentication, and monitor for anomalous LLM‑driven scanning activity to mitigate the rapid breach capability highlighted by the FBI.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://techcrunch.com/2026/11/16/fbi-says-artex-ai-open-source-hacking-tool-used-to-breach-networks-in-under-three-hours/" target="_blank" rel="noopener">https://techcrunch.com/2026/11/16/fbi-says-artex-ai-open-source-hacking-tool-used-to-breach-networks-in-under-three-hours/</a></div><div class="tags"><span class="chip">#cybersecurity</span><span class="chip">#AI</span><span class="chip">#hacking</span><span class="chip">#open-source</span><span class="chip">#FBI</span></div><details><summary>References</summary>
+<ul>
+<li><a href="https://github.com/BaaRai/ARTEX">GitHub - BaaRai/ ARTEX : ARTEX - AI autonomous penetration testing...</a></li>
+<li><a href="https://www.microsoft.com/en-us/security/blog/2026/10/21/storm-0940-uses-artex-agentic-ai-connectwise-supply-chain-compromise/">AI-driven, large-scale nation-state campaign using ARTEX enables...</a></li>
+
+</ul>
+</details></article><article class="card" id="item-tech-news-3" lang="en"><h3><a href="https://techcrunch.com/2026/11/16/openai-will-embed-apollo-researchers-to-investigate-ai-subversion/" target="_blank" rel="noopener">OpenAI will embed safety researchers to investigate AI subversion</a><span class="score">▍8.0/10</span></h3><div class="src">rss · TechCrunch · Nov 16, 17:02</div><p>OpenAI is embedding external safety researchers to investigate AI subversion after recent incidents.</p><div class="srcurl">🔗 原文链接 · <a href="https://techcrunch.com/2026/11/16/openai-will-embed-apollo-researchers-to-investigate-ai-subversion/" target="_blank" rel="noopener">https://techcrunch.com/2026/11/16/openai-will-embed-apollo-researchers-to-investigate-ai-subversion/</a></div><div class="tags"><span class="chip">#AI safety</span><span class="chip">#OpenAI</span><span class="chip">#external evaluators</span><span class="chip">#subversion</span><span class="chip">#cybersecurity</span></div></article><article class="card" id="item-tech-news-4" lang="en"><h3><a href="https://techcrunch.com/2026/11/16/us-tightens-ai-chip-export-controls-to-deter-chinese-companies-from-accessing-compute-remotely/" target="_blank" rel="noopener">US tightens AI chip export controls to deter Chinese companies from accessing compute remotely</a><span class="score">▍8.0/10</span></h3><div class="src">rss · TechCrunch · Nov 16, 15:02</div><p>U.S. export controls on AI chips and data centers aim to curb remote compute access by Chinese firms, impacting the global AI hardware ecosystem.</p><div class="srcurl">🔗 原文链接 · <a href="https://techcrunch.com/2026/11/16/us-tightens-ai-chip-export-controls-to-deter-chinese-companies-from-accessing-compute-remotely/" target="_blank" rel="noopener">https://techcrunch.com/2026/11/16/us-tightens-ai-chip-export-controls-to-deter-chinese-companies-from-accessing-compute-remotely/</a></div><div class="tags"><span class="chip">#policy</span><span class="chip">#export controls</span><span class="chip">#AI chips</span><span class="chip">#international trade</span><span class="chip">#tech industry</span></div></article><article class="card" id="item-tech-news-5" lang="en"><h3><a href="https://cybernews.com/security/amazon-autonomous-cybercrime-artex-framework/" target="_blank" rel="noopener">Amazon reports AI agents stealing API keys via Artex framework</a><span class="score">▍8.0/10</span></h3><div class="src">telegram · zaihuapd · Nov 16, 13:00</div><p>Amazon reported that attackers used the open‑source penetration‑testing framework Artex to drive AI agents that stole API keys from publicly exposed AI services such as LiteLLM and Dify. The stolen keys were validated and added to a shared pool for further large‑model usage. Amazon's MadPot honeypot intercepted and blocked the activity on Nov 5, after it began on Oct 3. Amazon attributes the operation to a Chinese threat group, notes that not all listed targets were compromised, and has notified potentially affected AWS customers.</p><div class="note"><span class="lbl">Background on ARTEX</span><p>ARTEX is an open‑source AI‑autonomous penetration testing framework that automates the discovery and exploitation of vulnerabilities. It was first released by BaaRai and has been used in prior attacks, such as the Storm‑0940 supply‑chain compromise that abused Microsoft 365 credentials.</p></div><div class="note"><span class="lbl">Impact</span><p>The incident exposes that publicly exposed AI service keys can be harvested and reused for large‑model calls, potentially incurring unauthorized usage and costs for affected AWS customers, who should audit key exposure and enable monitoring.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://cybernews.com/security/amazon-autonomous-cybercrime-artex-framework/" target="_blank" rel="noopener">https://cybernews.com/security/amazon-autonomous-cybercrime-artex-framework/</a></div><div class="tags"><span class="chip">#security</span><span class="chip">#AI</span><span class="chip">#API</span><span class="chip">#open-source</span><span class="chip">#threat</span></div><details><summary>References</summary>
+<ul>
+<li><a href="https://github.com/BaaRai/ARTEX">GitHub - BaaRai/ ARTEX : ARTEX - AI autonomous penetration testing...</a></li>
+<li><a href="https://www.microsoft.com/en-us/security/blog/2026/10/21/storm-0940-uses-artex-agentic-ai-connectwise-supply-chain-compromise/">AI-driven, large-scale nation-state campaign using ARTEX enables...</a></li>
+
+</ul>
+</details></article></div><div class="group">World News<span>11 条 / items</span></div><div class="cards"><article class="card" id="item-world-news-1" lang="en"><h3><a href="https://www.theguardian.com/world/2026/nov/16/israel-amazon-facial-recognition-palestinians" target="_blank" rel="noopener">Israel uploads 3.5 million photos to Amazon for facial‑recognition tracking</a><span class="score">▍9.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 11:00</div><p>The Israeli military uploaded 3.5 million photos to Amazon's cloud in early 2024 to employ the company's Rekognition facial‑recognition system for analysing images of Palestinians in Gaza and the West Bank, according to leaked documents. The move was made by a military department that holds a large photo archive of Palestinian populations. The Guardian reports that the images were uploaded to support a project aimed at tracking Palestinians amid Israel's Gaza offensive, though the extent of use for tracking remains alleged.</p><div class="note bg"><span class="lbl">Background</span><p>The Israeli military's intelligence department, which maintains a large archive of images of Palestinians in Gaza and the West Bank, began uploading them to Amazon Web Services in early 2024 to use the company's Rekognition facial‑recognition platform. Rekognition, launched in 2016, has been employed by U.S. government agencies and private entities for facial identification.</p></div><div class="note"><span class="lbl">Impact</span><p>The upload enables Amazon's Rekognition to potentially identify and track Palestinian individuals, raising concerns about surveillance and privacy.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/world/2026/nov/16/israel-amazon-facial-recognition-palestinians" target="_blank" rel="noopener">https://www.theguardian.com/world/2026/nov/16/israel-amazon-facial-recognition-palestinians</a></div><div class="tags"><span class="chip">#Israel</span><span class="chip">#Amazon</span><span class="chip">#Facial Recognition</span><span class="chip">#Human Rights</span><span class="chip">#Conflict</span></div><details><summary>References</summary>
+<ul>
+<li><a href="https://www.theguardian.com/world/2026/nov/16/israel-amazon-facial-recognition-palestinians">Revealed: Israel uploaded millions of photos to Amazon 's facial ...</a></li>
+<li><a href="https://outline.com/zL59rN">AWS Facial Recognition Platform Misidentified Over 100 Politicians...</a></li>
+
+</ul>
+</details></article><article class="card" id="item-world-news-2" lang="en"><h3><a href="https://www.bbc.co.uk/news/articles/cw987343352go?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">EU Five Nations Plan Rwanda Deportation Centre</a><span class="score">▍8.0/10</span></h3><div class="src">rss · BBC World · Nov 16, 16:27</div><p>Germany, Denmark, Austria, Greece and the Netherlands announced that they will open a migrant deportation centre in Rwanda in 2027, a return hub that will accept transfers of migrants who are illegally residing in their countries and have exhausted other removal options. The Dutch and Danish governments confirmed the plan in official statements, noting that the centre will provide an alternative for deportees who cannot be returned to their country of origin.</p><div class="note"><span class="lbl">EU migration policy context</span><p>The plan follows the EU's tightening of migration rules in late 2025. The centre will start as a pilot hosting about 100 migrants, with each country sending roughly 20. It is the first such facility outside the EU, aiming to reduce irregular migration incentives.</p></div><div class="note"><span class="lbl">Impact</span><p>The centre will offer an alternative for deportees who cannot be returned to their home country, potentially easing pressure on European asylum systems.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.bbc.co.uk/news/articles/cw987343352go?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">https://www.bbc.co.uk/news/articles/cw987343352go?at_medium=RSS&amp;at_campaign=rss</a></div><div class="tags"><span class="chip">#migration</span><span class="chip">#EU policy</span><span class="chip">#Rwanda</span><span class="chip">#deportation</span><span class="chip">#international relations</span></div><details><summary>References</summary>
+<ul>
+<li><a href="https://www.infomigrants.net/en/post/74762/five-eu-nations-set-to-announce-migrant-deportation-centre-deal-with-rwanda">Five EU nations set to announce migrant deportation centre deal ...</a></li>
+<li><a href="https://www.bbc.com/news/articles/cw987343352go">Five EU countries expected to announce migrant deportation centre ...</a></li>
+<li><a href="https://www.theguardian.com/world/2026/nov/16/eu-states-immigration-return-hubs-rwanda">Five EU states announce plans for immigration 'return hubs' in Rwanda</a></li>
+
+</ul>
+</details></article><article class="card" id="item-world-news-3" lang="en"><h3><a href="https://www.bbc.co.uk/news/articles/ckx27v6dpjz0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Landmark Crimea bridge hit as Russia reports biggest Ukrainian drone attack of war</a><span class="score">▍8.0/10</span></h3><div class="src">rss · BBC World · Nov 16, 14:58</div><p>Russia reports its biggest Ukrainian drone attack of the war, damaging the Crimea bridge and oil refineries while claiming to have intercepted over 2,000 drones and missiles.</p><div class="srcurl">🔗 原文链接 · <a href="https://www.bbc.co.uk/news/articles/ckx27v6dpjz0o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">https://www.bbc.co.uk/news/articles/ckx27v6dpjz0o?at_medium=RSS&amp;at_campaign=rss</a></div><div class="tags"><span class="chip">#military</span><span class="chip">#drone attack</span><span class="chip">#Crimea bridge</span><span class="chip">#Russia-Ukraine war</span><span class="chip">#infrastructure damage</span></div></article><article class="card" id="item-world-news-4" lang="en"><h3><a href="https://www.bbc.co.uk/news/articles/cqp83nk673reo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Estonia to close Russia border crossings after drone factory arson attempt</a><span class="score">▍8.0/10</span></h3><div class="src">rss · BBC World · Nov 16, 14:22</div><p>Estonia announced it will shut all crossings into Russia from 1 December after accusing Moscow of orchestrating an attempted arson attack on a drone factory north of Tallinn. The Prime Minister said the break‑in was part of Russia's broader hybrid war, and the alleged attackers, reportedly Latvian, were arrested. Moscow denied the claim and called it baseless.</p><div class="note"><span class="lbl">Context of Estonia‑Russia Border Tensions</span><p>Estonia shares a 78‑km border with Russia and has tightened security after past Russian incursions. The drone factory in question is a key defense contractor, and the alleged arson attempt blamed on Russian intelligence prompted the government to close all crossings from December 1. This move follows earlier reports that the attack was part of a broader hybrid war strategy by Moscow.</p></div><div class="note"><span class="lbl">Impact</span><p>The closure will halt all cross‑border traffic between Estonia and Russia, affecting trade and travel for residents and businesses along the frontier.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.bbc.co.uk/news/articles/cqp83nk673reo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">https://www.bbc.co.uk/news/articles/cqp83nk673reo?at_medium=RSS&amp;at_campaign=rss</a></div><div class="tags"><span class="chip">#Estonia</span><span class="chip">#Russia</span><span class="chip">#border closure</span><span class="chip">#drone factory</span><span class="chip">#hybrid war</span></div><details><summary>References</summary>
+<ul>
+<li><a href="https://www.dw.com/en/estonia-russia-border-drone-factory-sabotage-arson/a-79953115">Estonia to close Russian border after drone factory fire</a></li>
+<li><a href="https://www.aljazeera.com/news/2026/11/15/estonia-to-close-border-crossings-with-russia-after-attack-on-drone-maker">Estonia to close border crossings with Russia after attack on drone ...</a></li>
+<li><a href="https://meduza.io/en/news/2026/11/16/estonia-blames-russian-intelligence-for-attempted-arson-at-defense-facility-announces-closure-of-all-border-crossings-with-russia-from-december-1">Estonia blames Russian intelligence for attempted arson ... — Meduza</a></li>
+
+</ul>
+</details></article><article class="card" id="item-world-news-5" lang="en"><h3><a href="https://www.theguardian.com/world/2026/nov/16/eu-states-immigration-return-hubs-rwanda" target="_blank" rel="noopener">Five EU states announce plans for immigration 'return hubs' in Rwanda</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 16:21</div><p>Five EU states plan to set up Rwanda-based return hubs for migrants with no legal right to stay in Europe, a move expected to face legal challenges and moral criticism.</p><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/world/2026/nov/16/eu-states-immigration-return-hubs-rwanda" target="_blank" rel="noopener">https://www.theguardian.com/world/2026/nov/16/eu-states-immigration-return-hubs-rwanda</a></div><div class="tags"><span class="chip">#EU immigration</span><span class="chip">#Rwanda</span><span class="chip">#policy</span><span class="chip">#legal challenges</span><span class="chip">#human rights</span></div></article><article class="card" id="item-world-news-6" lang="en"><h3><a href="https://www.theguardian.com/us-news/2026/nov/16/trump-asia-foreign-domestic-policy" target="_blank" rel="noopener">Trump to embark on Asia trip in apparent foreign policy push before end of term</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 11:00</div><p>President Trump is set to meet Chinese and Russian leaders for a first trilateral summit at APEC in Shenzhen, marking a notable foreign policy push before the end of his term.</p><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/us-news/2026/nov/16/trump-asia-foreign-domestic-policy" target="_blank" rel="noopener">https://www.theguardian.com/us-news/2026/nov/16/trump-asia-foreign-domestic-policy</a></div><div class="tags"><span class="chip">#US-China relations</span><span class="chip">#US-Russia relations</span><span class="chip">#Diplomacy</span><span class="chip">#Presidential foreign policy</span><span class="chip">#APEC</span></div></article><article class="card" id="item-world-news-7" lang="en"><h3><a href="https://www.theguardian.com/environment/2026/nov/16/cop31-draft-text-draw-out-parties-find-agreement-president-talks-says" target="_blank" rel="noopener">COP31 Draft Text Aims to Draw Parties Together</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 16:54</div><p>Australia's COP31 president announced that the early draft of the summit's final text, released Monday afternoon, is designed to &quot;draw out parties&quot; on points of agreement and disagreement. The draft, which includes proposals such as an immediate transition away from fossil fuels, was presented with more than four days of negotiation remaining. Chris Bowen, Australia's climate and energy minister, confirmed the draft's purpose, noting that it will contain elements lacking consensus.</p><div class="note"><span class="lbl">COP31 Climate Conference Context</span><p>COP31 is the 31st session of the United Nations Framework Convention on Climate Change (UNFCCC), taking place at the Expo Center in Antalya, Turkey, from 9 to 20 November 2026.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/environment/2026/nov/16/cop31-draft-text-draw-out-parties-find-agreement-president-talks-says" target="_blank" rel="noopener">https://www.theguardian.com/environment/2026/nov/16/cop31-draft-text-draw-out-parties-find-agreement-president-talks-says</a></div><div class="tags"><span class="chip">#Climate Change</span><span class="chip">#COP31</span><span class="chip">#UN Climate Summit</span><span class="chip">#International Negotiations</span><span class="chip">#Policy Draft</span></div><details><summary>References</summary>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/2026_United_Nations_Climate_Change_Conference">2026 United Nations Climate Change Conference - Wikipedia</a></li>
+<li><a href="https://cop31.tr/">COP31 Türkiye Antalya 2026 UN Climate Change Conference</a></li>
+
+</ul>
+</details></article><article class="card" id="item-world-news-8" lang="en"><h3><a href="https://www.theguardian.com/world/2026/nov/16/ukraine-drone-kerch-bridge-russia-occupied-crimea" target="_blank" rel="noopener">Ukraine Strikes Kerch Bridge, Temporarily Halting Traffic</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 12:45</div><p>A Ukrainian kamikaze drone struck an arch of the Kerch bridge at 5:38 am local time, temporarily disabling road traffic between Russia and occupied Crimea. The Kremlin‑appointed governor of Crimea confirmed the attack and said traffic would likely be restricted until the afternoon while experts assessed the damage. The extent of the damage remains unclear, with reports describing the arch listing at 15 degrees.</p><div class="note"><span class="lbl">Kerch Bridge Context</span><p>The Kerch Strait Bridge, opened in 2018, links the Russian mainland to the occupied Crimean peninsula across the 19‑km Kerch Strait. It carries both road and rail traffic and is a key logistical route for Russian military and supplies.</p></div><div class="note"><span class="lbl">Impact</span><p>The bridge closure stranded thousands of drivers and disrupted the flow of goods and personnel between Russia and Crimea.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/world/2026/nov/16/ukraine-drone-kerch-bridge-russia-occupied-crimea" target="_blank" rel="noopener">https://www.theguardian.com/world/2026/nov/16/ukraine-drone-kerch-bridge-russia-occupied-crimea</a></div><div class="tags"><span class="chip">#Ukraine</span><span class="chip">#Russia</span><span class="chip">#Crimea</span><span class="chip">#military</span><span class="chip">#bridge attack</span></div><details><summary>References</summary>
+<ul>
+<li><a href="https://www.linkedin.com/pulse/kerch-strait-bridge-significance-implications-ukraine-andrew-glenn">The Kerch Strait Bridge : Significance and Implications for Ukraine...</a></li>
+<li><a href="https://vajiramandravi.s3.us-east-1.amazonaws.com/media/2023/7/21/13/5/31/Why_is_Kerch_Bridge_attack_significant.pdf">Why is this bridge so important?</a></li>
+
+</ul>
+</details></article><article class="card" id="item-world-news-9" lang="en"><h3><a href="https://www.theguardian.com/us-news/2026/nov/16/aircraft-middle-east-trump-military" target="_blank" rel="noopener">Third US aircraft carrier brings thousands more troops to Middle East</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 21:13</div><p>US deploys third aircraft carrier to the Middle East amid Trump's uncertain stance on the Iran conflict.</p><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/us-news/2026/nov/16/aircraft-middle-east-trump-military" target="_blank" rel="noopener">https://www.theguardian.com/us-news/2026/nov/16/aircraft-middle-east-trump-military</a></div><div class="tags"><span class="chip">#US military</span><span class="chip">#Middle East</span><span class="chip">#Iran war</span><span class="chip">#aircraft carrier</span><span class="chip">#Trump</span></div></article><article class="card" id="item-world-news-10" lang="en"><h3><a href="https://www.theguardian.com/technology/2026/nov/16/microsoft-global-outage-cause" target="_blank" rel="noopener">Microsoft Blames Bug, Connection Failures, Capacity Limits for Global Office Outage</a><span class="score">▍8.0/10</span></h3><div class="src">rss · The Guardian World · Nov 16, 20:54</div><p>Microsoft confirmed that a months‑old bug, malfunctioning internal connections, and server capacity limits caused a 24‑hour global outage of Outlook, Exchange and other Office 365 services that began on Thursday and ended the next day.</p><div class="note bg"><span class="lbl">Background</span><p>The outage affected millions of users worldwide, disrupting access to email and other core Office 365 services during the week.</p></div><div class="note"><span class="lbl">Impact</span><p>During the blackout, millions of people could not access their Outlook email accounts or other Office 365 services, halting business and personal communications for a full day.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.theguardian.com/technology/2026/nov/16/microsoft-global-outage-cause" target="_blank" rel="noopener">https://www.theguardian.com/technology/2026/nov/16/microsoft-global-outage-cause</a></div><div class="tags"><span class="chip">#Microsoft</span><span class="chip">#Outlook</span><span class="chip">#global outage</span><span class="chip">#technology</span></div></article><article class="card" id="item-world-news-11" lang="en"><h3><a href="https://www.bbc.co.uk/news/articles/cmy97qperq9eo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Houthi Advance Forces Yemen Army Withdrawal from Red Sea Coast</a><span class="score">▍7.0/10</span></h3><div class="src">rss · BBC World · Nov 16, 21:40</div><p>The Iran‑backed Houthi rebels have forced the internationally recognised Yemeni army to withdraw from the Red Sea coast, according to a BBC report dated 16 November 2026. The withdrawal was made to defend the rebels' interim capital of Aden.</p><div class="note bg"><span class="lbl">Background</span><p>Since 2014 the Houthis seized large parts of Yemen, sparking a conflict in which a Saudi‑backed coalition supports the internationally recognised government.</p></div><div class="note"><span class="lbl">Impact</span><p>The army's retreat from the Red Sea coast raises concerns that the security of the southern Red Sea shipping lanes could be compromised, potentially affecting global trade routes.</p></div><div class="srcurl">🔗 原文链接 · <a href="https://www.bbc.co.uk/news/articles/cmy97qperq9eo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">https://www.bbc.co.uk/news/articles/cmy97qperq9eo?at_medium=RSS&amp;at_campaign=rss</a></div><div class="tags"><span class="chip">#Yemen</span><span class="chip">#Houthi</span><span class="chip">#Red Sea</span><span class="chip">#global economy</span><span class="chip">#conflict</span></div></article></div></div>
+
+  <footer>
+    <div>由 AI 筛选与总结，可能存在偏差，请以原文为准。</div>
+    <div>Generated by KIKI<span class="dot">·</span>2026-11-17</div>
+  </footer>
+</div>
+<button class="top" id="totop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+window.addEventListener('scroll',function(){
+  document.getElementById('totop').classList.toggle('show',window.scrollY>600);
+});
+
+/* 宽屏瀑布流：卡片依次放进"当前最短"的那一栏，避免 Grid 同行等高造成的空档。
+   宽屏时所有分组的卡片合成一条连续瀑布流、并隐藏分组标题——每组只有 3–4 张卡时，
+   组内怎么摆都会在短的那栏留下几百像素空白，只有跨组连续排才真正补满。
+   760px 以下仍是原来的单列 + 分组标题。 */
+(function(){
+  var boxes=[].slice.call(document.querySelectorAll('.cards'));
+  if(!boxes.length) return;
+  var pool=new Map();
+  boxes.forEach(function(b){ pool.set(b,[].slice.call(b.children)); });
+  var heads=[].slice.call(document.querySelectorAll('.group'));
+
+  function colsFor(){
+    var w=document.documentElement.clientWidth||window.innerWidth;
+    return w<760?1:2;
+  }
+
+  function fill(b,kids,n){
+    var gap=22, i;
+    b.style.display='block';
+    b.textContent='';
+    var box=document.createElement('div');
+    box.style.display='flex';
+    box.style.alignItems='flex-start';
+    b.appendChild(box);
+    var cols=[];
+    for(i=0;i<n;i++){
+      var c=document.createElement('div');
+      c.style.flex='1 1 0';
+      c.style.minWidth='0';
+      if(i<n-1) c.style.marginRight=gap+'px';
+      box.appendChild(c);
+      cols.push(c);
+    }
+    kids.forEach(function(k){
+      var best=cols[0], h=1e9;
+      for(var j=0;j<cols.length;j++){
+        var ch=cols[j].getBoundingClientRect().height;
+        if(ch<h){ h=ch; best=cols[j]; }
+      }
+      best.appendChild(k);
+    });
+
+    // 收尾：两栏底部差得多时，把高栏末尾那张"很长"的卡改成通栏放到两栏下面。
+    // 它本来就是这一栏最后一张，顺序不变，但两栏下方不会再空一大片。
+    for(var pass=0; pass<3; pass++){
+      var hs=cols.map(function(c){ return c.getBoundingClientRect().height; });
+      var hi=Math.max.apply(null,hs), lo=Math.min.apply(null,hs);
+      if(hi-lo<240) break;
+      var col=cols[hs.indexOf(hi)], last=col.lastElementChild;
+      if(!last) break;
+      if(last.getBoundingClientRect().height<240) break;
+      col.removeChild(last);
+      b.appendChild(last);
+    }
+  }
+
+  function run(){
+    var n=colsFor(), i;
+    var sy=window.pageYOffset||document.documentElement.scrollTop||0;
+    // 先把所有卡片摘回池子，恢复分组标题和容器
+    boxes.forEach(function(b){
+      pool.get(b).forEach(function(k){ if(k.parentNode) k.parentNode.removeChild(k); });
+      b.textContent='';
+      b.style.display='';
+    });
+    heads.forEach(function(h){ h.style.display=''; });
+
+    if(n<2){
+      boxes.forEach(function(b){ pool.get(b).forEach(function(k){ b.appendChild(k); }); });
+    } else {
+      heads.forEach(function(h){ h.style.display='none'; });
+      var all=[];
+      boxes.forEach(function(b){ all=all.concat(pool.get(b)); });
+      boxes.forEach(function(b,idx){ if(idx) b.style.display='none'; });
+      fill(boxes[0], all, n);
+    }
+    // 重排会改变内容高度，浏览器可能把滚动位置夹回顶部；这里还原，避免"上滑一下就跳回开头"
+    if(sy>0){
+      window.scrollTo(0,sy);
+      requestAnimationFrame(function(){ window.scrollTo(0,sy); });
+    }
+  }
+
+  var timer=null, lastW=-1;
+  function later(){
+    // iPad 上下滑动时工具栏收放只改变高度、不改变宽度；宽度没变就不重排，
+    // 否则每次都拆了重建两栏，滚动位置会被弹回顶部。
+    var w=document.documentElement.clientWidth;
+    if(w===lastW) return;
+    lastW=w;
+    clearTimeout(timer);
+    timer=setTimeout(run,120);
+  }
+  function force(){
+    lastW=document.documentElement.clientWidth;
+    clearTimeout(timer);
+    timer=setTimeout(run,90);
+  }
+  // 目录条目：放不下一行时不做截断
+  //   - 只溢出一两个字：左右轻移，露出那截再移回来
+  //   - 溢出较多：尾部接一份副本，整条按 25px/秒向左滚，滚到副本接上时无缝循环
+  function tocScroll(){
+    var links=document.querySelectorAll('.toc a');
+    for(var i=0;i<links.length;i++){
+      var a=links[i], t=a.querySelector('.tt');
+      if(!t) continue;
+      var dup=a.querySelector('.tt.dup');
+      if(dup) a.removeChild(dup);
+      a.classList.remove('sc','nudge');
+      a.style.removeProperty('--dist');
+      a.style.removeProperty('--dur');
+      var pavail=a.clientWidth-20;        // 去掉左右 padding 的可用宽度
+      var tw=t.offsetWidth;               // 单行文本的完整宽度
+      var over=tw-pavail;
+      if(over<=4) continue;
+      if(over<=44){
+        a.classList.add('nudge');
+        a.style.setProperty('--dist', (-over-2)+'px');
+        a.style.setProperty('--dur', '7s');
+      } else {
+        var c=t.cloneNode(true);
+        c.className='tt dup';
+        c.setAttribute('aria-hidden','true');
+        a.appendChild(c);
+        a.classList.add('sc');
+        var dist=tw+28;                   // 副本与首份之间的空隙，正好补齐循环
+        a.style.setProperty('--dist', (-dist)+'px');
+        a.style.setProperty('--dur', Math.max(8, Math.round(dist/25))+'s');
+      }
+    }
+  }
+  window.addEventListener('resize',later);
+  window.addEventListener('resize',function(){ setTimeout(tocScroll,260); });
+  window.addEventListener('load',force);
+  try{ document.addEventListener('toggle',force,true); }catch(e){}
+  run();
+  tocScroll();
+})();
+</script>
+</body>
+</html>
