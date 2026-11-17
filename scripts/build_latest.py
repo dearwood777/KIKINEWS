@@ -122,9 +122,11 @@ body{{
 
 /* ---------- summary ---------- */
 .summary{{
-  display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
-  border-radius:14px;padding:13px 15px;font-size:14.5px;color:var(--muted);margin-bottom:16px;box-shadow:var(--shadow);
+  display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:9px 12px;font-size:13.5px;line-height:1.45;color:var(--muted);
+  margin-bottom:6px;box-shadow:var(--shadow);
 }}
+.summary>span{{flex:0 0 auto;font-size:14px}}
 .summary b{{color:var(--fg)}}
 
 /* ---------- toc ---------- */
@@ -134,11 +136,23 @@ body{{
 .toc{{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}}
 .toc a{{
   display:flex;align-items:center;height:32px;max-width:100%;overflow:hidden;
-  text-decoration:none;color:var(--fg);background:#0f1a2e;border:1px solid #25314b;
+  text-decoration:none;color:var(--fg);background:#0d1c3a;border:1px solid #27406b;
   padding:0 10px;border-radius:8px;font-size:13px;line-height:1;box-sizing:border-box;
 }}
 .toc a .tt{{display:block;white-space:nowrap;flex:0 0 auto;text-align:left}}
 .toc a .tt.dup{{margin-left:1.6em}}
+/* 滚动/轻移时文字在左右边缘渐隐，保留胶囊本身的描边 */
+.toc a.sc,.toc a.nudge{{position:relative}}
+.toc a.sc::before,.toc a.nudge::before,
+.toc a.sc::after,.toc a.nudge::after{{
+  content:'';position:absolute;top:0;bottom:0;width:14px;pointer-events:none;z-index:1;
+}}
+.toc a.sc::before,.toc a.nudge::before{{
+  left:0;background:linear-gradient(90deg,#0d1c3a,rgba(13,28,58,0));
+}}
+.toc a.sc::after,.toc a.nudge::after{{
+  right:0;background:linear-gradient(270deg,#0d1c3a,rgba(13,28,58,0));
+}}
 .toc a.sc .tt{{animation:tocscroll var(--dur,16s) linear infinite}}
 .toc a.nudge .tt{{animation:tocnudge var(--dur,7s) ease-in-out infinite}}
 @keyframes tocscroll{{
@@ -174,6 +188,7 @@ body{{
 @media (max-width: 520px){{
   .card{{border-radius:10px;padding:13px 14px 4px}}
   .card h3{{font-size:17px;line-height:1.42}}
+  .card p{{text-align:left;hyphens:none;-webkit-hyphens:none}}
 }}
 .card h3 a{{color:var(--fg);text-decoration:none}}
 .card h3 a:active{{color:var(--accent)}}
@@ -197,11 +212,16 @@ body{{
 .srcurl{{margin:0 0 14px;font-size:13px}}
 .srcurl a{{color:var(--accent);text-decoration:none;word-break:break-all}}
 .srcurl a:hover{{text-decoration:underline}}
-.cands{{margin:0 0 18px}}
+.cands{{margin:0 0 6px}}
 .cands summary{{list-style:none;cursor:pointer}}
 .cands summary::-webkit-details-marker{{display:none}}
-.cbtn{{display:inline-block;font-size:13px;padding:7px 14px;border-radius:999px;
+/* 候选行：三段两端对齐铺满整行，窄屏也不折行、右侧不留空 */
+.cbtn{{display:flex;align-items:center;gap:8px;font-size:12.5px;line-height:1;
+  padding:6px 12px;border-radius:999px;white-space:nowrap;
   border:1px solid var(--line);background:var(--card);color:var(--accent)}}
+.cbtn .l{{flex:0 0 auto}}
+.cbtn .r{{margin-left:auto;flex:0 0 auto;opacity:.85}}
+.cbtn .t{{flex:0 0 auto;font-size:12px;opacity:.7;color:var(--muted)}}
 .cands[open] .cbtn{{background:var(--chip)}}
 .clist{{margin:12px 0 0;padding-left:22px;font-size:13.5px;color:var(--muted)}}
 .clist li{{margin:0 0 7px}}
@@ -772,16 +792,25 @@ def render_candidates(cands: list[dict], src_count: str, generated_at: str = "")
         rows.append(f'<li>{link}{meta}</li>')
     scored = any(c.get("score") for c in cands)
     if scored:
-        head = f"全部候选 {len(cands)} 条 · 展开查看"
+        left = f"从 {len(cands)} 条中筛出"
+        right = f"展开全部 {len(cands)} 条 ›"
         if src_count and str(len(cands)) == str(src_count):
-            head = f"从 {src_count} 条内容中筛出 · 展开全部 {len(cands)} 条"
+            left = f"从 {src_count} 条中筛出"
+            right = f"展开全部 {src_count} 条 ›"
     else:
-        head = f"本次抓取候选 {len(cands)} 条（未评分） · 展开查看"
+        left = f"候选 {len(cands)} 条（未评分）"
+        right = "展开查看 ›"
+    stamp = ""
     if generated_at:
-        head = f"{head} · {generated_at}"
+        # 只留时分，日期 hero 上已经有了，整行才放得下
+        stamp = generated_at.strip()[-5:]
+        if not stamp[:2].isdigit():
+            stamp = generated_at.strip()
     return (
         '<details class="cands"><summary>'
-        f'<span class="cbtn">{head}</span></summary>'
+        f'<span class="cbtn"><span class="l">{left}</span>'
+        f'<span class="t">{stamp}</span>'
+        f'<span class="r">{right}</span></span></summary>'
         f'<ol class="clist">{"".join(rows)}</ol></details>'
     )
 
@@ -795,7 +824,9 @@ def render_bilingual(zh: dict | None, en: dict | None) -> str:
     blocks: list[str] = []
 
     if (zh or {}).get("summary"):
-        blocks.append(f'<div class="summary"><span>📌</span><div><b>本期</b> · {clean_text(zh["summary"])}</div></div>')
+        # “从 N 条内容中筛选出”这半句候选行已经说了，这里去掉，否则窄屏必折行
+        stxt = re.sub(r"^从\s*\d+\s*条内容中(筛选|筛)出\s*", "", clean_text(zh["summary"]))
+        blocks.append(f'<div class="summary"><span>📌</span><div><b>本期</b> · {stxt}</div></div>')
     elif (en or {}).get("summary"):
         blocks.append(f'<div class="summary"><span>📌</span><div><b>Summary</b> · {clean_text(en["summary"])}</div></div>')
 
