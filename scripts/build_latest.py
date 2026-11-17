@@ -9,6 +9,7 @@
 输出：docs/latest.html      —— 英文在上、中文在下，逐条对照；APK 默认加载这个
       docs/latest-en.html   —— 纯英文版（兼容/备用）
       docs/latest.json      —— 版本信息，App 用来判断是否更新
+      docs/widget.json      —— 精简标题列表，安卓桌面小组件用
 
 只依赖 markdown 库。
 """
@@ -871,6 +872,76 @@ def render_bilingual(zh: dict | None, en: dict | None) -> str:
     return '<div class="flow">' + "".join(blocks) + "</div>"
 
 
+SEC_SHORT = (
+    ("科技", "TECH"), ("tech", "TECH"),
+    ("财经", "FIN"), ("business", "FIN"), ("finan", "FIN"),
+    ("国际", "WORLD"), ("world", "WORLD"),
+)
+
+
+def _sec_short(group: str) -> str:
+    low = group.lower()
+    for key, tag in SEC_SHORT:
+        if key in low:
+            return tag
+    return group.split("·")[0].strip()[:6]
+
+
+def _num(text: str) -> float:
+    try:
+        return float(text)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def write_widget_json(posts: dict, day: str, hm: str) -> None:
+    """输出 docs/widget.json，供安卓桌面小组件使用。
+
+    只保留标题、评分、锚点、分类四项，体积约 2KB；标题优先取英文原文，
+    没有英文版条目才退回中文标题。排序按评分从高到低，同分保持页面顺序。
+    """
+    zh_data = posts.get("zh", (None, None))[1] or {}
+    en_data = posts.get("en", (None, None))[1] or {}
+    zh_idx = {i["anchor"]: i for i in zh_data.get("items", [])}
+    en_idx = {i["anchor"]: i for i in en_data.get("items", [])}
+
+    order: list[str] = []
+    sec_of: dict[str, str] = {}
+    for data in (zh_data, en_data):
+        for g in data.get("toc", []):
+            for it in g["items"]:
+                if it["anchor"] not in order:
+                    order.append(it["anchor"])
+                    sec_of.setdefault(it["anchor"], g["group"])
+
+    rows = []
+    for pos, anchor in enumerate(order):
+        en = en_idx.get(anchor) or {}
+        zh = zh_idx.get(anchor) or {}
+        title = (en.get("title") or zh.get("title") or "").strip()
+        if not title:
+            continue
+        rows.append(
+            {
+                "t": title,
+                "s": str(en.get("score") or zh.get("score") or ""),
+                "a": anchor,
+                "sec": _sec_short(sec_of.get(anchor, "")),
+                "_pos": pos,
+            }
+        )
+
+    rows.sort(key=lambda r: (-_num(r["s"]), r["_pos"]))
+    for r in rows:
+        r.pop("_pos")
+
+    payload = {"date": day, "updated": hm, "total": len(rows), "items": rows}
+    path = os.path.join(DOCS, "widget.json")
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=1)
+    print(f"[ok] widget.json ({len(rows)} items, {os.path.getsize(path)} B)")
+
+
 def main() -> None:
     posts = {}
     for lang in ("zh", "en"):
@@ -985,6 +1056,10 @@ def main() -> None:
     with open(os.path.join(DOCS, "latest.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)
     print("[ok] latest.json")
+
+    # 桌面小组件专用的精简数据：只有标题、评分、锚点、分类，约 2KB。
+    # 独立成文件是为了让小组件一次请求就能拿到全部信息，不用去解析整页 HTML。
+    write_widget_json(posts, display_day, hm)
 
 
 if __name__ == "__main__":

@@ -42,6 +42,8 @@ class MainActivity : AppCompatActivity() {
     private val holdHandler = Handler(Looper.getMainLooper())
     private var holdStartAt = 0L
     private var holdUnlocked = false
+    /** 从桌面小组件点进来时带的锚点，页面加载完再滚动过去。 */
+    private var pendingAnchor: String? = null
     private val unlockTask = Runnable {
         holdUnlocked = true
         toast("已解锁高级选项，松手后显示")
@@ -55,6 +57,9 @@ class MainActivity : AppCompatActivity() {
         private const val PREF = "horizon"
         private const val KEY_URL = "digest_url"
         private const val KEY_ZOOM = "text_zoom"
+
+        /** 桌面小组件点击标题时带过来的新闻锚点。 */
+        const val EXTRA_ANCHOR = "anchor"
 
         /** 长按多久解锁「在浏览器中打开」「复制日报链接」。 */
         private const val HOLD_UNLOCK_MS = 6000L
@@ -72,6 +77,8 @@ class MainActivity : AppCompatActivity() {
         errorText = findViewById(R.id.errorText)
 
         setupWebView()
+
+        pendingAnchor = intent?.getStringExtra(EXTRA_ANCHOR)
 
         swipe.setOnRefreshListener { load(digestUrl()) }
         findViewById<View>(R.id.retryButton).setOnClickListener {
@@ -143,6 +150,7 @@ class MainActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView, url: String) {
                 swipe.isRefreshing = false
                 errorPanel.visibility = View.GONE
+                scrollToPendingAnchor(view)
             }
 
             override fun onReceivedError(
@@ -158,8 +166,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun load(url: String) {
-        if (!hasNetwork()) {
+    /** 从小组件点标题进来：滚到那条新闻；找不到锚点就停在页首。 */
+    private fun scrollToPendingAnchor(view: WebView) {
+        val anchor = pendingAnchor ?: return
+        pendingAnchor = null
+        if (anchor.isEmpty()) return
+        val js = "(function(){var e=document.getElementById(${org.json.JSONObject.quote(anchor)});" +
+            "if(e){e.scrollIntoView({block:'start'});}})()"
+        view.evaluateJavascript(js, null)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val anchor = intent.getStringExtra(EXTRA_ANCHOR)
+        if (!anchor.isNullOrEmpty()) {
+            pendingAnchor = anchor
+            if (::web.isInitialized) scrollToPendingAnchor(web)
+        }
+    }
+
+    private fun load(url: String) {        if (!hasNetwork()) {
             showError("当前没有可用网络")
             return
         }
