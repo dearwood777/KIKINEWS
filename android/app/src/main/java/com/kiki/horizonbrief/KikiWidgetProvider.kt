@@ -242,7 +242,7 @@ object WidgetRenderer {
         baseSlots: Int
     ) {
         val views = RemoteViews(context.packageName, R.layout.widget_card)
-        val slots = slotsFor(manager, id, baseSlots)
+        val slots = slotsFor(context, manager, id, baseSlots)
 
         if (feed == null || feed.items.isEmpty()) {
             renderEmpty(context, views, id)
@@ -323,11 +323,17 @@ object WidgetRenderer {
      * 单位是 dp。OPTION_APPWIDGET_MIN_HEIGHT 是当前高度下限，够几行就显示几行；
      * 刚添加到桌面时 launcher 可能还没回传尺寸，这时退回 provider 自带的 baseSlots，
      * 避免 4×2 被渲染成一条。
+     *
+     * 平板上一个格子比手机高得多（同样 2 格能到 180dp 以上），而 launcher 回传的
+     * 高度下限往往还停在手机尺度，按它算就会「只给 4 行、每行拉得很开」。所以平板上
+     * 把估算值放大 1.6 倍，行数才能跟上真实高度。
      */
-    private fun slotsFor(manager: AppWidgetManager, id: Int, baseSlots: Int): Int {
+    private fun slotsFor(context: Context, manager: AppWidgetManager, id: Int, baseSlots: Int): Int {
         val h = manager.getAppWidgetOptions(id)
             .getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
-        val fit = (h - HEAD_DP) / ROW_DP
+        val tablet = context.resources.configuration.smallestScreenWidthDp >= 600
+        val hEst = if (tablet) (h * 16) / 10 else h
+        val fit = (hEst - HEAD_DP) / ROW_DP
         return maxOf(fit, baseSlots).coerceIn(1, MAX_ROWS)
     }
 
