@@ -136,7 +136,7 @@ body{{
 .toc{{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}}
 .toc a{{
   display:flex;align-items:center;height:32px;max-width:100%;overflow:hidden;
-  text-decoration:none;color:var(--fg);background:#0d1c3a;border:1px solid #27406b;
+  text-decoration:none;color:var(--fg);background:#091426;border:1px solid #1f3557;
   padding:0 10px;border-radius:8px;font-size:13px;line-height:1;box-sizing:border-box;
 }}
 .toc a .tt{{display:block;white-space:nowrap;flex:0 0 auto;text-align:left}}
@@ -148,10 +148,10 @@ body{{
   content:'';position:absolute;top:0;bottom:0;width:14px;pointer-events:none;z-index:1;
 }}
 .toc a.sc::before,.toc a.nudge::before{{
-  left:0;background:linear-gradient(90deg,#0d1c3a,rgba(13,28,58,0));
+  left:0;background:linear-gradient(90deg,#091426,rgba(9,20,38,0));
 }}
 .toc a.sc::after,.toc a.nudge::after{{
-  right:0;background:linear-gradient(270deg,#0d1c3a,rgba(13,28,58,0));
+  right:0;background:linear-gradient(270deg,#091426,rgba(9,20,38,0));
 }}
 .toc a.sc .tt{{animation:tocscroll var(--dur,16s) linear infinite}}
 .toc a.nudge .tt{{animation:tocnudge var(--dur,7s) ease-in-out infinite}}
