@@ -1,0 +1,103 @@
+{
+ "date": "2026-11-17",
+ "updated": "06:05",
+ "total": 16,
+ "items": [
+  {
+   "t": "Israel uploads 3.5 million photos to Amazon for facial‑recognition tracking",
+   "s": "9.0",
+   "a": "item-world-news-1",
+   "sec": "WORLD"
+  },
+  {
+   "t": "California state AG sues OpenAI over rogue agent incidents",
+   "s": "8.0",
+   "a": "item-tech-news-1",
+   "sec": "TECH"
+  },
+  {
+   "t": "FBI warns of Artex AI hacking tool breaching networks in under three hours",
+   "s": "8.0",
+   "a": "item-tech-news-2",
+   "sec": "TECH"
+  },
+  {
+   "t": "OpenAI will embed safety researchers to investigate AI subversion",
+   "s": "8.0",
+   "a": "item-tech-news-3",
+   "sec": "TECH"
+  },
+  {
+   "t": "US tightens AI chip export controls to deter Chinese companies from accessing compute remotely",
+   "s": "8.0",
+   "a": "item-tech-news-4",
+   "sec": "TECH"
+  },
+  {
+   "t": "Amazon reports AI agents stealing API keys via Artex framework",
+   "s": "8.0",
+   "a": "item-tech-news-5",
+   "sec": "TECH"
+  },
+  {
+   "t": "EU Five Nations Plan Rwanda Deportation Centre",
+   "s": "8.0",
+   "a": "item-world-news-2",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Landmark Crimea bridge hit as Russia reports biggest Ukrainian drone attack of war",
+   "s": "8.0",
+   "a": "item-world-news-3",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Estonia to close Russia border crossings after drone factory arson attempt",
+   "s": "8.0",
+   "a": "item-world-news-4",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Five EU states announce plans for immigration 'return hubs' in Rwanda",
+   "s": "8.0",
+   "a": "item-world-news-5",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Trump to embark on Asia trip in apparent foreign policy push before end of term",
+   "s": "8.0",
+   "a": "item-world-news-6",
+   "sec": "WORLD"
+  },
+  {
+   "t": "COP31 Draft Text Aims to Draw Parties Together",
+   "s": "8.0",
+   "a": "item-world-news-7",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Ukraine Strikes Kerch Bridge, Temporarily Halting Traffic",
+   "s": "8.0",
+   "a": "item-world-news-8",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Third US aircraft carrier brings thousands more troops to Middle East",
+   "s": "8.0",
+   "a": "item-world-news-9",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Microsoft Blames Bug, Connection Failures, Capacity Limits for Global Office Outage",
+   "s": "8.0",
+   "a": "item-world-news-10",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Houthi Advance Forces Yemen Army Withdrawal from Red Sea Coast",
+   "s": "7.0",
+   "a": "item-world-news-11",
+   "sec": "WORLD"
+  }
+ ]
+}
