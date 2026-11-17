@@ -82,6 +82,11 @@ body{
 }
 .toc a .tt{display:block;white-space:nowrap;flex:0 0 auto;text-align:left}
 .toc a .tt.dup{margin-left:1.6em}
+.toc a.sc,.toc a.nudge{
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent 100%);
+}
+
 .toc a.sc .tt{animation:tocscroll var(--dur,16s) linear infinite}
 .toc a.nudge .tt{animation:tocnudge var(--dur,7s) ease-in-out infinite}
 @keyframes tocscroll{
