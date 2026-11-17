@@ -85,10 +85,6 @@ body{{
 /* ---------- 横屏 / 平板宽屏：正文分两栏，别留一大片空白 ---------- */
 @media (min-width: 760px){{
   .wrap{{max-width:1320px;padding:0 20px 72px;padding-bottom:calc(72px + env(safe-area-inset-bottom))}}
-  .hero{{margin:0 -20px 20px;padding:28px 26px 24px}}
-  .hero h1{{font-size:30px}}
-  .hero .topline{{padding-right:66px}}
-  .hero .day{{font-size:11.5px}}
   .cards > .card{{margin:0 0 16px}}
   .card h3{{font-size:18.5px}}
 }}
@@ -100,11 +96,17 @@ body{{
   background:linear-gradient(180deg,#152847 0%,#070d18 100%);
   border-radius:0 0 16px 16px;
 }}
-.hero .topline{{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding-right:60px}}
-.hero .brand{{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.7}}
-.hero .day{{font-size:11px;letter-spacing:0;opacity:.7;white-space:nowrap;flex:0 0 auto}}
+.hero .brand{{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}}
+.hero .day{{margin-top:7px;font-size:13px;letter-spacing:.02em}}
+.hero .day .upd{{margin-left:9px;font-size:11px;font-weight:400;opacity:.6;letter-spacing:.02em}}
 .hero h1{{margin:13px 0 0;font-size:23px;line-height:1.3;font-weight:700;letter-spacing:.3px}}
 .pillrow{{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}}
+/* 宽屏报头必须写在基础规则之后，否则会被上面的基础值盖掉 */
+@media (min-width: 760px){{
+  .hero{{margin:0 -20px 20px;padding:28px 26px 24px}}
+  .hero h1{{font-size:30px}}
+  .hero .day{{font-size:14px}}
+}}
 .pill{{
   font-size:12px;padding:4px 10px;border-radius:999px;white-space:nowrap;
   background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);
@@ -255,10 +257,8 @@ footer .dot{{opacity:.45;margin:0 6px}}
 <body>
 <div class="wrap">
   <div class="hero">
-    <div class="topline">
-      <div class="brand">KIKI DAILY·每日速递</div>
-      <div class="day">{hero_date}</div>
-    </div>
+    <div class="brand">KIKI DAILY · 每日速递</div>
+    <div class="day">{hero_date}<span class="upd">{hero_update}</span></div>
     <h1>{hero_title}</h1>
     <div class="pillrow">{pills}</div>
   </div>
@@ -938,12 +938,14 @@ def main() -> None:
     display_day, updated_text = digest_display(DOCS)
     # 日期与时间并到报头右上角一行：2026-11-17 · 北京时间 06:05
     hm = updated_text.split(" ")[1] if " " in updated_text else ""
-    hero_date = f"{display_day} · 北京时间 {hm}" if hm else display_day
+    hero_date = display_day
+    hero_update = f"北京时间 {hm} · 自动生成" if hm else ""
     bj_now = now + timedelta(hours=8)
 
     page = TEMPLATE.format(
         title=f"KIKI 每日速递 {display_day}",
         hero_date=hero_date,
+        hero_update=hero_update,
         hero_title="科技 · 财经 · 国际速递",
         updated_short=display_day,
         pills=pills,
@@ -959,6 +961,7 @@ def main() -> None:
         en_page = TEMPLATE.format(
             title=f"KIKI Daily {display_day}",
             hero_date=hero_date,
+            hero_update=hero_update,
             hero_title="Tech · Finance · World",
             updated_short=display_day,
             pills=pills,
