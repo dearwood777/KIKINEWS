@@ -141,12 +141,14 @@ body{
   background:var(--card);border:1px solid var(--line);border-radius:16px;
   padding:16px 16px 6px;margin:0 0 14px;box-shadow:var(--shadow);scroll-margin-top:16px;
 }
-/* 标题是短块，用 balance 让两行长度尽量对称；正文长段用 pretty 防孤行（两者算法不同，不能互换） */
+/* 标题是短块，用 balance 让两行长度尽量对称（balance 只配短块，不用在正文上） */
 .card h3{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700;text-wrap:balance;color:#ffffff;letter-spacing:.1px}
 @media (max-width: 520px){
   .card{border-radius:10px;padding:13px 14px 4px}
   .card h3{font-size:17px;line-height:1.42}
-  .card p{text-align:left;hyphens:none;-webkit-hyphens:none}
+  /* 窄屏行更短，长词更容易塞不下而整词掉到下一行、在行尾留一大段空白。
+     这里必须留着自动断词，让 leader-ship 这类词能在词内断开把行填满。 */
+  .card p{text-align:left;hyphens:auto;-webkit-hyphens:auto}
 }
 .card h3 a{color:var(--fg);text-decoration:none}
 .card h3 a:active{color:var(--accent)}
@@ -157,8 +159,11 @@ body{
 }
 .src{font-size:12.5px;color:var(--muted);margin:-2px 0 10px}
 /* 取消两端对齐：窄栏（手机三行一条）两端对齐时词距忽大忽小，出现"河流"，中文更明显；
-   英文长词仍保留断词，避免长单词撑出卡片 */
-.card p{margin:0 0 12px;font-size:15.5px;color:var(--fg);text-align:left;text-wrap:pretty;hyphens:auto;-webkit-hyphens:auto}
+   英文长词仍保留断词，避免长单词撑出卡片。
+   正文不加 text-wrap: pretty —— 它不填行，只是把词往下一行挪以避免孤行，
+   短段（3~5 行）整段都在它的回看范围里，反而会在行尾掏出空洞。
+   pretty 只留给标题、词汇页短语这类需要"最后一行别太短"的短块。 */
+.card p{margin:0 0 12px;font-size:15.5px;color:var(--fg);text-align:left;hyphens:auto;-webkit-hyphens:auto}
 .card a{color:var(--accent);text-decoration:none;word-break:break-word}
 /* 难点词行内链接：颜色之外再给一条虚线下划线做第二指示（不靠颜色单独表达含义，
    符合 WCAG 1.4.11）；下划线用原生 text-decoration 而不是 border/伪元素，
