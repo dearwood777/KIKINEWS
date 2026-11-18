@@ -1,5 +1,13 @@
 # 更新记录
 
+## 修复「页面日期退回 11-12」（用本地过期正文覆盖线上）(2026-11-18)
+
+线上两页一度显示 2026-11-12，原因不在流水线：本地仓库 `docs/_posts` 只到 11-12（流水线的每日出刊只在 Actions 里跑，本地不会自动同步），手工重建后直接推送，等于把旧一期发上线。
+
+- 从 gh-pages 拉回 11-17 的中英正文，并取**该期 digest 提交**里的 `candidates.json`（`latest.json` 也取自同一提交），重新构建两页后推送；页面恢复为 16 条、日期 2026-11-18（北京时间出刊日），难点词汇 19 词。
+- `latest.json` 的 `generated_at` 还原成那一期的原始时间（2026-11-17T22:26Z）。它同时是 guard 判断「该不该出下一期」的依据，重建会把它改成当前时间，等于把下一次出刊整整推后 12 小时。
+- 新增 `scripts/rebuild_current.py`：以线上最新一期为准拉正文与候选数据重建，构建后自动还原 `latest.json`、校验页面日期与卡片数，`--push` 才推送（gh-pages 根 + main/docs 五件套）。以后手工重建一律用它，不要再直接跑 build_vocab/build_latest 后推送。
+
 ## 网页按 Modern Web Guidance 指南做的 CSS 修正(2026-11-18)
 
 装了 Chrome 团队的 modern-web-guidance 指南库（210 篇，放在 `D:\AI\modern-web-guidance`），拿主页与词汇页逐条对照，改掉四处"自己造的土办法"：
