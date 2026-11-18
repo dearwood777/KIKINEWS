@@ -1,5 +1,29 @@
 # 更新记录
 
+## 抓词算法改版：从「几条阈值筛人」改成「按已知证据自适应」(2026-11-18)
+
+老算法是三条阈值同时成立才算超纲词（词频排位 > 9000 **且** Collins < 2 **且** tag 不含 cet4），
+结果两头都错：`lieutenant` / `colonel` 被词库误标成 cet4 直接出局，`custody` 因为 Collins 给了 2 星被杀，
+而部分四级词反而溜进来；`lieutenant colonel` 这种多词术语、`spying` 这种屈折变化、
+`counter-terrorism` 这种连字符词，则在进入判断之前就被代码丢掉了。
+
+- **判定改为集合归属**：`known_evidence()` 只看「有没有任何一条‘读者已经认识’的硬证据」——
+  教材词表 A1–B2、牛津标注、Collins ≥ 3、词频前 4000，任一条命中即出局；`cet4` 标签噪声太大，
+  只在词频 5000 以内算弱证据。不再要求多条阈值同时满足。
+- **排序改为证据累加**：`rarity_score()` 把「无 CEFR 等级 / 词频档位 / Collins ≤ 1 / 无牛津 / 无标签 / 词长」累加，
+  当天出现次数只做同分排序，不再用单一词频决定版面。
+- **新增术语层**：正文 2–4 元片段与词库多词条目求交，出卡条件是「至少一个组成词本身没过已知判定」
+  （`lieutenant colonel` 里的 lieutenant），带连字符的透明复合词（`end-to-end` / `sea-level`）不出卡。
+- **连字符词不再丢弃**，`counter-terrorism` / `cyber-crime` 这类整体含义跑偏的仍出卡。
+- **屈折变化不再当派生词砍掉**：`roots_of` 只处理构词派生（un- / -ness / -ation），
+  `spying` 不再被判成 `spy` 的简单派生、「间谍活动」这条新闻义不再丢。
+- **无音标也出卡**：`chokepoint` 这种词库没音标的词，从「整卡丢弃」改为「只省音标、保留发音按钮」。
+- **噪声清理**：正文先剥 URL / 邮箱 / HTML 实体（裸链接曾灌进 `https` / `href` / `quot`）；
+  句中大写次数 ≥ 小写次数的词按专名排除。
+- 同一期日报（2026-11-12）出卡从旧算法 20 词变为 35 张，实测样本
+  （`A U.S. Army lieutenant colonel was arrested...`）稳定产出 `lieutenant colonel` +
+  `lieutenant` + `custody`。
+
 ## v1.6.006 修复「无法添加组件」（RemoteViews 控件白名单）(2026-11-18)
 
 1.6.005 用纯 `android.view.View` 画那层外框。`View` 不在 RemoteViews 允许的控件名单里（只认 FrameLayout、LinearLayout、ImageView、TextView、ListView、GridLayout 等），launcher 一 inflate 就抛异常，于是「Couldn't add widget」：不能预览、也加不上，什么内容都没有。
