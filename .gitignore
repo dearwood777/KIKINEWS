@@ -74,3 +74,6 @@ android/local.properties
 android/keystore.properties
 *.jks
 *.keystore
+
+# 词库体积大，Actions 侧现下
+data/ecdict.csv
