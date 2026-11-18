@@ -22,8 +22,8 @@ android {
         targetSdk = 34
         // 版本号分段：主.次.微（1.5.000）。每次小改动只递增最后一段，
         // 只有功能性大改才动第二段；versionCode 保证随之单调递增。
-        versionCode = 1 * 100000 + 6 * 10000 + 0
-        versionName = "1.6.000"
+        versionCode = 1 * 100000 + 6 * 10000 + 1
+        versionName = "1.6.001"
     }
 
     signingConfigs {
