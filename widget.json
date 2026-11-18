@@ -1,103 +1,103 @@
 {
- "date": "2026-11-18",
- "updated": "06:06",
+ "date": "2026-11-19",
+ "updated": "06:05",
  "total": 16,
  "items": [
   {
-   "t": "Jensen Huang Expresses Willingness to Return as Nvidia CEO",
-   "s": "9.0",
-   "a": "item-tech-news-1",
-   "sec": "TECH"
-  },
-  {
-   "t": "Ukrainian Forces Destroy Key Section of Crimean Bridge",
+   "t": "Jeffries Nominated as US House Speaker",
    "s": "9.0",
    "a": "item-world-news-1",
    "sec": "WORLD"
   },
   {
-   "t": "GPT‑6.2 Astra and Sol",
+   "t": "Fed Officials Expect More Rate Hikes, Cite AI Inflation Risk",
+   "s": "9.0",
+   "a": "item-finance-news-1",
+   "sec": "FIN"
+  },
+  {
+   "t": "Nginx HTTP/2 RCE Vulnerabilities \\(CVE-2026-123633, CVE-2026-123007\\)",
+   "s": "8.0",
+   "a": "item-tech-news-1",
+   "sec": "TECH"
+  },
+  {
+   "t": "OpenAI CEO Altman says AI industry can&\\#x27;t imagine without Jensen Huang",
    "s": "8.0",
    "a": "item-tech-news-2",
    "sec": "TECH"
   },
   {
-   "t": "Highly classified US national security communications network goes down",
+   "t": "Xint 披露 5 个 nginx 漏洞，可打到主机 root",
    "s": "8.0",
    "a": "item-tech-news-3",
    "sec": "TECH"
   },
   {
-   "t": "Waymo suspends freeway robotaxi rides nationwide after California DMV order",
-   "s": "8.0",
-   "a": "item-tech-news-4",
-   "sec": "TECH"
-  },
-  {
-   "t": "AI models can be tricked into identifying civilians as military targets by telling them it’s a game",
-   "s": "8.0",
-   "a": "item-tech-news-5",
-   "sec": "TECH"
-  },
-  {
-   "t": "Ukraine attack collapses part of Crimean Bridge",
+   "t": "Trump, Putin, Xi Meet in China Ahead of Asia‑Pacific Summit",
    "s": "8.0",
    "a": "item-world-news-2",
    "sec": "WORLD"
   },
   {
-   "t": "US Loses Measles-Free Status After 26 Years",
+   "t": "Israel launches rare Gaza ground operation beyond Yellow Line",
    "s": "8.0",
    "a": "item-world-news-3",
    "sec": "WORLD"
   },
   {
-   "t": "US Army Officer Arrested in UK on Spying Allegations",
+   "t": "Kuwait says it repelled first Iranian attack in two months after US strikes island",
    "s": "8.0",
    "a": "item-world-news-4",
    "sec": "WORLD"
   },
   {
-   "t": "Nvidia partner Megaspeed being investigated by US government over chip exports",
+   "t": "Putin, Trump, Xi to meet in Shenzhen for historic mini‑summit",
    "s": "8.0",
    "a": "item-world-news-5",
    "sec": "WORLD"
   },
   {
-   "t": "BBC reports from Kyiv bridge hit by Russian attack",
+   "t": "The seven Anthropic founders who are about to become multi-billionaires",
    "s": "8.0",
    "a": "item-world-news-6",
    "sec": "WORLD"
   },
   {
-   "t": "Will President Trump meet Kim Jong Un?",
+   "t": "UK‑EU Relationship Reset Draft to Be Signed in Brussels",
    "s": "8.0",
    "a": "item-world-news-7",
    "sec": "WORLD"
   },
   {
-   "t": "Spain&\\#x27;s Snap Election: Key Candidates to Watch",
+   "t": "Israel Postpones West Bank Settlement Contracts After UK Sanctions",
    "s": "8.0",
    "a": "item-world-news-8",
    "sec": "WORLD"
   },
   {
-   "t": "Huang to testify on alleged national security breach",
+   "t": "Anthropic Sets IPO Share Price at $83 Ahead of Nasdaq Debut",
    "s": "8.0",
    "a": "item-world-news-9",
    "sec": "WORLD"
   },
   {
-   "t": "Hi-tech Shenzhen takes centre stage as Xi sends ‘Chinamaxxing’ message at Apec summit",
+   "t": "NEPAL Urges Action at COP31 Amid Dire Climate Needs",
    "s": "8.0",
    "a": "item-world-news-10",
    "sec": "WORLD"
   },
   {
-   "t": "How Ukraine struck the Kerch bridge, a symbol of Putin’s rule",
-   "s": "8.0",
+   "t": "William and Kate meet PM Modi as they wrap up India tour",
+   "s": "7.0",
    "a": "item-world-news-11",
    "sec": "WORLD"
+  },
+  {
+   "t": "Fed’s Waller says central bank may need to ‘shock people’ with half-point rate hike",
+   "s": "7.0",
+   "a": "item-finance-news-2",
+   "sec": "FIN"
   }
  ]
 }
