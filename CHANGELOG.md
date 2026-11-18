@@ -1,5 +1,13 @@
 # 更新记录
 
+## v1.6.006 修复「无法添加组件」（RemoteViews 控件白名单）(2026-11-18)
+
+1.6.005 用纯 `android.view.View` 画那层外框。`View` 不在 RemoteViews 允许的控件名单里（只认 FrameLayout、LinearLayout、ImageView、TextView、ListView、GridLayout 等），launcher 一 inflate 就抛异常，于是「Couldn't add widget」：不能预览、也加不上，什么内容都没有。
+
+- 把那层改成 `FrameLayout`（同样只用 `android:background`），结构不变、位置不变，仍然叠在底板之上、四角花边与内容之下。
+- 顺带做了一次控件白名单自查：6 个布局里只出现 FrameLayout / LinearLayout / ImageView / TextView / ListView，全部在允许范围内。
+- 版本 1.6.006（versionCode 160006）。
+
 ## v1.6.005 边框与底板分离（边框不再随透明度变淡）、4×1 头部不再压框线（2026-11-18）
 
 - **边框跟着透明度变淡的问题**：11 档底板 `bg_widget_a000…a100` 里一直混着描边（`#C62C364A` 外圈、`#7E6FE3D4` 内细线），所以调透明度时连框一起淡掉。现在底板只画半透明色块，边框抽成独立的 `frame_widget.xml`（外圈 1dp `#E62C364A` + 内缩 5dp 的 0.7dp `#B36FE3D4` 细线，固定不透明），在 6 个布局里以一层 `View` 叠在底板之上、四角花边与内容之下。调透明度只影响底板，框线始终清晰；调到 0% 时只剩框和文字。
