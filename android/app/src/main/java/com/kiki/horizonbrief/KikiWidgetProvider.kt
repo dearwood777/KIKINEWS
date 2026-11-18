@@ -146,14 +146,29 @@ object WidgetStore {
     private const val KEY_AT = "fetched_at"
     private const val KEY_ALPHA = "bg_alpha"
 
-    /** 背景不透明度，0–100；默认 90。 */
-    fun alpha(context: Context): Int =
-        context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-            .getInt(KEY_ALPHA, 90).coerceIn(0, 100)
+    /**
+     * 背景不透明度，0–100；默认 90。
+     *
+     * 按组件 id 分开存：桌面上同时放 4×1 和 4×2 时，两个组件各调各的，
+     * 不会「最后改的那个把另一个也覆盖掉」。id 无效时退回全局默认值。
+     */
+    fun alpha(context: Context, id: Int): Int {
+        val prefs = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+        return if (id == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            prefs.getInt(KEY_ALPHA, 90).coerceIn(0, 100)
+        } else {
+            prefs.getInt("alpha_$id", prefs.getInt(KEY_ALPHA, 90)).coerceIn(0, 100)
+        }
+    }
 
-    fun setAlpha(context: Context, pct: Int) {
-        context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit()
-            .putInt(KEY_ALPHA, pct.coerceIn(0, 100)).apply()
+    fun setAlpha(context: Context, id: Int, pct: Int) {
+        val prefs = context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit()
+        if (id == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            prefs.putInt(KEY_ALPHA, pct.coerceIn(0, 100))
+        } else {
+            prefs.putInt("alpha_$id", pct.coerceIn(0, 100))
+        }
+        prefs.apply()
     }
 
     /** 免翻墙的取数顺序：GitHub Pages 同域 → jsDelivr 镜像 → ghfast 代理。 */
@@ -258,7 +273,7 @@ object WidgetStore {
 
     fun forget(context: Context, id: Int) {
         context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit()
-            .remove("page_$id").remove("seen_$id").apply()
+            .remove("page_$id").remove("seen_$id").remove("alpha_$id").apply()
     }
 }
 
@@ -290,7 +305,7 @@ object WidgetRenderer {
                 context.packageName,
                 if (tablet) R.layout.widget_card_wide_single else R.layout.widget_card_single
             )
-            applyAlpha(context, views)
+            applyAlpha(context, views, id)
             renderEmpty(context, views, id)
             manager.updateAppWidget(id, views)
             return
@@ -335,7 +350,7 @@ object WidgetRenderer {
             else -> R.layout.widget_list
         }
         val views = RemoteViews(context.packageName, layout)
-        applyAlpha(context, views)
+        applyAlpha(context, views, id)
 
         views.setTextViewText(R.id.w_date, dateText)
         views.setTextViewText(R.id.w_page, "$total 条")
@@ -361,8 +376,8 @@ object WidgetRenderer {
     }
 
     /** 11 档预制背景，按 10% 取整切换。 */
-    private fun applyAlpha(context: Context, views: RemoteViews) {
-        val pct = WidgetStore.alpha(context)
+    private fun applyAlpha(context: Context, views: RemoteViews, id: Int) {
+        val pct = WidgetStore.alpha(context, id)
         views.setInt(R.id.w_root, "setBackgroundResource", THUMB[(pct / 10).coerceIn(0, 10)])
     }
 

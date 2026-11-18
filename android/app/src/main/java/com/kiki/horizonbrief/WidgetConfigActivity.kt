@@ -40,7 +40,7 @@ class WidgetConfigActivity : Activity() {
             setResult(RESULT_CANCELED, Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId))
         }
 
-        pct = WidgetStore.alpha(this)
+        pct = WidgetStore.alpha(this, widgetId)
 
         val preview = findViewById<android.view.View>(R.id.cfg_preview)
         val value = findViewById<TextView>(R.id.cfg_value)
@@ -65,7 +65,7 @@ class WidgetConfigActivity : Activity() {
         })
 
         findViewById<Button>(R.id.cfg_save).setOnClickListener {
-            WidgetStore.setAlpha(this, pct)
+            WidgetStore.setAlpha(this, widgetId, pct)
             WidgetUpdater.refreshAll(this)
             if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
                 setResult(RESULT_OK, Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId))
