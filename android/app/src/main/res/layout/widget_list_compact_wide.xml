@@ -6,6 +6,12 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_widget_a090">
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/frame_widget" />
+
+
     <ImageView
         android:layout_width="16dp"
         android:layout_height="16dp"
@@ -45,8 +51,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingStart="12dp"
-        android:paddingEnd="4dp">
+        android:paddingStart="14dp"
+        android:paddingEnd="6dp"
+        android:paddingTop="6dp">
 
         <LinearLayout
             android:layout_width="match_parent"

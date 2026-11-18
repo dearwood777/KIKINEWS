@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  组件外框：不随透明度的底板一起变淡。
+  外层 1dp 描边 + 内缩 5dp 的 0.7dp 青色细线，透明度固定。
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="18dp" />
+            <solid android:color="#00000000" />
+            <stroke android:width="1dp" android:color="#E62C364A" />
+        </shape>
+    </item>
+    <item android:left="5dp" android:top="5dp" android:right="5dp" android:bottom="5dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="14dp" />
+            <solid android:color="#00000000" />
+            <stroke android:width="0.7dp" android:color="#B36FE3D4" />
+        </shape>
+    </item>
+</layer-list>
