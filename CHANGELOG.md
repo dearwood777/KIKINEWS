@@ -1,5 +1,17 @@
 # 更新记录
 
+## 网页按 Modern Web Guidance 指南做的 CSS 修正(2026-11-18)
+
+装了 Chrome 团队的 modern-web-guidance 指南库（210 篇，放在 `D:\AI\modern-web-guidance`），拿主页与词汇页逐条对照，改掉四处"自己造的土办法"：
+
+- **标题与正文换行用反了**：`.card h3` 原来用 `text-wrap:pretty`（那是防孤行的正文算法），改为 `text-wrap:balance`；正文 `p` 反过来加 `text-wrap:pretty`。标题求两行等长、正文求不出孤字，两者算法不同不能互换。词汇页词头 `.w`（多词术语会折行）同样改 balance，译文 / 例句加 pretty。
+- **取消正文两端对齐**：`text-align:justify` 在手机三行一条的窄栏里会产生词距忽大忽小的"河流"，中文尤其明显；改为左对齐，英文长词仍保留 `hyphens:auto` 断词防溢出。
+- **补上滚动条与原生控件配色**：原来完全没设，深色页面在 Windows / 安卓上挂一条亮灰滚动条。新增 `--sb-thumb:#5b7196` / `--sb-track:#0b1018`（对比度约 3.6:1，满足 WCAG 1.4.11）+ `scrollbar-color`，并声明 `color-scheme:dark` 让原生控件跟随；Safari 18.2 前的浏览器走 `@supports not (scrollbar-color:auto)` 里的 `::-webkit-scrollbar` 回退。刻意不设 `scrollbar-width`（thin 的滑块热区太小，且会让 WebKit 伪元素失效）。
+- **触控目标放大**：`@media (pointer: coarse)` 下目录胶囊 32→40px（平板 42px）、候选行 padding 加大、摘要三角加高；词汇页返回键加大、发音键视觉 32px 而热区用 `::after` 外扩到 48px。鼠标端尺寸完全不变。
+- **词汇页锚点被吸顶栏压住**：给 `html` 加 `scroll-padding-top:64px`。
+
+保留的部分（指南确认没有更优方案）：宽屏瀑布流仍然是自写的"当前最短栏"填充脚本——原生 grid lanes 目前只有 Safari 27.2 支持，指南给的替代（`grid-auto-flow:dense` 打乱 DOM 顺序、`columns` 列优先阅读）都不适合按序阅读的新闻流。
+
 ## 抓词算法改版：从「几条阈值筛人」改成「按已知证据自适应」(2026-11-18)
 
 老算法是三条阈值同时成立才算超纲词（词频排位 > 9000 **且** Collins < 2 **且** tag 不含 cet4），
