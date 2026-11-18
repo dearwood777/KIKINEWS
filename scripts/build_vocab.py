@@ -734,8 +734,17 @@ PAGE = """<!DOCTYPE html>
   /* 与主页共用同一套深色 token，两页明暗一致 */
   --bg:#0e1320;--card:#111926;--fg:#e2e8f4;--muted:#8b93a7;--line:#242d40;
   --accent:#5aa6ff;--chip:#242e42;--shadow:0 8px 24px rgba(0,0,0,.28);
+  /* 滚动条 token 与主页一致（滑块/轨道对比度约 3.6:1） */
+  --sb-thumb:#5b7196;--sb-track:#0b1018;
 }}
 *{{box-sizing:border-box;-webkit-tap-highlight-color:transparent}}
+/* color-scheme 让原生滚动条与控件跟随深色；scroll-padding-top 让锚点跳转不被吸顶栏压住 */
+html{{color-scheme:dark;scrollbar-color:var(--sb-thumb) var(--sb-track);scroll-padding-top:64px}}
+@supports not (scrollbar-color: auto) {{
+  html::-webkit-scrollbar{{width:12px;height:12px}}
+  html::-webkit-scrollbar-thumb{{background:var(--sb-thumb);border-radius:6px}}
+  html::-webkit-scrollbar-track{{background:var(--sb-track)}}
+}}
 body{{margin:0;background:var(--bg);color:var(--fg);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
   font-size:16px;line-height:1.6;overflow-x:hidden}}
@@ -761,28 +770,35 @@ body{{margin:0;background:var(--bg);color:var(--fg);
 }}
 .card::before{{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.55}}
 .hdr{{display:flex;align-items:center;gap:8px;flex-wrap:wrap}}
-.w{{font-size:19px;font-weight:700;letter-spacing:.2px;overflow-wrap:break-word}}
+.w{{font-size:19px;font-weight:700;letter-spacing:.2px;overflow-wrap:break-word;text-wrap:balance}}
 .ph{{color:var(--muted);font-size:13px;font-weight:400}}
 .meta{{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap}}
 .pos{{font-size:11.5px;color:var(--fg);background:var(--chip);border-radius:6px;padding:2px 7px}}
 .stars{{font-size:11.5px;color:#ffc861;letter-spacing:1px}}
 .streak{{font-size:11.5px;color:#7fdcb5}}
-.say{{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+.say{{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;
   border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--fg);
-  font-size:14px;cursor:pointer;padding:0}}
+  font-size:15px;cursor:pointer;padding:0}}
+/* 视觉仍是 32px，热区外扩到 48px，手指好按又不撑开排版 */
+.say::after{{content:"";position:absolute;inset:-8px;border-radius:999px}}
 .say:active{{transform:scale(.94)}}
 .say.on{{border-color:var(--accent);color:var(--accent)}}
-.t{{margin-top:7px;font-size:14.5px;color:#cfd6e6;white-space:pre-wrap}}
-.en{{margin-top:5px;font-size:13.5px;color:#a9b4cc;font-style:italic}}
-.ex{{margin-top:4px;font-size:13px;color:var(--muted)}}
+.t{{margin-top:7px;font-size:14.5px;color:#cfd6e6;white-space:pre-wrap;text-wrap:pretty}}
+.en{{margin-top:5px;font-size:13.5px;color:#a9b4cc;font-style:italic;text-wrap:pretty}}
+.ex{{margin-top:4px;font-size:13px;color:var(--muted);text-wrap:pretty}}
 .sense{{margin-top:7px;padding:7px 10px;border-radius:8px;background:rgba(255,200,97,.09);
   border:1px solid rgba(255,200,97,.25);font-size:13.5px;color:#ffd68a}}
 .sense .lb{{color:#c9a45f;font-size:11px;margin-right:6px;letter-spacing:.4px}}
 .ctx{{margin-top:9px;padding:9px 11px;border-left:2px solid #3b4a6b;background:rgba(78,161,255,.07);
-  border-radius:0 10px 10px 0;font-size:13.5px;color:#c3cddf}}
+  border-radius:0 10px 10px 0;font-size:13.5px;color:#c3cddf;text-wrap:pretty}}
 .ctx b{{color:#7fb8ff;font-weight:700}}
 .ctx .lb{{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;letter-spacing:.4px}}
 .intro{{color:var(--muted);font-size:12.5px;margin:6px 0 14px}}
+/* 触控设备：返回按钮与发音键热区放大；鼠标端保持原样 */
+@media (pointer: coarse){{
+  .back{{padding:11px 16px;font-size:15px}}
+  .bar{{padding:10px 0}}
+}}
 footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line-height:1.9}}
 </style>
 <div class="wrap">
@@ -893,11 +909,27 @@ footer{{margin-top:26px;text-align:center;color:var(--muted);font-size:12px;line
 </html>
 """
 
-CARD = """<div class="card">
+CARD = """<div class="card" id="{cid}">
     <div class="hdr"><span class="w">{word}</span><button class="say" data-w="{word}" data-a="{audio}">🔊</button>{ph}</div>
     <div class="meta">{pos}{stars}</div>
     <div class="t">{trans}</div>{sense}{en}{ex}{ctx}
   </div>"""
+
+
+def card_id(word: str, used: set[str]) -> str:
+    """给每张词卡一个稳定锚点：主页正文里点到这个词就直接跳到这张卡。
+
+    用词本身生成（w-lieutenant-colonel），不用序号——序号会随选词变化而整体错位，
+    词本身在跨期重复时也保持一致。重名时后面补 -2 / -3。
+    """
+    base = "w-" + re.sub(r"[^a-z0-9]+", "-", word.lower()).strip("-")
+    cid, n = base, 1
+    while cid in used:
+        n += 1
+        cid = f"{base}-{n}"
+    used.add(cid)
+    return cid
+
 
 POS_MAP = [
     ("n.", "n."), ("vt.", "v."), ("vi.", "v."), ("v.", "v."),
@@ -1232,6 +1264,8 @@ def main() -> None:
 
     cards = []
     dropped = []
+    used_ids: set[str] = set()
+    manifest_terms: list[dict] = []
     for _, _, e, sense in all_picked:
         w = e["word"]
         en = enriched.get(w) or {}
@@ -1256,11 +1290,14 @@ def main() -> None:
                   if en.get("example") else "")
         ctx = context_for(w, sents, forms_of.get(w))
         ctx_bit = f'<div class="ctx"><span class="lb">原文语境</span>{ctx}</div>' if ctx else ""
+        cid = card_id(w, used_ids)
         cards.append(CARD.format(
+            cid=cid,
             word=html.escape(w, quote=False), audio=audio, ph=ph,
             pos=pos_of(e, en), stars=f'<span class="stars">{stars_for(e["frq"])}</span>',
             trans=trans, sense=sense_bit, en=en_bit, ex=ex_bit, ctx=ctx_bit,
         ))
+        manifest_terms.append({"id": cid, "term": w})
 
     # 短语卡片：新闻里高频、课本上少见的说法（clamp down / shore up / dial back）
     phrase_cards = []
@@ -1281,13 +1318,16 @@ def main() -> None:
                              + r"\s+".join(re.escape(x) for x in word.split()[1:]) + r"\b", re.I)
             esc = pat.sub(lambda m: "<b>" + m.group(0) + "</b>", esc, count=1)
             ctx_bit = f'<div class="ctx"><span class="lb">原文语境</span>{esc}</div>'
+        cid = card_id(word, used_ids)
         phrase_cards.append(CARD.format(
+            cid=cid,
             word=html.escape(word, quote=False), audio=tts_url(word), ph="",
             pos='<span class="pos">短语</span>',
             stars='<span class="streak">新闻常见说法</span>',
             trans=html.escape(note, quote=False), sense="", en="", ex="",
             ctx=ctx_bit,
         ))
+        manifest_terms.append({"id": cid, "term": word})
     cards = phrase_cards + cards
 
     # 术语卡片：词库里带空格的多词条目，命中正文就出卡
@@ -1306,12 +1346,15 @@ def main() -> None:
             esc = html.escape(html.unescape(sent), quote=False)
             esc = pat.sub(lambda m: "<b>" + m.group(0) + "</b>", esc, count=1)
             ctx_bit = f'<div class="ctx"><span class="lb">原文语境</span>{esc}</div>'
+        cid = card_id(key, used_ids)
         term_cards.append(CARD.format(
+            cid=cid,
             word=html.escape(key, quote=False), audio=tts_url(key), ph="",
             pos='<span class="pos">术语</span>',
             stars='<span class="streak">领域说法</span>',
             trans=trans_html, sense="", en="", ex="", ctx=ctx_bit,
         ))
+        manifest_terms.append({"id": cid, "term": key})
     cards = phrase_cards + term_cards + cards
 
     page = PAGE.format(
@@ -1327,6 +1370,18 @@ def main() -> None:
         f.write(page)
     print(f"[ok] vocab.html: {len(cards)} words from {os.path.basename(post)} "
           f"(enrich: {sum(1 for w in words if enriched.get(w))})")
+
+    # 词表清单：主页据此把正文里这些词标出来并链到对应卡片。
+    # 只交词和锚点，不带释义——主页不需要，体积也小。
+    manifest = {
+        "source": os.path.basename(post),
+        "date": display_day,
+        "terms": manifest_terms,
+    }
+    man_path = os.path.join(DOCS, "vocab_manifest.json")
+    with open(man_path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(manifest, f, ensure_ascii=False, indent=1)
+    print(f"[ok] vocab_manifest.json ({len(manifest_terms)} terms)")
     if dropped:
         print(f"[info] 无音标已跳过: {', '.join(dropped)}")
 
