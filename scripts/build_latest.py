@@ -72,9 +72,21 @@ TEMPLATE = """<!DOCTYPE html>
   --bg:#0e1320; --fg:#e2e8f4; --muted:#8b93a7; --line:#242d40;
   --card:#111926; --soft:#1a2233; --accent:#5aa6ff; --accent2:#4fd1c5;
   --score:#4fd1c5; --chip:#242e42; --shadow:0 8px 24px rgba(0,0,0,.28);
+  /* 滚动条：深色页面上系统默认亮灰滚动条很割裂，单独给一组 token；
+     滑块与轨道对比度需 ≥3:1（WCAG 1.4.11），#5b7196 对 #0b1018 约 3.6:1 */
+  --sb-thumb:#5b7196; --sb-track:#0b1018;
 }}
 *{{box-sizing:border-box}}
-html{{-webkit-text-size-adjust:100%;scroll-behavior:smooth;overflow-x:hidden}}
+/* color-scheme 让原生滚动条、表单控件、下拉箭头跟着深色走 */
+html{{-webkit-text-size-adjust:100%;scroll-behavior:smooth;overflow-x:hidden;
+  color-scheme:dark;scrollbar-color:var(--sb-thumb) var(--sb-track);}}
+/* 不支持 scrollbar-color 的浏览器（Safari 18.2 之前 / Chrome 121 之前）走 WebKit 伪元素；
+   注意不要同时设 scrollbar-width，它会让 ::-webkit-scrollbar 失效，且 thin 的滑块热区过小 */
+@supports not (scrollbar-color: auto) {{
+  html::-webkit-scrollbar{{width:12px;height:12px}}
+  html::-webkit-scrollbar-thumb{{background:var(--sb-thumb);border-radius:6px}}
+  html::-webkit-scrollbar-track{{background:var(--sb-track)}}
+}}
 body{{
   margin:0;background:var(--bg);color:var(--fg);max-width:100vw;overflow-x:hidden;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
@@ -100,7 +112,7 @@ body{{
 .hero .brand{{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}}
 .hero .day{{margin-top:7px;font-size:13px;letter-spacing:.02em}}
 .hero .day .upd{{margin-left:9px;font-size:11px;font-weight:400;opacity:.6;letter-spacing:.02em}}
-.hero h1{{margin:13px 0 0;font-size:23px;line-height:1.3;font-weight:700;letter-spacing:.3px}}
+.hero h1{{margin:13px 0 0;font-size:23px;line-height:1.3;font-weight:700;letter-spacing:.3px;text-wrap:balance}}
 .pillrow{{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}}
 /* 宽屏报头必须写在基础规则之后，否则会被上面的基础值盖掉 */
 @media (min-width: 760px){{
@@ -189,7 +201,8 @@ body{{
   background:var(--card);border:1px solid var(--line);border-radius:16px;
   padding:16px 16px 6px;margin:0 0 14px;box-shadow:var(--shadow);scroll-margin-top:16px;
 }}
-.card h3{{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700;text-wrap:pretty;color:#ffffff;letter-spacing:.1px}}
+/* 标题是短块，用 balance 让两行长度尽量对称；正文长段用 pretty 防孤行（两者算法不同，不能互换） */
+.card h3{{margin:0 0 8px;font-size:18px;line-height:1.45;font-weight:700;text-wrap:balance;color:#ffffff;letter-spacing:.1px}}
 @media (max-width: 520px){{
   .card{{border-radius:10px;padding:13px 14px 4px}}
   .card h3{{font-size:17px;line-height:1.42}}
@@ -203,8 +216,21 @@ body{{
   border-radius:999px;padding:2px 8px;margin-left:6px;
 }}
 .src{{font-size:12.5px;color:var(--muted);margin:-2px 0 10px}}
-.card p{{margin:0 0 12px;font-size:15.5px;color:var(--fg);text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto}}
+/* 取消两端对齐：窄栏（手机三行一条）两端对齐时词距忽大忽小，出现"河流"，中文更明显；
+   英文长词仍保留断词，避免长单词撑出卡片 */
+.card p{{margin:0 0 12px;font-size:15.5px;color:var(--fg);text-align:left;text-wrap:pretty;hyphens:auto;-webkit-hyphens:auto}}
 .card a{{color:var(--accent);text-decoration:none;word-break:break-word}}
+/* 难点词行内链接：颜色之外再给一条虚线下划线做第二指示（不靠颜色单独表达含义，
+   符合 WCAG 1.4.11）；下划线用原生 text-decoration 而不是 border/伪元素，
+   折行时会跟着走、也会自动跳过字母下伸部分。悬停/键盘聚焦时虚线转实线。 */
+.card .vw{{
+  color:var(--accent);text-decoration:underline dotted;
+  text-decoration-thickness:max(1px,.06em);text-underline-offset:.2em;
+  text-decoration-color:color-mix(in srgb,var(--accent) 55%,transparent);
+}}
+.card .vw:is(:hover,:focus-visible){{text-decoration-style:solid;text-decoration-color:var(--accent)}}
+.card .vw:focus-visible{{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}}
+
 .note{{
   border-radius:12px;padding:10px 12px 2px;font-size:14.5px;background:var(--soft);
   border-left:3px solid var(--accent2);margin:0 0 12px;color:var(--fg);
@@ -244,6 +270,19 @@ details ul{{margin:8px 0 0;padding-left:18px}}
 .card img{{max-width:100%;height:auto;border-radius:10px}}
 .card table{{width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px}}
 .card th,.card td{{border:1px solid var(--line);padding:7px 9px;text-align:left}}
+
+/* ---------- 触控设备：可点目标抬到 40–44px（WCAG 2.5.5 建议 44×44），
+   鼠标端保持原尺寸不变，避免桌面上显得臃肿 ---------- */
+@media (pointer: coarse){{
+  .toc a{{height:40px;font-size:13.5px}}
+  .toc{{gap:8px}}
+  .pill{{padding:7px 12px}}
+  .cbtn{{padding:11px 14px}}
+  details summary{{padding:6px 0}}
+}}
+@media (pointer: coarse) and (min-width: 760px){{
+  .toc a{{height:42px;font-size:14px}}
+}}
 
 footer{{margin-top:34px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.9}}
 footer .dot{{opacity:.45;margin:0 6px}}
@@ -571,6 +610,107 @@ def clean_text(text: str) -> str:
     return html.escape(html.unescape(text))
 
 
+# ---------- 难点词汇联动 ----------
+# 词汇页给每张词卡一个 id（w-lieutenant-colonel），并输出 vocab_manifest.json 列出当期词表。
+# 主页读到这份清单，把正文里命中的词标成行内链接，点一下直接跳到词汇页那张卡。
+# 只在 manifest 的 source 与本期英文正文完全一致时才生效——换了期就自动失效，
+# 不会出现"主页链着上一期词表"的错位。
+_VOCAB_PAT: re.Pattern | None = None
+_VOCAB_GROUPS: dict[str, str] = {}
+
+
+def load_vocab_manifest(en_post: str | None) -> None:
+    global _VOCAB_PAT, _VOCAB_GROUPS
+    _VOCAB_PAT, _VOCAB_GROUPS = None, {}
+    path = os.path.join(DOCS, "vocab_manifest.json")
+    if not en_post or not os.path.exists(path):
+        return
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return
+    if os.path.basename(data.get("source") or "") != os.path.basename(en_post):
+        print("[skip] vocab_manifest.json 不属于本期正文，正文不做词汇标注")
+        return
+    terms = [(t["term"], t["id"]) for t in data.get("terms", []) if t.get("term")]
+    if not terms:
+        return
+    # 长词优先：lieutenant colonel 必须先于 lieutenant 命中，否则短语会被拆成两截。
+    # 每个词一个命名分组，命中后靠分组名反查锚点——这样屈折形式（severed / probing）
+    # 也能链到原形那张卡，不必在清单里穷举所有变形。
+    groups: dict[str, str] = {}
+    alts: list[str] = []
+    for i, (term, cid) in enumerate(sorted(terms, key=lambda x: -len(x[0]))):
+        name = f"t{i}"
+        groups[name] = cid
+        alts.append(f"(?P<{name}>{term_regex(term)})")
+    _VOCAB_GROUPS = groups
+    _VOCAB_PAT = re.compile("|".join(alts), re.I)
+    print(f"[ok] 正文词汇标注开启：{len(terms)} 个词")
+
+
+def _word_forms(word: str) -> str:
+    """一个词的匹配式：原形 + 常见屈折（复数 / 过去式 / 进行时）。
+
+    只收规则变化，不做词干化：宁可漏标，也不能把别的词错标成难点词。
+    """
+    alts = [re.escape(word)]
+    if word.endswith("e") and len(word) > 3:
+        alts.append(re.escape(word[:-1]) + r"(?:ed|ing)")
+    if word.endswith("y") and len(word) > 3:
+        alts.append(re.escape(word[:-1]) + r"(?:ies|ied)")
+    return "(?:" + "|".join(alts) + r")(?:s|es|d|ed|ing)?"
+
+
+def term_regex(term: str) -> str:
+    """词或短语 -> 正则。词间允许任意空白（正文折行后可能是换行/多空格）。
+
+    注意：只有普通单词需要 re.escape，最后一个词要保留 _word_forms 的正则语法，
+    不能再整体转义，否则 `(?:…)` 会被转成字面量，一个词都匹配不上。
+    """
+    words = term.split()
+    if not words:
+        return r"(?!x)x"
+    head = [re.escape(w) for w in words[:-1]]
+    body = r"\s+".join(head + [_word_forms(words[-1])])
+    return r"\b" + body + r"\b"
+
+
+def link_terms(frag: str) -> str:
+    """在已生成的 HTML 片段里给命中的词套上链接。
+
+    两点必须守住：
+    1. 只处理标签之外的文本，标签（含属性值）一律原样透传，不会被误伤；
+    2. 已经在 <a> 里的文本不再套链接——嵌套 <a> 是非法的，点下去会失效。
+    """
+    if _VOCAB_PAT is None or not frag:
+        return frag
+    out: list[str] = []
+    in_anchor = 0
+    for part in re.split("(<[^>]*>)", frag):
+        if part.startswith("<"):
+            low = part[:3].lower()
+            if low.startswith("<a"):
+                in_anchor += 1
+            elif low == "</a":
+                in_anchor = max(0, in_anchor - 1)
+            out.append(part)
+            continue
+        if in_anchor or not part:
+            out.append(part)
+            continue
+
+        def repl(m: re.Match) -> str:
+            for name, cid in _VOCAB_GROUPS.items():
+                if m.group(name):
+                    return f'<a class="vw" href="vocab.html#{cid}">{m.group(0)}</a>'
+            return m.group(0)
+
+        out.append(_VOCAB_PAT.sub(repl, part))
+    return "".join(out)
+
+
 def inline_md(text: str) -> str:
     """把 [文字](链接) 转成真链接，其余文本转义，避免实体和裸 markdown 漏到页面上。"""
     text = html.unescape(text)
@@ -699,12 +839,15 @@ def _card(anchor: str, en_it: dict | None, zh_it: dict | None) -> str:
     parts: list[str] = [f'<article class="card" id="{anchor}"{en_attr(lead["title"])}><h3>{head}{score_html}</h3>']
 
     if en_it:
+        en_body: list[str] = []
         if en_it["src"]:
-            parts.append(f'<div class="src">{inline_md(en_it["src"])}</div>')
-        parts.append("".join(en_it["paras"]))
+            en_body.append(f'<div class="src">{inline_md(en_it["src"])}</div>')
+        en_body.append("".join(en_it["paras"]))
         for n in en_it["notes"]:
             cls = "note bg" if n["kind"] in ("背景", "Background") else "note"
-            parts.append(f'<div class="{cls}"><span class="lbl">{html.escape(n["kind"])}</span>{n["html"]}</div>')
+            en_body.append(f'<div class="{cls}"><span class="lbl">{html.escape(n["kind"])}</span>{n["html"]}</div>')
+        # 正文里命中当期难点词汇的词套上行内链接（标题是原文外链，不能嵌套 <a>，故不处理标题）
+        parts.append(link_terms("".join(en_body)))
 
     if zh_it and _has_chinese(zh_it):
         body_zh = "".join(zh_it["paras"]) + "".join(
@@ -712,6 +855,7 @@ def _card(anchor: str, en_it: dict | None, zh_it: dict | None) -> str:
             f'<span class="lbl">{html.escape(n["kind"])}</span>{n["html"]}</div>'
             for n in zh_it["notes"]
         )
+        body_zh = link_terms(body_zh)
         title_zh = f"<h4>{clean_text(zh_it['title'])}</h4>" if en_it else ""
         if body_zh or title_zh:
             parts.append(f'<div class="zh"><span class="zhlabel">中文</span>{title_zh}{body_zh}</div>')
@@ -953,6 +1097,8 @@ def main() -> None:
     if not posts:
         print("[skip] no posts")
         return
+
+    load_vocab_manifest(posts.get("en", (None, None))[0])
 
     day = next(iter(posts.values()))[1]["day"]
     count = max(len(d["items"]) for _, d in posts.values())
