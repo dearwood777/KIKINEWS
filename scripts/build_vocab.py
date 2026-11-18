@@ -33,6 +33,8 @@ from build_latest import DOCS, POSTS, digest_display, plain_quotes  # noqa: E402
 
 FRONT_MATTER = re.compile(r"^---\s*\n.*?\n---\s*\n", re.S)
 LINK_MD = re.compile(r"\[([^\]]*)\]\([^)]*\)")
+URL_RE = re.compile(r"https?://\S+")
+EMAIL_RE = re.compile(r"\S+@\S+")
 TOKEN = re.compile(r"[A-Za-z][A-Za-z'\-]{2,}")
 SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
@@ -51,6 +53,7 @@ STOPWORDS = {
 MAX_WORDS = 80
 MAX_SENSE_WORDS = 6
 MAX_PHRASES = 8
+MAX_TERMS = 6
 # 词频排位在多少名以内算“C1 已认识”。两套词频任一进入该名次即视为已知。
 COMMON_RANK = 8000
 # 熟词生义只看排名 3500 之后的词：ceiling / rate 这类太基础的，即使在新闻里有专业义也不列。
@@ -182,8 +185,12 @@ def read_prose(path: str) -> str:
             s = s[2:]
         # 清掉正文里的标记残留：来源前缀、HTML 标签、Markdown 粗体、零宽字符
         s = re.sub(r"^\s*rss\s*·.*?·\s*[A-Za-z]{3,9}\s*\d{1,2},\s*\d{2}:\d{2}\s*", "", s)
+        # 裸 URL 会灌进 https / href / quot 这类噪声词，先整体去掉
+        s = URL_RE.sub(" ", s)
+        s = EMAIL_RE.sub(" ", s)
         s = re.sub(r"<[^>]*>", "", s)
-        s = s.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", '"')
+        s = (s.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
+             .replace("&quot;", '"').replace("&#39;", "'").replace("&nbsp;", " "))
         s = re.sub(r"\*\*(.+?)\*\*", r"\1", s)
         s = s.replace("\u200b", "").replace("\xa0", " ").replace("\u2011", "-")
         s = LINK_MD.sub(r"\1", s)
@@ -195,9 +202,15 @@ def candidates_from(text: str) -> set[str]:
     words = set()
     for m in TOKEN.finditer(text):
         w = m.group(0).strip("'-").lower()
-        if len(w) < 4 or w in STOPWORDS or "-" in w:
+        if len(w) < 4 or w in STOPWORDS:
             continue
+        # 早前这里直接丢掉带连字符的词，counter-terror / court-martial 这类
+        # “新闻里就长这样”的词因此永远抓不到。现在保留，并额外拆出两个组成部分。
         words.add(w)
+        if "-" in w:
+            for part in w.split("-"):
+                if len(part) >= 4 and part not in STOPWORDS:
+                    words.add(part)
         # 简单变形还原，让词库扫描能命中原形行
         for suf, cut in (("ing", 3), ("ied", 3), ("ies", 3), ("ed", 2), ("es", 2), ("s", 1)):
             if len(w) > cut + 3 and w.endswith(suf):
@@ -205,22 +218,54 @@ def candidates_from(text: str) -> set[str]:
     return words
 
 
-def scan_dict(dict_path: str, wanted: set[str]):
-    """流式扫一遍词库，返回 (原形词条, 变形→可能的原形列表, 原形→变形列表)。
+def ngrams_from(text: str, nmax: int = 4) -> set[str]:
+    """正文里所有 2–4 词的连续片段，用来在词库里找多词术语。
+
+    词库里确实有 lieutenant colonel / court-martial 这类条目（带中文释义），
+    用它们反查正文，比维护一张人工术语表更不容易漏。
+    """
+    toks = [t.lower().strip("'-") for t in TOKEN.findall(text)]
+    toks = [t for t in toks if t]
+    grams = set()
+    for n in range(2, nmax + 1):
+        for i in range(len(toks) - n + 1):
+            grams.add(" ".join(toks[i:i + n]))
+    return grams
+
+
+def scan_dict(dict_path: str, wanted: set[str], grams: set[str] | None = None):
+    """流式扫一遍词库，返回 (原形词条, 变形→可能的原形列表, 原形→变形列表, 多词条目)。
 
     只保留**原形**词条用于出词表：countries/parties 这类变形行的音标、词频常常缺失，
     而且它们的出现频率应该按原形（country/party）来判断，否则会把极常见的词收进来。
     同一个变形可能对应多个原形（does → do / doe），先都记下，稍后按词频挑最可能的。
+
+    grams 是正文的 2–4 词片段；词库里带空格的条目（lieutenant colonel / court-martial）
+    命中就收进 terms，作为“术语”层使用——这是词表里唯一能覆盖多词说法的地方。
     """
     bases: dict[str, dict] = {}
     rev_multi: dict[str, list[str]] = {}
     forms_of: dict[str, list[str]] = {}
+    terms: dict[str, dict] = {}
     if not os.path.exists(dict_path):
-        return bases, rev_multi, forms_of
+        return bases, rev_multi, forms_of, terms
     with open(dict_path, encoding="utf-8", newline="") as f:
         for row in csv.DictReader(f):
             word = (row.get("word") or "").strip().lower()
             if not word:
+                continue
+            if " " in word:
+                if grams and word in grams:
+                    terms[word] = {
+                        "word": word,
+                        "translation": (row.get("translation") or "").strip(),
+                        "frq": int((row.get("frq") or "0").strip() or 0),
+                        "bnc": int((row.get("bnc") or "0").strip() or 0),
+                        "phonetic": (row.get("phonetic") or "").strip(),
+                        "tag": (row.get("tag") or "").strip(),
+                        "collins": (row.get("collins") or "0").strip(),
+                        "oxford": (row.get("oxford") or "0").strip(),
+                    }
                 continue
             forms = []
             base_of_row = ""
@@ -253,7 +298,7 @@ def scan_dict(dict_path: str, wanted: set[str]):
                 rev_multi.setdefault(fm, []).append(word)
             if forms:
                 forms_of.setdefault(word, []).extend(forms)
-    return bases, rev_multi, forms_of
+    return bases, rev_multi, forms_of, terms
 
 
 def phonetic_guesses(word: str) -> list[str]:
@@ -269,111 +314,173 @@ def phonetic_guesses(word: str) -> list[str]:
     return [w for w in out if w != word]
 
 
+def _intv(entry: dict, key: str) -> int:
+    try:
+        return int((entry.get(key) or 0) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
 def _is_proper(entry: dict) -> bool:
+    """专名/缩写不出口语词卡。词库的 [人名][地名] 标注之外，
+    “n. 普里西拉（女子名）”“n. (Gibran)人名”这种写在释义里的也一并挡掉。"""
     trans = entry["translation"]
-    return any(trans.startswith(m) for m in ("[人名]", "[地名]", "[姓氏]", "[缩写]"))
-
-
-def is_hard(entry: dict) -> bool:
-    if not entry["translation"]:
-        return False
-    # 第一判据：CEFR 等级。A1–B2 一律不算超纲，C1/C2 一律收。
-    # 这一层比词频准得多——crucial 被标 B2、password 被标 B1，直接出局。
-    lv = CEFR.get(entry["word"])
-    if lv in CEFR_KNOWN:
-        return False
-    if lv in ("C1", "C2"):
-        # C1/C2 只是“过了 B2 线”，amid / bypass 这种也在这张表里，
-        # 对 C1 读者仍然太常见，所以继续往下走词频判据，不直接收。
-        pass
-    if entry["word"] in COMMON_WORDS:
-        return False
-    trans = entry["translation"]
-    for marker in ("[人名]", "[地名]", "[姓氏]", "[缩写]"):
-        if trans.startswith(marker):
-            return False
-    tags = entry["tag"]
-    if any(t in tags for t in ("zk", "gk", "cet4")):
-        return False
-    # 六级词按“新闻里常见的书面语”标准保留：真正生僻的留，词频靠前的（C1 早就认识的）仍排除
-    if "cet6" in tags and is_common(entry):
-        return False
-    if (entry.get("oxford") or "0").strip() == "1":
-        return False
-    try:
-        if int(entry["collins"] or 0) >= 2:
-            return False
-    except ValueError:
-        pass
-    frq = entry["frq"]
-    bnc = entry.get("bnc", 0)
-    # 两套词频（当代语料 frq / 英式语料 bnc）任一显示为常用词，就说明它不该进超纲词表。
-    # does → do、millions → million 这类常见词，靠这一步排除。
-    if frq >= 9000 or bnc >= 9000:
+    if any(trans.startswith(m) for m in ("[人名]", "[地名]", "[姓氏]", "[缩写]", "abbr.")):
         return True
-    if frq > 0 or bnc > 0:
-        return False
-    # 两套词频都查不到：短词多是缩写或变形残渣，不收
-    if len(entry["word"]) < 6:
-        return False
-    return True
+    head = trans[:26]
+    return any(k in head for k in ("人名", "地名", "姓氏", "女子名", "男子名", "国名", "州名"))
 
 
-def is_common(entry: dict) -> bool:
-    """C1/专八读者基本认识：有牛津标注、Collins 星级够、或两套词频都靠前。"""
+def known_evidence(entry: dict) -> int:
+    """读者“已经认识”这个词的证据强度，0 表示没有任何证据（视为超纲）。
+
+    这是整个抓词逻辑的核心改动：**判定改成看集合归属，不再看单条阈值**。
+    早前的写法要求同时满足“词频排位 > 9000、Collins < 2、tag 不含 cet4”，
+    三条阈值叠在一起，像 lieutenant / colonel 这种被词库误标成 cet4 的词、
+    以及 custody 这种 Collins 给了 2 星但实际是法律义的词，全被挡在外面；
+    反过来，四条阈值都不满足的 CET-4 词却能溜进来。
+    现在每一条来源都只是“认识”的一份证据，任何一份足够硬的证据（教材词表、
+    牛津标注、前 4000 高频）都能让这个词出局，不需要三条同时成立。
+    """
     if not entry:
-        return False
-    if entry["word"] in COMMON_WORDS:
-        return True
+        return 99
+    word = entry["word"]
+    level = CEFR.get(word)
+    if level in CEFR_KNOWN:
+        return 10
+    score = 2 if level in ("C1", "C2") else 0
     if (entry.get("oxford") or "0").strip() == "1":
-        return True
-    try:
-        if int(entry.get("collins") or 0) >= 2:
-            return True
-    except ValueError:
-        pass
-    for key in ("frq", "bnc"):
-        v = entry.get(key, 0)
-        if 0 < v <= COMMON_RANK:
-            return True
-    return False
+        score = max(score, 3)
+    if _intv(entry, "collins") >= 3:
+        score = max(score, 3)
+    ranks = [x for x in (_intv(entry, "frq"), _intv(entry, "bnc")) if x]
+    top = min(ranks) if ranks else 0
+    if top and top <= COMMON_RANK // 2:
+        score = max(score, 4)
+    tags = entry["tag"]
+    if any(t in tags for t in ("zk", "gk")) and top and top <= COMMON_RANK:
+        score = max(score, 1)
+    # cet4 标签在词库里噪声很大（colonel / lieutenant 都被标成四级），
+    # 所以它只在词频也明显靠前（5000 以内）时才算证据，不能单独判“认识”。
+    if "cet4" in tags and top and top <= 5000:
+        score = max(score, 1)
+    if word in COMMON_WORDS:
+        score = max(score, 3)
+    return score
 
 
-DERIV_PREFIXES = ("un", "in", "im", "non", "dis", "mis", "re", "pre", "over",
-                  "under", "anti", "co", "sub", "de", "multi", "semi", "post",
-                  "inter", "intra", "hyper", "ultra", "auto", "micro", "macro")
-DERIV_SUFFIXES = ("ization", "isation", "ation", "ition", "ship", "ness", "ment",
-                  "able", "ible", "less", "like", "ward", "wise", "ally", "ity",
-                  "ive", "ous", "ful", "ize", "ise", "ing", "ers", "er", "or",
-                  "al", "ic", "ly", "ed", "es", "s")
+def rarity_score(entry: dict) -> int:
+    """排序用：越难分越高。多路证据累加，没有任何单条阈值能决定去留。"""
+    word = entry["word"]
+    level = CEFR.get(word)
+    score = 4 if level == "C2" else 2 if level == "C1" else 2
+    ranks = [x for x in (_intv(entry, "frq"), _intv(entry, "bnc")) if x]
+    top = min(ranks) if ranks else 0
+    if top == 0:
+        score += 4
+    elif top > 16000:
+        score += 4
+    elif top > 11000:
+        score += 3
+    elif top > 7000:
+        score += 2
+    if _intv(entry, "collins") <= 1:
+        score += 1
+    if (entry.get("oxford") or "0").strip() != "1":
+        score += 1
+    if not entry["tag"]:
+        score += 1
+    if len(word) >= 10:
+        score += 1
+    return score
+
+
+# 只砍“透明构词派生”：unconfirmed ← confirm、careless ← care。
+# 屈折变化（s / ed / ing）已经通过词库 exchange 归到原形，不在这一层处理——
+# 早前连屈折一起砍，spying 被判成 spy 的简单派生，“间谍活动”这条新闻义整条丢了。
+OPAQUE_PREFIXES = {"counter", "anti", "non", "semi", "quasi", "cyber", "cross", "multi"}
+EXCL_PREFIXES = ("un", "in", "im", "non", "dis", "mis", "re", "pre", "over", "under",
+                 "anti", "co", "sub", "de", "multi", "semi", "post", "inter", "intra",
+                 "hyper", "ultra", "auto", "micro", "macro")
+EXCL_SUFFIXES = ("ization", "isation", "ation", "ition", "ship", "ness", "ment",
+                 "able", "ible", "less", "like", "ward", "wise", "ous", "ful", "ize", "ise")
 
 
 def roots_of(word: str) -> list[str]:
     """拆出可能的构词根：unconfirmed → confirm，negotiator → negotiate，censorship → censor。"""
     out = []
-    for p in DERIV_PREFIXES:
-        if word.startswith(p) and len(word) - len(p) >= 3:
+    for p in EXCL_PREFIXES:
+        if word.startswith(p) and len(word) - len(p) >= 4:
             out.append(word[len(p):])
-    for s in DERIV_SUFFIXES:
-        if word.endswith(s) and len(word) - len(s) >= 3:
+    for s in EXCL_SUFFIXES:
+        if word.endswith(s) and len(word) - len(s) >= 4:
             stem = word[:-len(s)]
             out.append(stem)
             out.append(stem + "e")   # negotiat → negotiate
             out.append(stem + "y")   # privat → privacy
-            if stem.endswith("i"):
-                out.append(stem[:-1] + "y")  # happi → happy
     return [w for w in dict.fromkeys(out) if w and w != word]
 
 
 def derived_from_known(word: str, bases: dict[str, dict]) -> bool:
-    """判断是不是“本来认识的词的简单派生”（最多拆两层）。"""
+    """判断是不是“本来认识的词的透明派生”（最多拆两层）。"""
     for r in roots_of(word):
-        if is_common(bases.get(r)):
+        if known_evidence(bases.get(r)) >= 3:
             return True
         for r2 in roots_of(r):
-            if is_common(bases.get(r2)):
+            if known_evidence(bases.get(r2)) >= 3:
                 return True
     return False
+
+
+# 多词术语层要用的两套小表：功能词（句首/句尾是它们就不是术语）、
+# 民族/国别形容词（这些多半是专名的一部分，不做术语卡）。
+FUNC_WORDS = STOPWORDS | {
+    "is", "are", "was", "were", "be", "been", "being", "do", "does", "did", "per", "via",
+}
+DEMONYMS = {
+    "american", "african", "european", "asian", "british", "russian", "chinese", "indian",
+    "japanese", "korean", "israeli", "ukrainian", "iranian", "turkish", "german", "french",
+    "italian", "spanish", "polish", "dutch", "canadian", "australian", "mexican",
+    "brazilian", "saudi", "qatari", "emirati", "syrian", "lebanese", "egyptian",
+}
+
+
+def term_worth_card(key: str, term: dict, text: str, known_of) -> bool:
+    """多词条目值不值得出卡。
+
+    三条硬规矩：
+    ① 带连字符的整词（end-to-end / cyber-crime）属于单词层，不在这里重复出卡；
+    ② 首尾是功能词的片段（years ago / one of）不是术语；
+    ③ **必须至少有一个组成词本身就没过“已知”判定**（lieutenant colonel 里的 lieutenant）。
+       这条是关键：早前只按“组成词有没有 CEFR 等级”，years / decision / local 这种
+       没被教材表收录的组合词也会漏进来，于是满屏 decision models、local authorities。
+    组成词全部是读者已经认识的东西时，这个组合大概率也是能猜懂的，不出卡。
+    """
+    words = key.split()
+    if not words or "-" in key:
+        return False
+    if words[0] in FUNC_WORDS or words[-1] in FUNC_WORDS:
+        return False
+    trans = term["translation"].replace("\\n", "\n").strip()
+    if not trans or trans.startswith("[网络]"):
+        return False
+    head = trans[:26]
+    if any(k in head for k in ("人名", "地名", "姓氏", "国名", "州名", "省名")):
+        return False
+    content = [w for w in words if w not in FUNC_WORDS]
+    if not content:
+        return False
+    if any(w in DEMONYMS for w in content):
+        return False
+    if all(known_of(w) > 0 for w in content):
+        return False
+    # 原文里只以首字母大写形式出现，说明是专名（Department of Justice / Strait of Hormuz）
+    cap = re.compile(r"\b" + r"\s+".join(re.escape(w.capitalize()) for w in words) + r"\b")
+    low = re.compile(r"\b" + r"\s+".join(re.escape(w) for w in words) + r"\b")
+    if cap.search(text) and not low.search(text):
+        return False
+    return True
+
 
 
 # ---------- 熟词生义 ----------
@@ -962,10 +1069,11 @@ def main() -> None:
     # 与日报页完全一致：按这次抓取的 UTC 时间换算北京时间，重建不会改日期
     display_day, _ = digest_display(DOCS)
     text = read_prose(post)
+    grams = ngrams_from(text)
     wanted = candidates_from(text)
     # 把可能的构词根也一起查进来，才能判断 unconfirmed 是不是由认识的 confirm 派生而来
     wanted |= {r for t in list(wanted) for r in roots_of(t)}
-    bases, rev_multi, forms_of = scan_dict(dict_path, wanted)
+    bases, rev_multi, forms_of, terms = scan_dict(dict_path, wanted, grams)
     if not bases:
         print(f"[skip] dictionary not found or nothing matched: {dict_path}")
         return
@@ -986,11 +1094,18 @@ def main() -> None:
 
     freq = Counter()
     lower_forms = Counter()
-    for m in TOKEN.finditer(text):
+    cap_forms = Counter()
+    for m in re.finditer(r"[A-Za-z][A-Za-z'\-]{2,}", text):
         raw = m.group(0).strip("'-")
-        freq[raw.lower()] += 1
+        key = raw.lower()
+        freq[key] += 1
         if raw[:1].islower():
-            lower_forms[raw.lower()] += 1
+            lower_forms[key] += 1
+        else:
+            # 句首大写是正常语法，不算专名；只有句中大写才计入
+            before = text[max(0, m.start() - 3):m.start()].strip()
+            if before and not re.search(r"[.!?:\n\"“（(]$", before):
+                cap_forms[key] += 1
 
     # 先归到原形再判断：countries 计入 country、held 计入 hold，
     # 频率和难度都按原形算，避免把极常见的词收进来，也避免拿没有音标的变形行出词。
@@ -1005,16 +1120,30 @@ def main() -> None:
     for token in sorted(lower_forms):
         base = resolve(token)
         e = bases.get(base)
-        if not e or e["word"] in seen_words:
+        if not e or not e["translation"] or e["word"] in seen_words:
             continue
-        # 简单派生词不收：unconfirmed / negotiator / redesign 这类，
-        # 只要去掉前后缀后能落到一个“本来就会”的词，就不算生词。
+        # 专名、机构名、品牌名不出卡
+        if _is_proper(e):
+            continue
+        if cap_forms.get(token, 0) >= lower_forms.get(token, 0):
+            continue
+        # 透明派生词不收：unconfirmed / careless 这种，去掉前后缀就能落到一个“本来就会”的词。
         if derived_from_known(e["word"], bases):
             continue
+        # 连字符复合词：两半都是读者认识的（end-to-end / sea-level / large-scale），
+        # 组起来也是字面意思，不出卡。但 counter-terrorism / cyber-crime 这类
+        # 前缀改变了词义、属于特定领域叫法的，仍然出卡。
+        if "-" in e["word"]:
+            parts = [p for p in e["word"].split("-") if len(p) >= 3]
+            opaque = e["word"].split("-")[0] in OPAQUE_PREFIXES
+            if parts and not opaque and all(known_evidence(bases.get(p)) > 0 for p in parts):
+                continue
         count = sum(c for f, c in lower_forms.items() if resolve(f) == base)
-        if is_hard(e):
+        # 判定：没有任何“读者认识”的证据 → 超纲词。证据来自教材词表 / 牛津 / Collins /
+        # 高频榜，任一条足够硬就出局；不再要求几条阈值同时成立。
+        if known_evidence(e) == 0:
             seen_words.add(e["word"])
-            picked.append((e["frq"], -count, e, None))
+            picked.append((rarity_score(e), -count, e, None))
             continue
         # 第二层：熟词生义。词本身不算生僻，但在这条新闻里是另一个意思——
         # 这正是“看得懂每个词、却读不懂这句话”的来源，值得单独列出。
@@ -1023,12 +1152,29 @@ def main() -> None:
         note = news_senses.get(e["word"])
         if note and ranks and min(ranks) >= NEWS_SENSE_MIN_RANK:
             seen_words.add(e["word"])
-            common_sense.append((e["frq"], -count, e, (e["word"], note)))
+            common_sense.append((rarity_score(e), -count, e, (e["word"], note)))
 
-    picked.sort(key=lambda x: (x[0] if x[0] > 0 else 10**9, x[1]))
+    # 按“稀有度证据”排序，不看单一词频：分数相同的，当天出现次数多的排前面
+    picked.sort(key=lambda x: (-x[0], x[1]))
     picked = picked[:MAX_WORDS]
-    common_sense.sort(key=lambda x: (x[0] if x[0] > 0 else 10**9, x[1]))
+    common_sense.sort(key=lambda x: (-x[0], x[1]))
     sense_picked = common_sense[:MAX_SENSE_WORDS]
+
+    # 术语层：词库里带空格的多词条目，命中正文就出卡（lieutenant colonel / court-martial）
+    def _known_of(word: str) -> int:
+        e = bases.get(resolve(word))
+        return known_evidence(e) if e else 99
+
+    term_picked = []
+    for key, t in terms.items():
+        if not term_worth_card(key, t, text, _known_of):
+            continue
+        if key in seen_words:
+            continue
+        ungraded = sum(1 for w in key.split() if w not in FUNC_WORDS and w not in CEFR)
+        term_picked.append((-ungraded, len(key), key, t))
+    term_picked.sort()
+    term_picked = term_picked[:MAX_TERMS]
 
     # 第三层：模型复核。规则先筛一遍，模型再独立读一遍正文，两者取并集——
     # 规则漏掉的（被误判成简单派生词、或词频被判成常见其实很难的）由模型补上。
@@ -1051,12 +1197,9 @@ def main() -> None:
             e = by_form.get(w)
             if not e or not e["translation"] or _is_proper(e):
                 continue
-            if CEFR.get(e["word"]) in CEFR_KNOWN:
-                continue
-            # amid / bypass 这种 C1 标签里的高频词，模型也可能挑，但对 C1 读者太常见：
-            # 词频排名 5000 以内的一律不要，只补真正少见的。
-            ranks = [x for x in (e["frq"], e["bnc"]) if x]
-            if ranks and min(ranks) < 5000:
+            # 规则已经用“已知证据”判过一轮，这里只挡证据很硬的（教材词表 / 牛津 / 前 4000 高频）。
+            # 早前用“词频 5000 以内不要”，会把 colonel（bnc 3566）这种模型挑对的词也挡掉。
+            if known_evidence(e) >= 3:
                 continue
             seen_words.add(w)
             ai_picked.append((e["frq"] if e["frq"] else 10**9, dict(e), (e["word"], cn)))
@@ -1093,13 +1236,13 @@ def main() -> None:
         w = e["word"]
         en = enriched.get(w) or {}
         audio = tts_url(w)
-        # 词库里部分词条（尤其是派生词、专业词）没有音标，用公开词典接口的音标补上
+        # 词库里部分词条（尤其是专业词）没有音标，用公开词典接口的音标补上；
+        # 两处都没有就只放发音按钮、不写音标——早前因此直接丢掉整张卡，
+        # chokepoint 这种真难点词反而被吞掉了。
         ph_text = e["phonetic"] or (en.get("phonetic") or "")
         if not ph_text:
-            # 连音标都查不到的词不出卡：列出来却不会读，对读者没意义
             dropped.append(w)
-            continue
-        ph = f'<span class="ph">/{html.escape(ph_text, quote=False)}/</span>'
+        ph = f'<span class="ph">/{html.escape(ph_text, quote=False)}/</span>' if ph_text else ""
         # 词库释义用字面量 "\n" 分行，且常带 [网络]/[计] 之类的专业标记
         raw_lines = e["translation"].replace("\\n", "\n").split("\n")
         lines = [ln.strip() for ln in raw_lines if ln.strip()]
@@ -1146,6 +1289,30 @@ def main() -> None:
             ctx=ctx_bit,
         ))
     cards = phrase_cards + cards
+
+    # 术语卡片：词库里带空格的多词条目，命中正文就出卡
+    term_cards = []
+    for _, _, key, t in term_picked:
+        trans = t["translation"].replace("\\n", "\n").strip()
+        lines = [ln.strip() for ln in trans.split("\n") if ln.strip()]
+        keep = [ln for ln in lines if not ln.startswith("[网络]")][:2] or lines[:2]
+        trans_html = html.escape("\n".join(keep), quote=False)
+        # 语境句：取第一处出现该术语的句子
+        pat = re.compile(r"\b" + re.escape(key.split()[0]) + r"[a-z]{0,3}\s+"
+                         + r"\s+".join(re.escape(x) for x in key.split()[1:]) + r"\b", re.I)
+        sent = next((s for s in sents if pat.search(s)), "")
+        ctx_bit = ""
+        if sent:
+            esc = html.escape(html.unescape(sent), quote=False)
+            esc = pat.sub(lambda m: "<b>" + m.group(0) + "</b>", esc, count=1)
+            ctx_bit = f'<div class="ctx"><span class="lb">原文语境</span>{esc}</div>'
+        term_cards.append(CARD.format(
+            word=html.escape(key, quote=False), audio=tts_url(key), ph="",
+            pos='<span class="pos">术语</span>',
+            stars='<span class="streak">领域说法</span>',
+            trans=trans_html, sense="", en="", ex="", ctx=ctx_bit,
+        ))
+    cards = phrase_cards + term_cards + cards
 
     page = PAGE.format(
         title=f"难点词汇 {display_day}",
