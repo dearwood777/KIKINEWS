@@ -58,14 +58,15 @@ body{margin:0;background:var(--bg);color:var(--fg);
 .say::after{content:"";position:absolute;inset:-8px;border-radius:999px}
 .say:active{transform:scale(.94)}
 .say.on{border-color:var(--accent);color:var(--accent)}
-.t{margin-top:7px;font-size:14.5px;color:#cfd6e6;white-space:pre-wrap;text-wrap:pretty}
-.en{margin-top:5px;font-size:13.5px;color:#a9b4cc;font-style:italic;text-wrap:pretty}
-.ex{margin-top:4px;font-size:13px;color:var(--muted);text-wrap:pretty}
+.t{margin-top:7px;font-size:14.5px;color:#cfd6e6;white-space:pre-wrap}
+/* 词汇页正文同样不加 pretty：它不填行，只把词下移，短段反被掏空；长词靠断词填满 */
+.en{margin-top:5px;font-size:13.5px;color:#a9b4cc;font-style:italic;hyphens:auto;-webkit-hyphens:auto}
+.ex{margin-top:4px;font-size:13px;color:var(--muted);hyphens:auto;-webkit-hyphens:auto}
 .sense{margin-top:7px;padding:7px 10px;border-radius:8px;background:rgba(255,200,97,.09);
   border:1px solid rgba(255,200,97,.25);font-size:13.5px;color:#ffd68a}
 .sense .lb{color:#c9a45f;font-size:11px;margin-right:6px;letter-spacing:.4px}
 .ctx{margin-top:9px;padding:9px 11px;border-left:2px solid #3b4a6b;background:rgba(78,161,255,.07);
-  border-radius:0 10px 10px 0;font-size:13.5px;color:#c3cddf;text-wrap:pretty}
+  border-radius:0 10px 10px 0;font-size:13.5px;color:#c3cddf;hyphens:auto;-webkit-hyphens:auto}
 .ctx b{color:#7fb8ff;font-weight:700}
 .ctx .lb{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;letter-spacing:.4px}
 .intro{color:var(--muted);font-size:12.5px;margin:6px 0 14px}
