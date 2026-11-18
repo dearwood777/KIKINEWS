@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.widget.RemoteViews
@@ -15,29 +16,34 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * 桌面小组件：4×1 与 4×2 两个独立条目，共用一套数据层。
+ * 桌面小组件：4×1 与 4×2 两个独立条目，共用一套数据层与渲染层。
  *
- * 4×2 用「集合型」组件（ListView + RemoteViewsService，见 WidgetService.kt）：
- * 行数由系统按真实高度决定，装得下几条就显示几条，超出部分可滚动，
- * 所以平板不会再「只给三条、底下空一大片」，手机也不会「第三行只露半行」。
+ * 两者都走「集合型」组件（ListView + RemoteViewsService，见 WidgetService.kt）：
+ * 行数由系统按真实高度决定，装得下几条就显示几条，超出部分可滚动。所以
+ * 平板上不会「只给三条、底下空一大片」，手机上也不会「第三行只露半行」，
+ * 更不需要任何「猜行数」的算法。
  *
- * 4×1 是单行布局（widget_card_single / widget_card_wide_single），一条标题 + 时间 + 箭头。
+ * 4×1 用紧凑版（头部 14dp、行高 22dp），40dp 的手机格子也能放「头部 + 一条」；
+ * 4×2 用常规版（头部 20dp、行高 26/30dp）。
  *
  * 透明度：0–100%、10% 一档，11 个预制背景，点组件上的 ⚙ 调整。
- * 翻页：‹ › 手动跳一屏（步长 = baseSlots），系统 30 分钟刷新时自动跳一屏；列表本身也能滑。
+ * 翻页：‹ › 跳一屏（步长 baseSlots），系统 30 分钟刷新时自动跳一屏；列表本身也能滑。
  * 数据来自 GitHub Pages 上的 widget.json，取不到退回本地缓存，再退回安装包内快照。
  */
 open class KikiWidgetProvider : AppWidgetProvider() {
 
-    /** 翻页步长：4×1 走 1 条，4×2 走 3 条。 */
+    /** 翻页步长。 */
     open val baseSlots: Int get() = 3
+
+    /** 是否用紧凑版布局（4×1 为 true）。 */
+    open val compact: Boolean get() = false
 
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        // 只给 10 秒窗口，网络失败的组合会超时，因此限制为两次尝试并各自 3 秒超时
+        // 广播只有 10 秒窗口，网络尝试限制为两次、每次 3 秒超时
         val pending = goAsync()
         Thread {
             try {
@@ -46,7 +52,7 @@ open class KikiWidgetProvider : AppWidgetProvider() {
                 appWidgetIds.forEach { id ->
                     WidgetRenderer.render(
                         context, appWidgetManager, id, feed, step = 1,
-                        providerClass = javaClass, baseSlots = baseSlots
+                        providerClass = javaClass, baseSlots = baseSlots, compact = compact
                     )
                 }
             } catch (t: Throwable) {
@@ -63,28 +69,16 @@ open class KikiWidgetProvider : AppWidgetProvider() {
         appWidgetId: Int,
         newOptions: android.os.Bundle
     ) {
-        // 尺寸变了：列表型组件由系统自己重排，这里只刷新一次头部与数据，页码保持
+        // 尺寸变了：列表型组件由系统自己重排，这里只刷新头部与数据，不动页码
         WidgetRenderer.render(
             context, appWidgetManager, appWidgetId, WidgetStore.cached(context), step = 0,
-            providerClass = javaClass, baseSlots = baseSlots
+            providerClass = javaClass, baseSlots = baseSlots, compact = compact
         )
     }
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         val action = intent.action ?: return
-
-        if (action == ACTION_CONFIG) {
-            val id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
-            if (id == -1) return
-            context.startActivity(
-                Intent(context, WidgetConfigActivity::class.java)
-                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-            return
-        }
-
         if (action != ACTION_NEXT && action != ACTION_PREV) return
         val id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
         if (id == -1) return
@@ -96,7 +90,8 @@ open class KikiWidgetProvider : AppWidgetProvider() {
             WidgetStore.cached(context),
             step = if (action == ACTION_NEXT) 1 else -1,
             providerClass = javaClass,
-            baseSlots = baseSlots
+            baseSlots = baseSlots,
+            compact = compact
         )
     }
 
@@ -108,31 +103,31 @@ open class KikiWidgetProvider : AppWidgetProvider() {
         private const val TAG = "KikiWidget"
         const val ACTION_NEXT = "com.kiki.horizonbrief.WIDGET_NEXT"
         const val ACTION_PREV = "com.kiki.horizonbrief.WIDGET_PREV"
-        const val ACTION_CONFIG = "com.kiki.horizonbrief.WIDGET_CONFIG"
     }
 }
 
-/** 4×1：picker 里单独一条，单行显示。 */
+/** 4×1：picker 里单独一条，紧凑列表。 */
 class KikiWidgetProvider4x1 : KikiWidgetProvider() {
-    override val baseSlots: Int get() = 1
+    override val compact: Boolean get() = true
 }
 
-/** 4×2：picker 里单独一条，列表型，高度装几条显示几条。 */
-class KikiWidgetProvider4x2 : KikiWidgetProvider() {
-    override val baseSlots: Int get() = 3
-}
+/** 4×2：picker 里单独一条，常规列表。 */
+class KikiWidgetProvider4x2 : KikiWidgetProvider()
 
 /** 透明度改完、或其他需要整体重绘时用。 */
 object WidgetUpdater {
     fun refreshAll(context: Context) {
         val mgr = AppWidgetManager.getInstance(context)
-        for (cls in listOf(KikiWidgetProvider4x1::class.java, KikiWidgetProvider4x2::class.java)) {
-            val ids = mgr.getAppWidgetIds(android.content.ComponentName(context, cls)) ?: continue
+        val providers = listOf(
+            KikiWidgetProvider4x1::class.java to true,
+            KikiWidgetProvider4x2::class.java to false
+        )
+        providers.forEach { (cls, compact) ->
+            val ids = mgr.getAppWidgetIds(android.content.ComponentName(context, cls)) ?: return@forEach
             ids.forEach { id ->
                 WidgetRenderer.render(
                     context, mgr, id, WidgetStore.cached(context), step = 0,
-                    providerClass = cls,
-                    baseSlots = if (cls == KikiWidgetProvider4x1::class.java) 1 else 3
+                    providerClass = cls, baseSlots = 3, compact = compact
                 )
             }
         }
@@ -205,7 +200,7 @@ object WidgetStore {
                 setRequestProperty("Cache-Control", "no-cache")
             }
             if (conn.responseCode != 200) return null
-            BufferedReader(conn.inputStream.bufferedReader()).use { reader ->
+            conn.inputStream.bufferedReader().use { reader ->
                 val sb = StringBuilder()
                 var line = reader.readLine()
                 while (line != null && sb.length < 64 * 1024) {
@@ -285,7 +280,8 @@ object WidgetRenderer {
         feed: WidgetFeed?,
         step: Int,
         providerClass: Class<*>,
-        baseSlots: Int
+        baseSlots: Int,
+        compact: Boolean
     ) {
         val tablet = context.resources.configuration.smallestScreenWidthDp >= 600
 
@@ -315,15 +311,11 @@ object WidgetRenderer {
         val dateText = listOf(feed.date.takeLast(5), feed.updated)
             .filter { it.isNotBlank() }.joinToString(" ")
 
-        if (pageSize >= 2) {
-            renderList(context, manager, id, total, dateText, providerClass, tablet)
-        } else {
-            renderSingle(context, manager, id, items[start % total], total, dateText, providerClass, tablet)
-        }
+        renderList(context, manager, id, total, dateText, providerClass, tablet, compact)
     }
 
     /**
-     * 4×2：头部固定，列表填满剩余高度。行数完全交给系统（ListView 按真实高度排），
+     * 头部固定，列表填满剩余高度。行数交给系统（ListView 按真实高度排），
      * 所以不再有「猜行数」这一步，平板也不会留空白。
      */
     private fun renderList(
@@ -333,9 +325,15 @@ object WidgetRenderer {
         total: Int,
         dateText: String,
         providerClass: Class<*>,
-        tablet: Boolean
+        tablet: Boolean,
+        compact: Boolean
     ) {
-        val layout = if (tablet) R.layout.widget_list_wide else R.layout.widget_list
+        val layout = when {
+            compact && tablet -> R.layout.widget_list_compact_wide
+            compact -> R.layout.widget_list_compact
+            tablet -> R.layout.widget_list_wide
+            else -> R.layout.widget_list
+        }
         val views = RemoteViews(context.packageName, layout)
         applyAlpha(context, views)
 
@@ -343,54 +341,23 @@ object WidgetRenderer {
         views.setTextViewText(R.id.w_page, "$total 条")
         views.setTextViewText(android.R.id.empty, EMPTY_HINT)
 
-        bindConfig(context, views, id, providerClass, R.id.w_set)
-        bindArrow(context, views, id, R.id.w_prev, KikiWidgetProvider.ACTION_PREV, 20, providerClass)
-        bindArrow(context, views, id, R.id.w_next, KikiWidgetProvider.ACTION_NEXT, 21, providerClass)
-        views.setOnClickPendingIntent(R.id.w_date, openApp(context, id, null, 22, mutable = false))
+        bindConfig(context, views, id, R.id.w_set)
+        bindArrow(context, views, id, R.id.w_prev, KikiWidgetProvider.ACTION_PREV, 2, providerClass)
+        bindArrow(context, views, id, R.id.w_next, KikiWidgetProvider.ACTION_NEXT, 3, providerClass)
+        views.setOnClickPendingIntent(R.id.w_date, openApp(context, id, null, 1, mutable = false))
 
         views.setEmptyView(R.id.w_list, android.R.id.empty)
         views.setRemoteAdapter(
             R.id.w_list,
             Intent(context, WidgetService::class.java)
                 .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
+                .putExtra(WidgetService.EXTRA_COMPACT, compact)
         )
-        // 列表项的点击靠 fill-in intent 把锚点传进 MainActivity，模板必须允许合并 extras
-        views.setPendingIntentTemplate(R.id.w_list, openApp(context, id, null, 60, mutable = true))
+        // 列表项点击靠 fill-in intent 把锚点传进 MainActivity，模板必须允许合并 extras
+        views.setPendingIntentTemplate(R.id.w_list, openApp(context, id, null, 9, mutable = true))
 
         manager.updateAppWidget(id, views)
         manager.notifyAppWidgetViewDataChanged(id, R.id.w_list)
-    }
-
-    /** 4×1：单行显示一条，保持原样。 */
-    private fun renderSingle(
-        context: Context,
-        manager: AppWidgetManager,
-        id: Int,
-        item: WidgetItem,
-        total: Int,
-        dateText: String,
-        providerClass: Class<*>,
-        tablet: Boolean
-    ) {
-        val views = RemoteViews(
-            context.packageName,
-            if (tablet) R.layout.widget_card_wide_single else R.layout.widget_card_single
-        )
-        applyAlpha(context, views)
-        views.setViewVisibility(R.id.w_single, android.view.View.VISIBLE)
-        views.setViewVisibility(R.id.w_multi, android.view.View.GONE)
-        views.setTextViewText(R.id.w_stitle, item.title)
-        views.setTextViewText(R.id.w_stime, dateText)
-        views.setOnClickPendingIntent(R.id.w_stitle, openApp(context, id, item.anchor, 10, mutable = false))
-        views.setOnClickPendingIntent(R.id.w_stime, openApp(context, id, null, 11, mutable = false))
-        bindConfig(context, views, id, providerClass, R.id.w_sset)
-        bindArrow(context, views, id, R.id.w_sprev, KikiWidgetProvider.ACTION_PREV, 12, providerClass)
-        bindArrow(context, views, id, R.id.w_snext, KikiWidgetProvider.ACTION_NEXT, 13, providerClass)
-        if (total <= 1) {
-            views.setViewVisibility(R.id.w_sprev, android.view.View.GONE)
-            views.setViewVisibility(R.id.w_snext, android.view.View.GONE)
-        }
-        manager.updateAppWidget(id, views)
     }
 
     /** 11 档预制背景，按 10% 取整切换。 */
@@ -406,23 +373,30 @@ object WidgetRenderer {
         views.setTextViewText(R.id.w_stime, "")
         views.setViewVisibility(R.id.w_sprev, android.view.View.GONE)
         views.setViewVisibility(R.id.w_snext, android.view.View.GONE)
-        views.setOnClickPendingIntent(R.id.w_stitle, openApp(context, id, null, 40, mutable = false))
+        views.setOnClickPendingIntent(R.id.w_stitle, openApp(context, id, null, 4, mutable = false))
     }
 
+    /**
+     * 透明度设置页直接以 Activity PendingIntent 打开。
+     * 早前版本是「广播 → startActivity」，Android 10 起后台启动 Activity 会被拦，
+     * 部分机型点 ⚙ 没反应就是这个原因。
+     */
     private fun bindConfig(
         context: Context,
         views: RemoteViews,
         id: Int,
-        providerClass: Class<*>,
         viewId: Int
     ) {
+        val intent = Intent(context, WidgetConfigActivity::class.java)
+            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
+            .setData(Uri.parse("kiki://widget/$id/config"))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         views.setOnClickPendingIntent(
-            viewId, PendingIntent.getBroadcast(
+            viewId,
+            PendingIntent.getActivity(
                 context,
-                50,
-                Intent(context, providerClass)
-                    .setAction(KikiWidgetProvider.ACTION_CONFIG)
-                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id),
+                requestCode(id, 5),
+                intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         )
@@ -434,16 +408,19 @@ object WidgetRenderer {
         id: Int,
         viewId: Int,
         action: String,
-        requestCode: Int,
+        slot: Int,
         providerClass: Class<*>
     ) {
+        val intent = Intent(context, providerClass)
+            .setAction(action)
+            .setData(Uri.parse("kiki://widget/$id/arrow/$slot"))
+            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
         views.setOnClickPendingIntent(
-            viewId, PendingIntent.getBroadcast(
+            viewId,
+            PendingIntent.getBroadcast(
                 context,
-                requestCode,
-                Intent(context, providerClass)
-                    .setAction(action)
-                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id),
+                requestCode(id, slot),
+                intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         )
@@ -453,10 +430,11 @@ object WidgetRenderer {
         context: Context,
         id: Int,
         anchor: String?,
-        requestCode: Int,
+        slot: Int,
         mutable: Boolean
     ): PendingIntent {
         val intent = Intent(context, MainActivity::class.java).apply {
+            data = Uri.parse("kiki://widget/$id/open/$slot")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
             if (!anchor.isNullOrBlank()) putExtra(MainActivity.EXTRA_ANCHOR, anchor)
         }
@@ -465,6 +443,9 @@ object WidgetRenderer {
             mutable -> 0
             else -> PendingIntent.FLAG_IMMUTABLE
         }
-        return PendingIntent.getActivity(context, requestCode, intent, flags)
+        return PendingIntent.getActivity(context, requestCode(id, slot), intent, flags)
     }
+
+    /** 每个组件实例一套 requestCode，避免多个组件的 PendingIntent 互相覆盖。 */
+    private fun requestCode(id: Int, slot: Int): Int = (id and 0xFFFF) * 16 + slot
 }

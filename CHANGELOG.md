@@ -1,5 +1,15 @@
 # 更新记录
 
+## v1.6.003 4×1 也改成集合型 + 点齿轮打不开、多组件互相串页的修复（2026-11-18）
+
+**问题**：4×2 已经正常（平板能铺 11 条），但 4×1 还是单行布局，只有一条、其余空白——它天生不参与自适应。另外自查发现两处会出事的写法。
+
+- **4×1 换成集合型**：改用 `widget_list_compact.xml` / `widget_list_compact_wide.xml`（头部 14dp / 18dp）+ `widget_row_compact.xml` / `widget_row_compact_wide.xml`（行高 22dp / 26dp）。手机 4×1（约 40dp 高）放「头部 + 1 条」，平板 4×1 自动铺 3–5 条。两个尺寸现在走同一套机制，不再有「一种尺寸是自适应、另一种是一次性」的分裂。
+- **点 ⚙ 打不开（自查修复）**：旧版是「广播 → `startActivity`」，Android 10 起后台启动 Activity 会被系统拦掉，部分机型点齿轮没反应。改成直接用 `PendingIntent.getActivity` 打开 `WidgetConfigActivity`，并给 Intent 加 `kiki://widget/<id>/config` 的 data 保证每个组件各自独立。
+- **多组件互相串页（自查修复）**：旧版所有组件的箭头/打开 App 共用固定 requestCode，加上 `FLAG_UPDATE_CURRENT` 后，后建的 PendingIntent 会覆盖先建的，点多组件里的箭头可能动的是另一个组件。现在 requestCode 改成 `(id*16 + 槽位)`，并给每个 Intent 附 `kiki://widget/<id>/...` 的 data，彻底隔离。
+- 头部信息保持「日期 + 总条数」，‹ › 跳一屏（步长 3），跳完 `notifyAppWidgetViewDataChanged` 重取数据。
+- 版本 1.6.003（versionCode 160003）。
+
 ## v1.6.002 小组件 4×2 改为集合型（ListView），平板不再只给三条（2026-11-18）
 
 **1.6.001 为什么还不够**：1.6.001 用「响应式尺寸映射」把 1–8 行的布局全部交给系统挑，但这条路仍然依赖 launcher 回传一个可信的尺寸——这台平板的 launcher 给的尺寸明显小于真实高度，系统于是挑了 3 行那一档，剩下三分之二自然空着。任何「按数字挑布局」的写法都会在它上面失效。

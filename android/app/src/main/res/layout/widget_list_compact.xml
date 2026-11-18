@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  4×1 的集合型布局（紧凑版）：头部压到 14dp，ListView 占满剩余高度。
+  手机 4×1（约 40dp 高）显示 头部 + 1 条；平板 4×1 高得多，自动显示 3–5 条。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_widget_a090">
+
+    <ImageView
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:layout_gravity="top|start"
+        android:layout_margin="3dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_corner_curl" />
+
+    <ImageView
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="3dp"
+        android:contentDescription="@null"
+        android:rotation="90"
+        android:src="@drawable/ic_corner_curl" />
+
+    <ImageView
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="3dp"
+        android:contentDescription="@null"
+        android:rotation="270"
+        android:src="@drawable/ic_corner_curl" />
+
+    <ImageView
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="3dp"
+        android:contentDescription="@null"
+        android:rotation="180"
+        android:src="@drawable/ic_corner_curl" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="10dp"
+        android:paddingEnd="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="14dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/w_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="#8b93a7"
+                android:textSize="9.5sp" />
+
+            <TextView
+                android:id="@+id/w_page"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#6f7789"
+                android:textSize="8.5sp" />
+
+            <TextView
+                android:id="@+id/w_set"
+                android:layout_width="20dp"
+                android:layout_height="14dp"
+                android:gravity="center"
+                android:text="⚙"
+                android:textColor="#8b93a7"
+                android:textSize="8.5sp" />
+
+            <TextView
+                android:id="@+id/w_prev"
+                android:layout_width="22dp"
+                android:layout_height="14dp"
+                android:gravity="center"
+                android:text="‹"
+                android:textColor="#cfd6e4"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/w_next"
+                android:layout_width="22dp"
+                android:layout_height="14dp"
+                android:gravity="center"
+                android:text="›"
+                android:textColor="#cfd6e4"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/w_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:divider="@null"
+            android:dividerHeight="0dp"
+            android:listSelector="@android:color/transparent"
+            android:scrollbars="none" />
+
+        <TextView
+            android:id="@android:id/empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#8b93a7"
+            android:textSize="11sp"
+            android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

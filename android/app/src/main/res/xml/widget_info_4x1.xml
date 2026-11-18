@@ -6,7 +6,7 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:configure="com.kiki.horizonbrief.WidgetConfigActivity"
     android:description="@string/widget_desc_4x1"
-    android:initialLayout="@layout/widget_card_single"
+    android:initialLayout="@layout/widget_list_compact"
     android:maxResizeHeight="480dp"
     android:maxResizeWidth="560dp"
     android:minHeight="40dp"
