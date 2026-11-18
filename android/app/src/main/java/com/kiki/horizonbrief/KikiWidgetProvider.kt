@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import android.util.SizeF
 import android.widget.RemoteViews
 import org.json.JSONArray
 import org.json.JSONObject
@@ -16,23 +15,21 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * 桌面小组件：4×1 与 4×2 两个独立条目，共用一套渲染逻辑。
+ * 桌面小组件：4×1 与 4×2 两个独立条目，共用一套数据层。
  *
- * 尺寸适配（1.6.001 起，响应式布局）：
- *   1. picker 标签用 targetCellWidth/targetCellHeight 声明格子数（Android 12+），
- *      Android 11 及以下退回 minWidth。
- *   2. 不再自己猜高度。把「能放 1 行 / 2 行 … 8 行」的布局全部注册进
- *      RemoteViews(Map<SizeF, RemoteViews>)，由系统按组件真实尺寸挑能装下的最大一档，
- *      所以手机上不会「第三行被裁一半」，平板上也不会「只给三条、下面空一片」。
- *   3. 窄版（手机）行高 26dp、标题 12.5sp；宽版（平板，最小屏宽 ≥600dp）行高 30dp、
- *      标题 14.5sp。选窄还是宽由设备类别决定，不再由组件宽度猜，避免手机被误判成宽版。
- * 透明度：0–100%，11 档预制背景，点组件上的 ⚙ 调整。
- * 翻页：‹ › 手动翻一页（步长 = 该 provider 的默认条数），系统 30 分钟刷新自动翻一页。
+ * 4×2 用「集合型」组件（ListView + RemoteViewsService，见 WidgetService.kt）：
+ * 行数由系统按真实高度决定，装得下几条就显示几条，超出部分可滚动，
+ * 所以平板不会再「只给三条、底下空一大片」，手机也不会「第三行只露半行」。
+ *
+ * 4×1 是单行布局（widget_card_single / widget_card_wide_single），一条标题 + 时间 + 箭头。
+ *
+ * 透明度：0–100%、10% 一档，11 个预制背景，点组件上的 ⚙ 调整。
+ * 翻页：‹ › 手动跳一屏（步长 = baseSlots），系统 30 分钟刷新时自动跳一屏；列表本身也能滑。
  * 数据来自 GitHub Pages 上的 widget.json，取不到退回本地缓存，再退回安装包内快照。
  */
 open class KikiWidgetProvider : AppWidgetProvider() {
 
-    /** 翻一页走几条：4×1 给 1，4×2 给 3。 */
+    /** 翻页步长：4×1 走 1 条，4×2 走 3 条。 */
     open val baseSlots: Int get() = 3
 
     override fun onUpdate(
@@ -66,7 +63,7 @@ open class KikiWidgetProvider : AppWidgetProvider() {
         appWidgetId: Int,
         newOptions: android.os.Bundle
     ) {
-        // 用户拉了尺寸：响应式布局由系统重挑，这里只需按新尺寸重渲染一次，页码保持
+        // 尺寸变了：列表型组件由系统自己重排，这里只刷新一次头部与数据，页码保持
         WidgetRenderer.render(
             context, appWidgetManager, appWidgetId, WidgetStore.cached(context), step = 0,
             providerClass = javaClass, baseSlots = baseSlots
@@ -115,12 +112,12 @@ open class KikiWidgetProvider : AppWidgetProvider() {
     }
 }
 
-/** 4×1：picker 里单独一条，手机上一条、平板上按高度自动多显示几条。 */
+/** 4×1：picker 里单独一条，单行显示。 */
 class KikiWidgetProvider4x1 : KikiWidgetProvider() {
     override val baseSlots: Int get() = 1
 }
 
-/** 4×2：picker 里单独一条，默认三条。 */
+/** 4×2：picker 里单独一条，列表型，高度装几条显示几条。 */
 class KikiWidgetProvider4x2 : KikiWidgetProvider() {
     override val baseSlots: Int get() = 3
 }
@@ -252,11 +249,13 @@ object WidgetStore {
         context.getSharedPreferences(PREF, Context.MODE_PRIVATE).getInt("page_$id", 0)
 
     fun setStart(context: Context, id: Int, start: Int) {
-        context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit().putInt("page_$id", start).apply()
+        context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit()
+            .putInt("page_$id", start).apply()
     }
 
     fun markSeen(context: Context, id: Int) {
-        context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit().putBoolean("seen_$id", true).apply()
+        context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit()
+            .putBoolean("seen_$id", true).apply()
     }
 
     fun isSeen(context: Context, id: Int): Boolean =
@@ -268,14 +267,8 @@ object WidgetStore {
     }
 }
 
-/**
- * 响应式渲染：
- * - 每种行数（1–8）都有对应布局，注册到 RemoteViews(SizeF → views)，系统按真实尺寸选；
- * - 每行固定高度，条目从「首条下标」开始循环取，永远填满可见行，不会出现半行。
- */
 object WidgetRenderer {
 
-    private const val MAX_ROWS = 8
     const val EMPTY_HINT = "打开 App 同步今日新闻"
 
     private val THUMB = intArrayOf(
@@ -284,43 +277,6 @@ object WidgetRenderer {
         R.drawable.bg_widget_a060, R.drawable.bg_widget_a070, R.drawable.bg_widget_a080,
         R.drawable.bg_widget_a090, R.drawable.bg_widget_a100
     )
-
-    private val ROW_IDS = intArrayOf(
-        R.id.w_r1, R.id.w_r2, R.id.w_r3, R.id.w_r4,
-        R.id.w_r5, R.id.w_r6, R.id.w_r7, R.id.w_r8
-    )
-    private val TITLE_IDS = intArrayOf(
-        R.id.w_t1, R.id.w_t2, R.id.w_t3, R.id.w_t4,
-        R.id.w_t5, R.id.w_t6, R.id.w_t7, R.id.w_t8
-    )
-    private val SCORE_IDS = intArrayOf(
-        R.id.w_s1, R.id.w_s2, R.id.w_s3, R.id.w_s4,
-        R.id.w_s5, R.id.w_s6, R.id.w_s7, R.id.w_s8
-    )
-
-    /** 窄版（手机）：行高 26dp、头部 20dp、上下内边距合计 10dp。 */
-    private fun narrowLayout(rows: Int): Int = when (rows) {
-        1 -> R.layout.widget_card_single
-        2 -> R.layout.widget_card_r2
-        3 -> R.layout.widget_card_r3
-        4 -> R.layout.widget_card_r4
-        5 -> R.layout.widget_card_r5
-        6 -> R.layout.widget_card_r6
-        7 -> R.layout.widget_card_r7
-        else -> R.layout.widget_card_r8
-    }
-
-    /** 宽版（平板）：行高 30dp、头部 24dp、上下内边距合计 10dp。 */
-    private fun wideLayout(rows: Int): Int = when (rows) {
-        1 -> R.layout.widget_card_wide_single
-        2 -> R.layout.widget_card_wide_r2
-        3 -> R.layout.widget_card_wide_r3
-        4 -> R.layout.widget_card_wide_r4
-        5 -> R.layout.widget_card_wide_r5
-        6 -> R.layout.widget_card_wide_r6
-        7 -> R.layout.widget_card_wide_r7
-        else -> R.layout.widget_card_wide_r8
-    }
 
     fun render(
         context: Context,
@@ -334,7 +290,10 @@ object WidgetRenderer {
         val tablet = context.resources.configuration.smallestScreenWidthDp >= 600
 
         if (feed == null || feed.items.isEmpty()) {
-            val views = RemoteViews(context.packageName, narrowLayout(1))
+            val views = RemoteViews(
+                context.packageName,
+                if (tablet) R.layout.widget_card_wide_single else R.layout.widget_card_single
+            )
             applyAlpha(context, views)
             renderEmpty(context, views, id)
             manager.updateAppWidget(id, views)
@@ -344,7 +303,6 @@ object WidgetRenderer {
         val items = feed.items
         val total = items.size
         val pageSize = baseSlots.coerceAtLeast(1)
-        val pages = (total + pageSize - 1) / pageSize
 
         var start = WidgetStore.start(context, id).coerceIn(0, total - 1)
         if (step != 0 && WidgetStore.isSeen(context, id)) {
@@ -357,97 +315,82 @@ object WidgetRenderer {
         val dateText = listOf(feed.date.takeLast(5), feed.updated)
             .filter { it.isNotBlank() }.joinToString(" ")
 
-        val pageNo = start / pageSize + 1
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val variants = HashMap<SizeF, RemoteViews>()
-            for (rows in 1..MAX_ROWS) {
-                val layout = if (tablet) wideLayout(rows) else narrowLayout(rows)
-                val views = RemoteViews(context.packageName, layout)
-                applyAlpha(context, views)
-                fill(
-                    context, views, rows, items, start, total, dateText,
-                    pageNo, pages, id, providerClass
-                )
-                // 宽度给 1dp 表示「任何宽度都接受」，系统只按高度挑档；
-                // 高度 = 头部 + 内边距 + 行数 × 行高
-                val rowDp = if (tablet) 30 else 26
-                val headDp = if (tablet) 24 else 20
-                variants[SizeF(1f, (headDp + 10 + rows * rowDp).toFloat())] = views
-            }
-            manager.updateAppWidget(id, RemoteViews(variants))
+        if (pageSize >= 2) {
+            renderList(context, manager, id, total, dateText, providerClass, tablet)
         } else {
-            // Android 11 及以下没有响应式布局，按高度下限估一档；行高固定，最多差一行
-            val h = manager.getAppWidgetOptions(id)
-                .getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
-            val rowDp = if (tablet) 30 else 26
-            val headDp = if (tablet) 24 else 20
-            val rows = ((h - headDp - 10) / rowDp).coerceIn(1, MAX_ROWS)
-            val layout = if (tablet) wideLayout(rows) else narrowLayout(rows)
-            val views = RemoteViews(context.packageName, layout)
-            applyAlpha(context, views)
-            fill(
-                context, views, rows, items, start, total, dateText,
-                pageNo, pages, id, providerClass
-            )
-            manager.updateAppWidget(id, views)
+            renderSingle(context, manager, id, items[start % total], total, dateText, providerClass, tablet)
         }
     }
 
-    /** 把数据填进指定行数的布局：1 行走单行模式，2 行以上走列表模式。 */
-    private fun fill(
+    /**
+     * 4×2：头部固定，列表填满剩余高度。行数完全交给系统（ListView 按真实高度排），
+     * 所以不再有「猜行数」这一步，平板也不会留空白。
+     */
+    private fun renderList(
         context: Context,
-        views: RemoteViews,
-        rows: Int,
-        items: List<WidgetItem>,
-        start: Int,
+        manager: AppWidgetManager,
+        id: Int,
         total: Int,
         dateText: String,
-        pageNo: Int,
-        pages: Int,
-        id: Int,
-        providerClass: Class<*>
+        providerClass: Class<*>,
+        tablet: Boolean
     ) {
-        bindConfig(context, views, id, providerClass, R.id.w_set)
-        bindConfig(context, views, id, providerClass, R.id.w_sset)
+        val layout = if (tablet) R.layout.widget_list_wide else R.layout.widget_list
+        val views = RemoteViews(context.packageName, layout)
+        applyAlpha(context, views)
 
-        if (rows <= 1) {
-            views.setViewVisibility(R.id.w_single, android.view.View.VISIBLE)
-            views.setViewVisibility(R.id.w_multi, android.view.View.GONE)
-            val it = items[start % total]
-            views.setTextViewText(R.id.w_stitle, it.title)
-            views.setTextViewText(R.id.w_stime, dateText)
-            views.setOnClickPendingIntent(R.id.w_stitle, openApp(context, id, it.anchor, 10))
-            views.setOnClickPendingIntent(R.id.w_stime, openApp(context, id, null, 11))
-            bindArrow(context, views, id, R.id.w_sprev, KikiWidgetProvider.ACTION_PREV, 12, providerClass)
-            bindArrow(context, views, id, R.id.w_snext, KikiWidgetProvider.ACTION_NEXT, 13, providerClass)
-            if (pages <= 1) {
-                views.setViewVisibility(R.id.w_sprev, android.view.View.GONE)
-                views.setViewVisibility(R.id.w_snext, android.view.View.GONE)
-            }
-            return
-        }
-
-        views.setViewVisibility(R.id.w_multi, android.view.View.VISIBLE)
-        views.setViewVisibility(R.id.w_single, android.view.View.GONE)
         views.setTextViewText(R.id.w_date, dateText)
-        views.setTextViewText(R.id.w_page, "$pageNo/$pages")
+        views.setTextViewText(R.id.w_page, "$total 条")
+        views.setTextViewText(android.R.id.empty, EMPTY_HINT)
+
+        bindConfig(context, views, id, providerClass, R.id.w_set)
         bindArrow(context, views, id, R.id.w_prev, KikiWidgetProvider.ACTION_PREV, 20, providerClass)
         bindArrow(context, views, id, R.id.w_next, KikiWidgetProvider.ACTION_NEXT, 21, providerClass)
-        views.setOnClickPendingIntent(R.id.w_date, openApp(context, id, null, 22))
-        if (pages <= 1) {
-            views.setViewVisibility(R.id.w_prev, android.view.View.GONE)
-            views.setViewVisibility(R.id.w_next, android.view.View.GONE)
-        }
+        views.setOnClickPendingIntent(R.id.w_date, openApp(context, id, null, 22, mutable = false))
 
-        for (i in 0 until rows) {
-            // 循环取：最后一页也不会留空行，永远填满可见行
-            val item = items[(start + i) % total]
-            views.setViewVisibility(ROW_IDS[i], android.view.View.VISIBLE)
-            views.setTextViewText(TITLE_IDS[i], item.title)
-            views.setTextViewText(SCORE_IDS[i], item.score)
-            views.setOnClickPendingIntent(ROW_IDS[i], openApp(context, id, item.anchor, 30 + i))
+        views.setEmptyView(R.id.w_list, android.R.id.empty)
+        views.setRemoteAdapter(
+            R.id.w_list,
+            Intent(context, WidgetService::class.java)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
+        )
+        // 列表项的点击靠 fill-in intent 把锚点传进 MainActivity，模板必须允许合并 extras
+        views.setPendingIntentTemplate(R.id.w_list, openApp(context, id, null, 60, mutable = true))
+
+        manager.updateAppWidget(id, views)
+        manager.notifyAppWidgetViewDataChanged(id, R.id.w_list)
+    }
+
+    /** 4×1：单行显示一条，保持原样。 */
+    private fun renderSingle(
+        context: Context,
+        manager: AppWidgetManager,
+        id: Int,
+        item: WidgetItem,
+        total: Int,
+        dateText: String,
+        providerClass: Class<*>,
+        tablet: Boolean
+    ) {
+        val views = RemoteViews(
+            context.packageName,
+            if (tablet) R.layout.widget_card_wide_single else R.layout.widget_card_single
+        )
+        applyAlpha(context, views)
+        views.setViewVisibility(R.id.w_single, android.view.View.VISIBLE)
+        views.setViewVisibility(R.id.w_multi, android.view.View.GONE)
+        views.setTextViewText(R.id.w_stitle, item.title)
+        views.setTextViewText(R.id.w_stime, dateText)
+        views.setOnClickPendingIntent(R.id.w_stitle, openApp(context, id, item.anchor, 10, mutable = false))
+        views.setOnClickPendingIntent(R.id.w_stime, openApp(context, id, null, 11, mutable = false))
+        bindConfig(context, views, id, providerClass, R.id.w_sset)
+        bindArrow(context, views, id, R.id.w_sprev, KikiWidgetProvider.ACTION_PREV, 12, providerClass)
+        bindArrow(context, views, id, R.id.w_snext, KikiWidgetProvider.ACTION_NEXT, 13, providerClass)
+        if (total <= 1) {
+            views.setViewVisibility(R.id.w_sprev, android.view.View.GONE)
+            views.setViewVisibility(R.id.w_snext, android.view.View.GONE)
         }
+        manager.updateAppWidget(id, views)
     }
 
     /** 11 档预制背景，按 10% 取整切换。 */
@@ -463,7 +406,7 @@ object WidgetRenderer {
         views.setTextViewText(R.id.w_stime, "")
         views.setViewVisibility(R.id.w_sprev, android.view.View.GONE)
         views.setViewVisibility(R.id.w_snext, android.view.View.GONE)
-        views.setOnClickPendingIntent(R.id.w_stitle, openApp(context, id, null, 40))
+        views.setOnClickPendingIntent(R.id.w_stitle, openApp(context, id, null, 40, mutable = false))
     }
 
     private fun bindConfig(
@@ -506,16 +449,22 @@ object WidgetRenderer {
         )
     }
 
-    private fun openApp(context: Context, id: Int, anchor: String?, requestCode: Int): PendingIntent {
+    private fun openApp(
+        context: Context,
+        id: Int,
+        anchor: String?,
+        requestCode: Int,
+        mutable: Boolean
+    ): PendingIntent {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
             if (!anchor.isNullOrBlank()) putExtra(MainActivity.EXTRA_ANCHOR, anchor)
         }
-        return PendingIntent.getActivity(
-            context,
-            requestCode,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or when {
+            mutable && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> PendingIntent.FLAG_MUTABLE
+            mutable -> 0
+            else -> PendingIntent.FLAG_IMMUTABLE
+        }
+        return PendingIntent.getActivity(context, requestCode, intent, flags)
     }
 }

@@ -1,5 +1,17 @@
 # 更新记录
 
+## v1.6.002 小组件 4×2 改为集合型（ListView），平板不再只给三条（2026-11-18）
+
+**1.6.001 为什么还不够**：1.6.001 用「响应式尺寸映射」把 1–8 行的布局全部交给系统挑，但这条路仍然依赖 launcher 回传一个可信的尺寸——这台平板的 launcher 给的尺寸明显小于真实高度，系统于是挑了 3 行那一档，剩下三分之二自然空着。任何「按数字挑布局」的写法都会在它上面失效。
+
+- **改为集合型组件（Android 官方推荐做法）**：新增 `WidgetService.kt`（`RemoteViewsService` + `WidgetFactory`），4×2 的布局换成 `widget_list.xml` / `widget_list_wide.xml`——头部固定一行，下面 `ListView` 占满剩余高度。行数不再由 App 计算：装得下几条系统就排几条，超出部分可以滑动。所以「只给三条、底下空一大片」和「第三条只露半行」从原理上都不可能再出现，也不需要任何猜 dp 的算法。
+- 行高仍写死（手机 26dp、平板 30dp，见 `widget_row.xml` / `widget_row_wide.xml`），保证条目不会被拉稀。
+- 4×1 维持单行布局（`widget_card_single` / `widget_card_wide_single`），行为不变。
+- **Manifest 补 `WidgetService` 声明**（`permission=android.permission.BIND_REMOTEVIEWS`、`exported=false`）；列表项点击改用 fill-in intent + `setPendingIntentTemplate`（S+ 用 `FLAG_MUTABLE`，S- 不加 `FLAG_IMMUTABLE`），点条目仍能跳正文锚点。
+- **4×2 的 `initialLayout` / `previewLayout` 改指列表布局**，避免首帧和预览显示成固定三行版。
+- 头部信息简化为日期 + 总条数；‹ › 仍是手动跳一屏（步长 3 条），跳完调 `notifyAppWidgetViewDataChanged` 重取数据。
+- 版本 1.6.002（versionCode 160002）。
+
 ## v1.6.001 小组件：改成系统侧响应式布局，修手机半行被裁与平板只给三条（2026-11-18）
 
 **两个现象**（用户真机截图）：手机上 4×2 显示的第三行只剩一半字；平板上拉大了仍然只有三条、下面空一大片。根因是 1.6.000 仍在用 `OPTION_APPWIDGET_MIN_HEIGHT` 自己算行数，而不同 launcher 回传这个值偏差很大——手机回传偏大（按宽的 30dp 行高排出 3 行，实际高度装不下，第三行被父容器裁掉），平板回传偏小（只排 3 行）。另外 1.6.000 用「组件宽度 ≥300dp」判断宽版，手机 4×2 的宽度正好过线，于是手机误用了平板字号和 30dp 行高，把问题放大。
