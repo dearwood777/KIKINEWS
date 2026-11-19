@@ -1,473 +1,485 @@
 {
- "generated_at": "2026-11-18T22:05:31+00:00",
- "count": 78,
+ "generated_at": "2026-11-19T22:05:12+00:00",
+ "count": 80,
  "items": [
   {
-   "title": "Fed officials expect more rate hikes, worry about AI impact on inflation, minutes show",
-   "url": "https://www.cnbc.com/2026/11/18/fed-minutes-october-2026.html",
-   "score": 9.0,
-   "profile": "finance-news"
+   "title": "Myanmar ruling gives new relevance to genocide convention and is ‘full of messages’ for Israel",
+   "url": "https://www.theguardian.com/law/2026/nov/19/myanmar-ruling-new-relevance-genocide-convention-messages-israel",
+   "score": 10.0,
+   "profile": "world-news"
   },
   {
-   "title": "Democrats nominate Hakeem Jeffries to be US Speaker of the House",
-   "url": "https://www.bbc.co.uk/news/articles/cmy49873dn95o?at_medium=RSS&at_campaign=rss",
+   "title": "‘Everyone struggled for this justice’: tears in court as Rohingya vindicated in Myanmar genocide ruling",
+   "url": "https://www.theguardian.com/global-development/2026/nov/19/everyone-struggled-for-this-justice-tears-in-court-as-rohingya-vindicated-in-myanmar-genocide-ruling",
+   "score": 10.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Myanmar committed genocide against Rohingya minority, world’s top court rules",
+   "url": "https://www.theguardian.com/world/2026/nov/19/genocide-rohingya-international-court-of-justice-ruling-myanmar",
+   "score": 10.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "World court finds Myanmar committed genocide against the Rohingya - Courthouse News",
+   "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQTU1saGUyWGhmTTJBMFBna00tcy1vOG9iNFIyODJlRkRFaml6R1hXdEdmNVJhVU4zTGVUeVBCdExaRjBuSDVlcEdGUVM2akF4NDI5SzhWamlyc3h4ZG82ek1GSXZMUEhoaDFWRmFtUENwdmNSVjhYOTZ1VUxrTWR6dlVRU0twa3Q2a1ZlNUVfWEtLOFAtc3JCdjJ6Tk8?oc=5",
+   "score": 10.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Anthropic hits $2T in Nasdaq debut",
+   "url": "https://www.reuters.com/business/finance/anthropics-historic-debut-put-ais-promise-peril-wall-st-test-2026-11-19/",
+   "score": 9.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Anthropic becomes most valuable AI firm as shares soar in stock market debut",
+   "url": "https://www.bbc.co.uk/news/articles/c3x29ggenz12o?at_medium=RSS&at_campaign=rss",
    "score": 9.0,
    "profile": "world-news"
   },
   {
-   "title": "Unauthenticated remote code execution in Nginx",
-   "url": "https://www.wiz.io/blog/nginx-http2-rce-vulnerabilities",
+   "title": "Myanmar committed genocide against Rohingya minority, top UN court rules",
+   "url": "https://www.bbc.co.uk/news/articles/c804wzp20ddvo?at_medium=RSS&at_campaign=rss",
+   "score": 9.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Europe ready for talks with Russia on ending war in Ukraine, leaders say",
+   "url": "https://www.bbc.co.uk/news/articles/ckzd9nln5e6go?at_medium=RSS&at_campaign=rss",
+   "score": 9.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Putin vows 'far more painful' response to Ukraine's strikes on Crimean Bridge",
+   "url": "https://www.bbc.co.uk/news/articles/cm879dqn3e1jo?at_medium=RSS&at_campaign=rss",
+   "score": 9.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Rohingya genocide: What was said in court and what happens now?",
+   "url": "https://www.bbc.co.uk/news/videos/c60qj10j0ld5o?at_medium=RSS&at_campaign=rss",
+   "score": 9.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Top UN court finds Myanmar committed genocide against Muslim Rohingya - Reuters",
+   "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxPbzZlQXBMbFU3Qzl0M2E2b0tJZHVzejVGQXczQTUxaHJmV1ZMZ3dVTWFGRzhsT1ZvNmdMMVRQVlNyMnVmX1RoUWo4UmtCT2RSX3Y5Q0JjWm9paEtmbXhCLXM0bTR4aXg5eUQ2dWRSZGlaT09VWTF6Q3FuUHFMR0ZqSmc3UWdDRHc2OHpJNE9pX2FmZldBME1xc29YRENBQkE0ZGhORjlTWkpyMzBCSzF5R21lRmcwMFFRNWltZ1FQYmdROXEtVUxXekp5RQ?oc=5",
+   "score": 9.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "UK government forced to admit it issued Apple a secret encryption order",
+   "url": "https://macanorak.com/uk-government-forced-to-admit-it-issued-apple-a-secret-encryption-order/",
    "score": 8.0,
    "profile": "tech-news"
   },
   {
-   "title": "OpenAI CEO Sam Altman says it’s ‘hard to imagine the AI industry without Jensen’",
-   "url": "https://techcrunch.com/2026/11/18/openai-ceo-sam-altman-says-its-hard-to-imagine-the-ai-industry-without-jensen/",
+   "title": "Someone reported java4shell bug in September 2026",
+   "url": "https://github.com/openjdk/jdk/pull/32781",
    "score": 8.0,
    "profile": "tech-news"
   },
   {
-   "title": "Trump shakes hands with Putin and Xi ahead of historic talks in China",
-   "url": "https://www.bbc.co.uk/news/articles/ck9d75x5wwwwo?at_medium=RSS&at_campaign=rss",
+   "title": "Meta’s AI agent Muse is mixing up conversations and could be exposing private data, report says",
+   "url": "https://techcrunch.com/2026/11/19/metas-ai-agent-muse-is-mixing-up-conversations-and-exposing-private-data-report-says/",
+   "score": 8.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "UK government forced to disclose secret Apple backdoor order",
+   "url": "https://techcrunch.com/2026/11/19/u-k-government-forced-to-disclose-secret-apple-backdoor-order/",
+   "score": 8.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Trump, Putin and Xi release 'peace declaration' after historic meeting",
+   "url": "https://www.bbc.co.uk/news/articles/c623j4ln97x7o?at_medium=RSS&at_campaign=rss",
    "score": 8.0,
    "profile": "world-news"
   },
   {
-   "title": "Israeli military launches rare ground operation in Gaza beyond Yellow Line",
+   "title": "Venezuela signs military deal with US less than a year after Maduro's removal",
+   "url": "https://www.bbc.co.uk/news/articles/cmwy8pyqlq5vo?at_medium=RSS&at_campaign=rss",
+   "score": 8.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Israeli military completes ground operation in Gaza beyond Yellow Line",
    "url": "https://www.bbc.co.uk/news/articles/cw8r7510degno?at_medium=RSS&at_campaign=rss",
    "score": 8.0,
    "profile": "world-news"
   },
   {
-   "title": "Kuwait says it repelled first Iranian attack in two months after US strikes island",
-   "url": "https://www.bbc.co.uk/news/articles/cw4gn9jeqjq7o?at_medium=RSS&at_campaign=rss",
+   "title": "What did Trump, Xi and Putin get out of their historic meeting?",
+   "url": "https://www.bbc.co.uk/news/videos/c63rgnq05pdwo?at_medium=RSS&at_campaign=rss",
    "score": 8.0,
    "profile": "world-news"
   },
   {
-   "title": "Steve Rosenberg: Historic talks with Xi and Trump are a coup for Putin",
-   "url": "https://www.bbc.co.uk/news/articles/c9n70gd320mpo?at_medium=RSS&at_campaign=rss",
+   "title": "New page in history? Xi, Trump and Putin summit was more of a footnote",
+   "url": "https://www.theguardian.com/world/2026/nov/19/new-page-in-history-xi-trump-and-putin-summit-was-more-of-a-footnote",
    "score": 8.0,
    "profile": "world-news"
   },
   {
-   "title": "The seven Anthropic founders who are about to become multi-billionaires",
-   "url": "https://www.bbc.co.uk/news/articles/cmd7159vlr85o?at_medium=RSS&at_campaign=rss",
+   "title": "What is at stake at the EU-UK summit in Brussels?",
+   "url": "https://www.theguardian.com/politics/2026/nov/19/eu-uk-summit-explainer-burnham-brexit-brussels",
    "score": 8.0,
    "profile": "world-news"
   },
   {
-   "title": "Cheese, pet passports and youth mobility: what’s in the UK-EU ‘relationship reset’ draft?",
-   "url": "https://www.theguardian.com/politics/2026/nov/18/uk-eu-relationship-reset-draft-explainer",
+   "title": "Israeli tanks cross ‘yellow line’ boundary into Hamas-controlled central Gaza",
+   "url": "https://www.theguardian.com/world/2026/nov/18/israeli-tanks-cross-yellow-line-boundary-into-hamas-controlled-central-gaza",
    "score": 8.0,
    "profile": "world-news"
   },
   {
-   "title": "Israel delays building contracts for West Bank settlement after UK sanctions",
-   "url": "https://www.theguardian.com/world/2026/nov/18/israel-construction-contracts-e1-west-bank-settlement-uk-sanctions",
+   "title": "Senate Republicans rejects war powers bill to halt fighting in Iran",
+   "url": "https://www.theguardian.com/us-news/2026/nov/19/senate-iran-war-powers-resolution-rejected",
    "score": 8.0,
    "profile": "world-news"
   },
   {
-   "title": "Anthropic sets share price at $83 for stock market debut, above expected range",
-   "url": "https://www.theguardian.com/technology/2026/nov/18/anthropic-share-price-stock-market-ipo",
+   "title": "European Commission confirms cyberattack, investigation underway - upi",
+   "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNSi1iY2JtS2hKVUkydHJNYzhscUVLc0dRTzVUQnZtMUhiMHBqZXpoSVpGc1BRUFlzOHRiU3FZSHp0TFZoQzJJQkFWRWtmcTNac0dadzdTb3d6aW1zekg5dWdBcHVmcndkRU54cTVoM1ZyQ05iOE55SkJueFFpTGdyNUJvLTFwbEdxdzluSjJhT0xXNGN0elA1eHl4eWxqcGhTMHRHd0ZFUnpneXU0YUFpZzhreEplUTNRN19IcXFDVEJHcmRjUjBOQnR1YWfSAdIBQVVfeXFMT1VCTTExMkZyVExSdGJvUmYtdkJrb2VoVno4Vi1KcVU2dFhsTTY2V28xQWdBTFhlRVEzR1piYmNHSVdzOTh5R0xNb1hQUDVMcmhwODVWV0RmU0IydDV0MUFwUlhyR0VJbVpEcXlPY2k2am1IOFExX0V3VUoweHhLVkh3b2RNZzlvZnF0dUtZaGxuVGxrcmlwaklhYzBzRlJtck0zX2d0eXZGS0xxTWQyNnFZU253a0tqb0dUU3ZURFE0Y2hnd095NGtCODdwLVRkSFB3?oc=5",
    "score": 8.0,
    "profile": "world-news"
   },
   {
-   "title": "Xint 披露 5 个 nginx 漏洞，可打到主机 root",
-   "url": "https://nginx2root.com/",
-   "score": 8.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Nepal Came to COP31 in Dire Need. It’s a Test for the World. - The New York Times",
-   "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBhVjNBM0hjaU9xM0Myak93ZmRxcS1BbEVVUzloam42UmFBRHcxaUFabUY2cjFTOEh5OWtUY2R6OW9yYjhHMXVNNnJFenpLdmE4YTNsZVYtaHhkVWN0Y0pPNjA5UDBMOGJNdjRwS3p4dW90NHVMVHk3MHdVYXI?oc=5",
+   "title": "Trump, Putin and Xi release 'peace declaration' after historic meeting - BBC",
+   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE1BblY0ODJpaUlrOGdtV1g4YjAyQzhZLS1TaFIxTDRRSUQ1X0lpcGgyZ18tMDVrZG0zNHJhSmMwampkaG1YNmh2dlRQN3kwM3lzbGtNMEtRYWVYZk0?oc=5",
    "score": 8.0,
    "profile": "world-news"
   },
   {
-   "title": "Seven new models at scalable price-performance",
-   "url": "https://microsoft.ai/news/microsoft-ignite-2026/",
+   "title": "Claude solves two open problems in the physics of black holes",
+   "url": "https://www.anthropic.com/research/claude-black-hole-physics",
    "score": 7.0,
    "profile": "tech-news"
   },
   {
-   "title": "Fed’s Waller says central bank may need to ‘shock people’ with half-point rate hike",
-   "url": "https://www.cnbc.com/2026/11/18/federal-reserve-governor-christopher-waller.html",
-   "score": 7.0,
-   "profile": "finance-news"
-  },
-  {
-   "title": "Palmer Luckey warns AI-powered cyberattacks are outpacing defenses: ‘It’s time to start running’",
-   "url": "https://techcrunch.com/2026/11/18/palmer-luckey-warns-ai-powered-cyberattacks-are-outpacing-defenses-its-time-to-start-running/",
+   "title": "Anthropic’s IPO could deliver $156 billion to charity",
+   "url": "https://techcrunch.com/2026/11/19/anthropics-ipo-could-deliver-156-billion-to-charity/",
    "score": 7.0,
    "profile": "tech-news"
   },
   {
-   "title": "Snapchat now lets developers build AR Lenses with AI assistants like Claude Code and Cursor",
-   "url": "https://techcrunch.com/2026/11/18/snapchat-now-lets-developers-build-ar-lenses-with-ai-coding-assistants-like-claude-code-and-cursor/",
+   "title": "Google gives Gemini the ability to use your Mac for you",
+   "url": "https://techcrunch.com/2026/11/19/google-gives-gemini-the-ability-to-use-your-mac-for-you/",
    "score": 7.0,
    "profile": "tech-news"
   },
   {
-   "title": "Sam Altman warns against a future where AI, not humans, calls the shots",
-   "url": "https://techcrunch.com/2026/11/18/sam-altman-warns-against-a-future-where-ai-not-humans-calls-the-shots/",
+   "title": "Anthropic’s IPO puts AI’s circular financing boom to the test",
+   "url": "https://techcrunch.com/2026/11/19/anthropics-ipo-puts-ais-circular-financing-boom-to-the-test/",
    "score": 7.0,
    "profile": "tech-news"
   },
   {
-   "title": "William and Kate meet PM Modi as they wrap up India tour",
-   "url": "https://www.bbc.co.uk/news/articles/cq62ped2ypy4o?at_medium=RSS&at_campaign=rss",
+   "title": "Florida pastor found guilty over role in assassination of Haitian president",
+   "url": "https://www.bbc.co.uk/news/articles/cm702q0lg50po?at_medium=RSS&at_campaign=rss",
    "score": 7.0,
    "profile": "world-news"
   },
   {
-   "title": "New video shows explosions moments before part of Crimea Bridge collapses",
-   "url": "https://www.bbc.co.uk/news/videos/ckvg28jy77z5o?at_medium=RSS&at_campaign=rss",
+   "title": "China, Russia and US agree peace declaration with no mention of Ukraine and Iran wars",
+   "url": "https://www.theguardian.com/world/2026/nov/19/china-russia-us-agree-peace-statement-no-mention-ukraine-iran-wars",
    "score": 7.0,
    "profile": "world-news"
   },
   {
-   "title": "Who to watch in Spain's election race",
-   "url": "https://www.bbc.co.uk/news/articles/cxr5g4lyp94no?at_medium=RSS&at_campaign=rss",
+   "title": "UK-EU reset talks will go ‘down to the wire’ as crunch summit approaches",
+   "url": "https://www.theguardian.com/world/2026/nov/19/uk-eu-reset-talks-andy-burnham-food-farming-tuition-fees",
    "score": 7.0,
    "profile": "world-news"
   },
   {
-   "title": "Fears grow that US will put Nobel-winning judge under sanctions after Myanmar genocide ruling",
-   "url": "https://www.theguardian.com/world/2026/nov/18/us-sanctions-icj-judges-myanmar-genocide-ruling-israel-gaza-court",
+   "title": "UK and EU plan first talks on sending refused asylum seekers to third countries",
+   "url": "https://www.theguardian.com/uk-news/2026/nov/19/uk-eu-talks-asylum-seekers-third-country-hubs",
    "score": 7.0,
    "profile": "world-news"
   },
   {
-   "title": "Anthony Albanese defies critics for Apec summit photo with Vladimir Putin",
-   "url": "https://www.theguardian.com/australia-news/2026/nov/18/anthony-albanese-defies-critics-for-apec-summit-photo-with-vladimir-putin",
+   "title": "John Cornyn blocks Trump judicial nominee after Senate shouting match with Ted Cruz",
+   "url": "https://www.theguardian.com/us-news/2026/nov/19/judge-t-elliot-gaiser-nomination-fight",
    "score": 7.0,
    "profile": "world-news"
   },
   {
-   "title": "EU ‘to close door’ to talks on long-term UK ties until Burnham has decided on Brexit",
-   "url": "https://www.theguardian.com/politics/2026/nov/18/eu-uk-reset-summit-talks-burnham-brexit",
-   "score": 7.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Labour faces double blow over UK fossil fuel projects",
-   "url": "https://www.theguardian.com/business/2026/nov/18/sse-threatens-to-close-yorkshire-gas-storage-site-unless-ministers-intervene",
-   "score": 7.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "FAA chief urges critics to ‘lay off’ Sean Duffy for flight stoppage: ‘Blame me’",
-   "url": "https://www.theguardian.com/world/2026/nov/18/faa-sean-duffy-flight-stoppage",
-   "score": 7.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "US admits ‘substantial’ change to extradition request translation for leftist activist",
-   "url": "https://www.theguardian.com/us-news/2026/nov/18/fergie-chambers-extradition-request-translation",
-   "score": 7.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Xi Jinping rallies against protectionism as he welcomes Trump to Apec summit - The Guardian",
-   "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQeEczVjdhaDgxcUxoWTFaUnMyVGktWmRtMVFaUmJQNHNqRlZGUjFoelozRXFWeGhRVHZRUUtaTndCdGJERzR0eGtpT3hta3lzYjJPWnV0TXhVaDh2SG9JZnpsc05hTzlyT1ZtVVBxbDJIcTdqVkFJOUNnUnBPbkFOUkwxWWFmSWVua2VCTEVVT01YX09HTzNRc1VlODh6YXBaMzktOA?oc=5",
-   "score": 7.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Palmer Luckey thinks China is ‘thrilled to have Jensen out,’ so he wants the ousted Nvidia CEO reinstated",
-   "url": "https://techcrunch.com/2026/11/18/palmer-luckey-thinks-china-is-thrilled-to-have-jensen-out-so-he-wants-the-ousted-nvidia-ceo-reinstated/",
-   "score": 6.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Nvidia clarifies when it will — and won’t — keep financing neoclouds",
-   "url": "https://techcrunch.com/2026/11/18/nvidia-clarifies-when-it-will-and-wont-keep-financing-neoclouds/",
-   "score": 6.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "India’s Humyn Labs raises $47M to feed US robotics companies the data they need",
-   "url": "https://techcrunch.com/2026/11/18/accel-backs-indias-humyn-labs-to-supply-training-data-needed-by-u-s-robotics-ai-developers/",
-   "score": 6.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Apec summit as it happened: Xi welcomes Trump on China visit as Putin claims Europe in ‘humiliating decline’",
-   "url": "https://www.theguardian.com/world/live/2026/nov/18/apec-summit-live-updates-xi-putin-trump-world-leaders-gather-in-china",
+   "title": "US consortium wins huge Kenya mining deal, beating Chinese rivals",
+   "url": "https://www.bbc.co.uk/news/articles/cm9q84gp0gr3o?at_medium=RSS&at_campaign=rss",
    "score": 6.0,
    "profile": "world-news"
   },
   {
-   "title": "Inside Deutsche Bank",
-   "url": "https://www.inside-db.com/",
+   "title": "'Frustrated' - Democrats remain a divided party despite winning big in midterms",
+   "url": "https://www.bbc.co.uk/news/articles/c6174edpp5e8o?at_medium=RSS&at_campaign=rss",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Trump’s world stage ‘triumph’ is turning into a domestic disaster - The Times",
+   "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPN29KcHVRdFVQdjZObDVZSlgwVlVCS2VaVTc3UWJPYjkwS3hrb1o1UWxxZzBxcGpDck9GbnF6SEh0ZHhodFowd3lNWlpCaXcwWWsyWldNTWdHXzc3MjVNSnlWZ29NZUUtWXZVZHBBX0s2TU1YNnhld1VnMVI3SnRYejVPZTJLWkwySll0bUJtOUpaVm5VcTc0eHNjeWdPUGJhSG51blZ2VVRPempqTW5aTjZyN0Y1TVNBWHJ3?oc=5",
+   "score": 6.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "These tech outages are giving Y2K, AI agent style",
+   "url": "https://techcrunch.com/2026/11/19/these-tech-outages-are-giving-y2k-ai-agent-style/",
    "score": 5.0,
    "profile": "tech-news"
   },
   {
-   "title": "DNS resolvers are the wrong place to fight piracy",
-   "url": "https://techstackups.com/articles/quad9-leaves-france-dns-blocking/",
+   "title": "At Nasdaq opening bell, Anthropic CEO recommits to pacing AI development",
+   "url": "https://techcrunch.com/2026/11/19/at-nasdaq-opening-bell-anthropic-ceo-recommits-to-pacing-ai-development/",
    "score": 5.0,
    "profile": "tech-news"
   },
   {
-   "title": "AI agents ask better questions than KPMG accountants in audit trial",
-   "url": "https://europeanbusinessmagazine.com/ai-agents-better-questions-kpmg/",
+   "title": "Superhuman pushes its Go assistant everywhere",
+   "url": "https://techcrunch.com/2026/11/19/superhuman-pushes-its-go-assistant-everywhere/",
    "score": 5.0,
    "profile": "tech-news"
   },
   {
-   "title": "Tech outages are causing people to panic-buy. Costco is benefiting, Mizuho says",
-   "url": "https://www.cnbc.com/2026/11/18/tech-outage-costco-panic-buying.html",
+   "title": "Dozens missing after boat carrying migrants sinks off Senegal's coast",
+   "url": "https://www.bbc.co.uk/news/articles/c58j484089ewo?at_medium=RSS&at_campaign=rss",
    "score": 5.0,
-   "profile": "finance-news"
+   "profile": "world-news"
   },
   {
-   "title": "Google’s AI feature in Search gets its own incognito mode",
-   "url": "https://techcrunch.com/2026/11/18/googles-ai-feature-in-search-gets-its-own-incognito-mode/",
+   "title": "Guardian Australia takes home two Walkley awards for excellence in journalism",
+   "url": "https://www.theguardian.com/australia-news/2026/nov/19/guardian-australia-takes-home-two-walkley-awards-for-excellence-in-journalism",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Australian music industry rejects ‘divide and conquer’ proposal to give musicians exemption from AI scraping",
+   "url": "https://www.theguardian.com/australia-news/2026/nov/20/australian-music-industry-rejects-proposal-to-give-musicians-exemption-ai-scraping",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "An elevator, a brick wall and a bathroom: scientists use gravity to send ‘practically unblockable’ message",
+   "url": "https://www.theguardian.com/science/2026/nov/20/scientists-communicate-using-gravity-elevator-brick-wall-bathroom-experiment",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Mark Speakman resigns and says Liberals face ‘existential threat’ as NSW exodus continues",
+   "url": "https://www.theguardian.com/australia-news/2026/nov/19/mark-speakman-resigns-and-says-liberals-face-existential-threat-as-nsw-exodus-continues",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Is Europe now in the shadow of a Trump, Putin and Xi alliance? – podcast",
+   "url": "https://www.theguardian.com/politics/audio/2026/nov/19/is-europe-in-shadow-of-trump-putin-xi-alliance-podcast",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Grand Theft Auto fans skip work and pull all-nighters to play new instalment",
+   "url": "https://www.theguardian.com/games/2026/nov/19/grand-theft-auto-six-fans-skip-work-pull-all-nighters",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Suspects charged in California train heist ring that netted cargo worth $22m",
+   "url": "https://www.theguardian.com/us-news/2026/nov/19/nike-croc-train-heist",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "✈️ Telegram macOS 测试版新增「隐藏聊天」",
+   "url": "https://telegram.me/zaihuapd/45242",
    "score": 5.0,
    "profile": "tech-news"
   },
   {
-   "title": "More banks say customers using AI agents are on their own — even if they get hacked",
-   "url": "https://techcrunch.com/2026/11/18/more-banks-says-customers-using-ai-agents-are-on-their-own-even-if-they-get-hacked/",
+   "title": "🤖 Anthropic 上市首日开盘涨 34% 市值达到 1.5 万亿美元",
+   "url": "https://www.cls.cn/detail/2539480",
    "score": 5.0,
    "profile": "tech-news"
   },
   {
-   "title": "China dominates battery graphite, but this startup could break the monopoly",
-   "url": "https://techcrunch.com/2026/11/18/china-dominates-battery-graphite-but-this-startup-could-break-the-monopoly/",
-   "score": 5.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Inside the old gas pipeline where Ukraine is fighting an underground war with Russia",
-   "url": "https://www.bbc.co.uk/news/videos/c8p3vw4q6nzzo?at_medium=RSS&at_campaign=rss",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "'The drones don't fly here' - BBC reports from Ukraine's new front line",
-   "url": "https://www.bbc.co.uk/news/articles/c32l507ev4v4o?at_medium=RSS&at_campaign=rss",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Parents jailed for torture and death of four-year-old girl found along French motorway in 1987",
-   "url": "https://www.bbc.co.uk/news/articles/c6lyw490z14jo?at_medium=RSS&at_campaign=rss",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Julio Iglesias facing court investigation over alleged sexual offences",
-   "url": "https://www.bbc.co.uk/news/articles/c6x284pnn4e2o?at_medium=RSS&at_campaign=rss",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Democrats win Alaska Senate race two weeks after midterms counting began",
-   "url": "https://www.bbc.co.uk/news/articles/cqev3v2ygzlvo?at_medium=RSS&at_campaign=rss",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Bancroft sandpaper claims heap pressure on Cummins",
-   "url": "https://www.bbc.co.uk/sport/cricket/articles/cmqlqdevgl9ro?at_medium=RSS&at_campaign=rss",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Business Council of Australia more aligned with fossil fuel industry than its members’ values, analysis finds",
-   "url": "https://www.theguardian.com/australia-news/2026/nov/19/bca-policy-energy-companies-members-climate-concerns",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "The leave campaign has been resurrected, so how should Burnham respond?",
-   "url": "https://www.theguardian.com/politics/2026/nov/18/pro-brexit-stay-out-same-playbook-analysis",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Alexander Zverev notified of abuse lawsuit by ex-partner during ATP Finals",
-   "url": "https://www.theguardian.com/sport/2026/nov/18/alexander-zverev-abuse-lawsuit-atp-finals-finals-brenda-patea",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Member of anti-migrant group found guilty of Staffordshire murder",
-   "url": "https://www.theguardian.com/uk-news/2026/nov/18/member-anti-migrant-group-guilty-murder-raise-colours-billy-allison",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Shabana Mahmood backs ban on police marching in pride events in uniform",
-   "url": "https://www.theguardian.com/politics/2026/nov/18/shabana-mahmood-backs-ban-on-police-marching-in-pride-events-in-uniform",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "‘Neighbourhood support teams’ to pave way for national care service, Cooper announces",
-   "url": "https://www.theguardian.com/society/2026/nov/18/new-neighbourhood-support-teams-to-pave-the-way-for-national-care-service-cooper-announces",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "DeepSeek 服务端搜索和网页抓取改为免费",
-   "url": "https://www.ithome.com/1/029/058.htm",
-   "score": 5.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Five Virginia Tech researchers among world's most highly cited - Virginia Tech News",
-   "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOdVZkU2pwUFdHMEs4UmhnMGwtT1RqcTVJdkE2emcxMHVXOEw5dk41WGFfTHJQRGs2RlEwWG42VHktZkZ2Zzh0WS1wcGxkSjBmRFpfSzd1Zl9EbWMwclRSRVJZeDNzYWVSWEVxM2gzSmUyNnppcWtUYmw1QVRBMWJYYl9lWWR3U3Vt?oc=5",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Supply dependencies leave global trade exposed, and other trade news to know this month - World Economic Forum",
-   "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQU2t4SVJIbktEa3A5WDB2d0NEVU01c2w1NHNYR3dvT2VCMHRwNzdOMTJIdUp5eTVCOWNEWmJHdWhrQUhET2ZWYV9Ea0w5cVhUd2JaMFc2MHhPeXQ2Q3ZlbEduellkRmNVWjdtMHFMNWdEUXJWd2xyZXZPUkhJUWw5Q2dRV3V1elBwTkd6Sk9naUV3ZGNHV3VGRFBHNUFjOVZ5?oc=5",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Former world boxing champion is in ICE custody amid calls for his release - NBC News",
-   "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNLURQVHkyT3JYWldJVUlOUDBHSVR2RUdxcHprTzJWUUhWRFdTRl9wbTlNS3p1ZkhYQzJ2Ny05UjJjRnh5blpydnZ6UlJIdzZRcUNiMzhBdHZUbU5ISWNDTWp6ZkRKWXdvdTlKTDNfWlhkcTduaU51cDg2QVJKd0tZLUMyTE5aRUpJOGF4Q0hFeEFtcF9yMWlwdno0SmFNdk9QSlBPZg?oc=5",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Spend management platform Payhawk announces $280M raise, 2B valuation",
-   "url": "https://techcrunch.com/2026/11/18/spend-management-platform-payhawk-announces-280m-raise-2b-valuation/",
-   "score": 4.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Felicis leads $7.5M bet on Unsiloed AI to make enterprise documents usable by AI agents",
-   "url": "https://techcrunch.com/2026/11/18/felicis-leads-7-5m-bet-on-unsiloed-ai-to-make-enterprise-documents-usable-by-ai-agents/",
-   "score": 4.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "PlayStation suffers widespread network problems hours before release of GTA VI",
-   "url": "https://www.theguardian.com/games/2026/nov/18/playstation-down-grand-theft-auto-vi-game-release",
+   "title": "Howard-era minister Sharman Stone dies via voluntary assisted dying, aged 75",
+   "url": "https://www.theguardian.com/australia-news/2026/nov/20/howard-era-minister-sharman-stone-dies-via-voluntary-assisted-dying-aged-75",
    "score": 4.0,
    "profile": "world-news"
   },
   {
-   "title": "I watched Trump, Xi and Putin gather in China. Here are my top takeaways",
-   "url": "https://www.cnbc.com/2026/11/18/trump-xi-putin-apec-shenzhen-china.html",
-   "score": 3.0,
-   "profile": "finance-news"
+   "title": "Man arrested after ‘horrific’ knife attack on Bradford councillor",
+   "url": "https://www.theguardian.com/uk-news/2026/nov/19/man-arrested-horrific-knife-attack-bradford-councillor-ibrar-ali",
+   "score": 4.0,
+   "profile": "world-news"
   },
   {
-   "title": "Sam Altman says his life is so weird that he’s unfazed by Andrew Garfield portraying him in upcoming movie",
-   "url": "https://techcrunch.com/2026/11/18/sam-altman-says-his-life-is-so-weird-that-hes-unfazed-by-andrew-garfield-portraying-him-in-upcoming-movie/",
+   "title": "Show HN: Cornhole News – A Hacker News inspired site for news across the Midwest",
+   "url": "https://cornholenews.news/",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "David Ellison says HBO will air critical Elon Musk documentary despite his $1B investment in Skydance",
-   "url": "https://techcrunch.com/2026/11/18/david-ellison-says-hbo-will-air-critical-elon-musk-documentary-despite-1b-investment-in-skydance/",
+   "title": "Pancreatic cancer halted by virus injection in three patients",
+   "url": "https://www.newscientist.com/article/2528235-pancreatic-cancer-halted-by-virus-injection-in-three-patients/",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "Sony’s updated turntable is an easy entry into the world of vinyl",
-   "url": "https://techcrunch.com/2026/11/18/sonys-updated-turntable-is-an-easy-entry-into-the-world-of-vinyl/",
+   "title": "Uber tests rides for kids as young as 10, with extra pay for drivers",
+   "url": "https://techcrunch.com/2026/11/19/uber-tests-rides-for-kids-as-young-as-10-with-extra-pay-for-drivers/",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "British hackers face prison for GTA 6 data breach and crypto thefts",
-   "url": "https://techcrunch.com/2026/11/18/british-hackers-face-prison-for-gta-6-data-breach-and-crypto-thefts/",
+   "title": "The unfolding Jensen Huang scandal: a timeline",
+   "url": "https://techcrunch.com/2026/11/19/nvidia-ceo-jensen-huangs-affair-with-alleged-chinese-spy-a-timeline/",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "Grand Theft Auto 6 is a masterpiece, say critics",
-   "url": "https://www.bbc.co.uk/news/articles/cw8r75xm8v4po?at_medium=RSS&at_campaign=rss",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Fiona the hippo undergoing care after swallowing a hat at Cincinnati Zoo",
-   "url": "https://www.bbc.co.uk/news/articles/cm2d93z0e9gjo?at_medium=RSS&at_campaign=rss",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Birmingham council granted interim ban on union jacks on lamp-posts",
-   "url": "https://www.theguardian.com/uk-news/2026/nov/18/birmingham-council-interim-ban-union-jacks-raise-the-colours",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Ex-Tory MPs barred from shaping Reform UK’s immigration policy, says Zia Yusuf",
-   "url": "https://www.theguardian.com/politics/2026/nov/18/ex-tory-defectors-barred-from-shaping-reform-uks-immigration-policy-says-yusuf",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Markwayne Mullin defends move to take government plane to football game amid flight stoppage – US politics live",
-   "url": "https://www.theguardian.com/us-news/live/2026/nov/18/donald-trump-mary-peltola-alaska-hakeem-jeffries-democrats-republicans-congress-house-senate-midterms-latest-news-updates",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "剑桥词典 2026 年度词汇定为「human」",
-   "url": "https://www.cam.ac.uk/news/cambridge-dictionary-reveals-word-of-the-year-2026",
+   "title": "Former Alibaba exec’s Everful raises $48.5M to connect retailers with Chinese factories",
+   "url": "https://techcrunch.com/2026/11/19/former-alibaba-execs-everful-raises-48-5m-to-connect-retailers-with-chinese-factories/",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "飞行 49 年后，旅行者 1 号探测器抵达距离地球一个光日的距离，约 260 亿千米",
-   "url": "https://www.cnn.com/2026/11/18/science/voyager-1-light-day",
+   "title": "Anthropic hits Nasdaq exchanges at $111, 33% above IPO price",
+   "url": "https://techcrunch.com/2026/11/19/anthropic-hits-nasdaq-exchanges-at-110-27-above-ipo-price/",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "As U.S. Infrastructure Crumbles, ABC’s ‘World News Tonight’ Posts Highest Week-Long Daily Ratings Since COVID - Variety",
-   "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxNM0xaaW5mY0p6Zy1NTWtXZGZoOGUwc1A0TFFsZmJwcjluWmdsTEM3RnpPcVUySkhnVF8tUW5qRlQ4blRiQnhHRE1OOEZtZkM2YlZrR3FhZE5NUW9GeV9wMThuNndkMmJKVWRWeUdPU2NjVWk2M0NIUTQxTnFGRDUzaFpYaXE5dTJVT2c3VWN2MEwzV0d0OHJr?oc=5",
+   "title": "Nimble enters the item-tracking market with eco-friendly luggage tags and keychains",
+   "url": "https://techcrunch.com/2026/11/19/nimble-enters-the-item-tracking-market-with-eco-friendly-luggage-tags-and-keychains/",
    "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "World AMR Awareness Week 2026: One Health, One Action: Prevent AMR Now - World Health Organization (WHO)",
-   "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOWFN6MlptUV9hSWFoM3BsTlRRdEt1YVpxdTB2YmVfemRzVlkxRUV3dktueVp2SjhZZDQ3c3NuU01sUkhFTHVpb1lmZWc2YWJNeXZHR0s3ZXJVb3RSeDYwdHBPWkxQYW5VNkhRaGJiMDZwWk9hYnpGeUhaZEM4SkVHTERLS29KeC1aYWR2VEdpZFBqR29vSHNmX0xFSVlGcC15VjVr?oc=5",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Boxing world champion Jorge Linares detained by ICE in Texas - CBS News",
-   "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxNMm40RXBFWldpdzhyQzJlTlppVDlQZWpWd2I4a1F4YjVBaEotZjJ3aW9NOHB2SWVEMEpVVTdLR1pyXzBtZHZlOVN0Z1ZmUC00SW13am9GRnI4bktINXQ5dm9iR0hXNHJjYmpOYXhpdXB1cVdLTDFWRVNTUmotN3VXOEY3OTk?oc=5",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "📢 Maru Code API  抽奖活动来了！ 🤩 主营 Codex、Claude Code",
-   "url": "https://api.muteki.site/register?aff=XREAM",
-   "score": 2.0,
    "profile": "tech-news"
   },
   {
-   "title": "How NBC News Group Has Brought the World's Biggest Stories to Audiences for 100 Years - nbcuniversal media",
-   "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxORTVZb2d6RXhBWk85X3Aya0dEeEEzWTV2S2NrZEdMYldSZzFNTUVxZjZvQzJ2RjRLV0ZoUHoyTmd6X2ZPdXhSUjJfNmlRUE5HTjR2VENlNUwyT09VakxWZ1JqYmhuSGt2TThSQ3lPRTNnVUxfNll6dU4zRU5ZejByMUdmeVh6SjB6WERuam5ObnpSbnlQT19GUVJ4dDRneHlGUmYtVjgtZw?oc=5",
+   "title": "Fiona the hippo dies after swallowing a hat at Cincinnati Zoo",
+   "url": "https://www.bbc.co.uk/news/articles/cwz0k3172xzko?at_medium=RSS&at_campaign=rss",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Susan Smith denied parole again 32 years after drowning her two sons",
+   "url": "https://www.bbc.co.uk/news/articles/ckdd1y09eqjmo?at_medium=RSS&at_campaign=rss",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "'It's a dream come true' – South African DJ celebrates featuring in GTA 6",
+   "url": "https://www.bbc.co.uk/news/articles/crx20q3qy0vxo?at_medium=RSS&at_campaign=rss",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Race to replant five South African baobabs after export blocked",
+   "url": "https://www.theguardian.com/environment/2026/nov/19/baobab-five-trees-south-africa-dug-up-export-blocked-georgia-aoe",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Trump accused of falling asleep during Xi Jinping speech at Apec summit in China",
+   "url": "https://www.theguardian.com/us-news/2026/nov/19/trump-apec-asleep-china",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Ukraine allies warn ‘Yalta format’ will not bring about peace – as it happened",
+   "url": "https://www.theguardian.com/world/live/2026/nov/19/russia-ukraine-war-coalition-of-the-willing-europe-latest-news-updates",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Eight injured after driver in Israel repeatedly rams car into Palestinians",
+   "url": "https://www.theguardian.com/world/2026/nov/19/car-rams-into-palestinian-residents-four-times-in-israeli-city-kafr-qasim",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "‘Welsh can tell any story’: Cymraeg dub of Star Wars premieres in Cardiff",
+   "url": "https://www.theguardian.com/film/2026/nov/19/welsh-cymraeg-dub-star-wars-cardiff",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Prison authorities consider whether Russell Brand harassed victims with YouTube message",
+   "url": "https://www.theguardian.com/news/2026/nov/19/prison-authorities-consider-russell-brand-youtube-message-rules-victim-distress",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Woman raped by strangers after being drugged by husband calls for consent law changes",
+   "url": "https://www.theguardian.com/uk-news/2026/nov/19/men-convicted-sexual-assault-and-rape-woman-at-invitation-of-husband",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Fiona the hippo dies after ingesting knitted hat at Cincinnati zoo",
+   "url": "https://www.theguardian.com/world/2026/nov/19/fiona-hippo-cincinnati-zoo-knit-hat",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "John Fetterman vehemently backs Schumer for Senate majority leader and says he’s ‘considering things’ on 2028 re-election – live",
+   "url": "https://www.theguardian.com/us-news/live/2026/nov/19/hakeem-jeffries-us-politics-demicrats-republicans-latest-news-updates",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "🍏 爆料：iPhone 20 Pro 或重回钛金属边框",
+   "url": "https://www.macrumors.com/2026/11/18/iphone-20-pro-rumored-to-return-to-titanium/",
+   "score": 3.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "拼多多三季度营收 1083 亿元，股价盘前涨逾 8%",
+   "url": "https://mp.weixin.qq.com/s/vMtfWkFZ0hRTDU54BlD80Q",
+   "score": 3.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "《GTA 6》预购破 1700 万份，PS5 占 75%",
+   "url": "https://www.gamespot.com/articles/gta-6-has-sold-almost-8-million-copies-so-far-and-ps5-is-dominating-the-split-of-course/",
+   "score": 3.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Fiona the world-famous hippo has died: ‘crushed by this news’ - AL.com",
+   "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPRFZJcTg4UU9OdzQ5aFhMcHhXZ3E1YVNRbnc2R0pTaktva0JCZ29tYTFURW8tR0M2LXRkLWRpbW5FaVNEU0lDN3l2U083THZkdHF4VDlJRFNsSVdZaEhNOVJiMlZ5MUpOOHZsczVOZHhkcW05Y2FMSU12YThSeU1abzhCT3QwQmpyRWZ0Q3RoZTAwUzRDLVZ4LXlHWdIBrwFBVV95cUxPS2xTeElvejdUTzFnSjFSZXVnYUZxVlh2OEJhalI4RXZ3UG1mdDhxUVp1bF9iWWFXSEdVQ1k1dWpEVzRnOG1vSmU1SERzalM3RzRiREdPdkZDWWhDOTRZZFFNbWJ0T3h2VkRtNXViUmNGVkloV2lNcWY4S19ndWtqelNUQlFBdzR6cXBTcHVUMl9xSmMzZTBNNlZZVFlvVlJTOGRyZU5sWHBBdVc1SWhN?oc=5",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Macabre Rewards Await in Talebound — World of Warcraft - Blizzard News",
+   "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPNERuTjJEUzVZbkxhd2UybjEwNDNDRUtidXk5eXRJUHlwdFRoQ0tHZWVGZFVjMGpZT0NaaEY1RkREMzJLS19KcGtGV3YxMUd5bUhwenliZjlEdll2bHZRMzN2TUVBd3BCVEc2Y19IQlhPUmw5YzZGLUoyNVJEMjhtZGJwY0NiNWZTS0pj?oc=5",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Everyone Is a Friend: Trump's Meetings in Asia Show His Varied Approaches to Shifting World Order - U.S. News & World Report",
+   "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxNaC1Sb2JndEhOVFphdTR2Y25aRDFTc1F1bHNpQXNEN1dFbGJVU1NNUlhzUmZTRi1NNVk2LWViOGZSVlIxMzRzNEJiZXhSdlV5TnRQYXVESGc0Y1pFbzlyMU9OdnAzZ1UzQVJ5bUYwcFNkTVRvZVJocU5yaTZjRm9zZXVLWVNhczdHU3J5S0tncWxkYVd3eUV4Vk5fZWp2Yl9IVDRwcm5nSVQ3MFBOQkhaOGRsOThVRDZULUpqOUtmRHBPaUJqN0pKN2M2QU04NEdnZFVydWplSUdSNVd3VmNj?oc=5",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Indian driver wins $1.3m in life-changing lottery prize",
+   "url": "https://www.bbc.co.uk/news/videos/cke89vdn75gyo?at_medium=RSS&at_campaign=rss",
    "score": 2.0,
    "profile": "world-news"
   },
   {
-   "title": "Hegseth uses Venezuela visit to boast of Maduro’s capture by US military",
-   "url": "https://www.theguardian.com/world/2026/nov/18/pete-hegseth-venezuela-nicolas-maduro-military",
+   "title": "World@VCU: Karma Choki from Bhutan - VCU News",
+   "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE5DUkFwY3Mzd1hlNEVURExQMEdISTZoSXdadE9DUlhGNU9JSmlSTUdHcUJ0UFNJUVprX3M0RXVqc2FnMEJqUFhXV3d5R1hzZEg1RkNFdzBPaEhoczlfRkl1LTNkbjlEdkZZekgxQzlB?oc=5",
    "score": 1.0,
    "profile": "world-news"
   },
   {
-   "title": "Steady hands - Northeastern Global News",
-   "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE9LSkZpMF9LY3d3Z09NOVdnTW9UVS1uWEZGcC1jMEVia0JRYkdUTnItZUJIWWhQZkdfWE1xWlFOR3hlOU05RWlfMlVVOTBuM3o3NEpHZHo2NnlmLUlZb3FERGc3V0k?oc=5",
-   "score": 1.0,
+   "title": "Campus at twilight - Northeastern Global News",
+   "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE1xWTllMnhQeHJENXEtY1BIdjNGbUdBaDhDeks2aXJscXZVV1M2WG1QelZPMS1ZZTZKbWc5Q3gyV3l2ZW14SC1VY2o1cWdnVFYwUFRSRUswREkyQ0h6ZWxPZGtBM1lVNktfeVJxeQ?oc=5",
+   "score": 0.0,
    "profile": "world-news"
   }
  ]

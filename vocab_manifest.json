@@ -1,70 +1,58 @@
 {
- "source": "2026-11-18-summary-en.md",
- "date": "2026-11-19",
+ "source": "2026-11-19-summary-en.md",
+ "date": "2026-11-20",
  "terms": [
-  {
-   "id": "w-unauthenticated",
-   "term": "unauthenticated"
-  },
-  {
-   "id": "w-cross-border",
-   "term": "cross-border"
-  },
-  {
-   "id": "w-extramarital",
-   "term": "extramarital"
-  },
   {
    "id": "w-trilateral",
    "term": "trilateral"
   },
   {
-   "id": "w-workaround",
-   "term": "workaround"
+   "id": "w-dozens",
+   "term": "dozens"
   },
   {
-   "id": "w-airbase",
-   "term": "airbase"
+   "id": "w-genocidal",
+   "term": "genocidal"
   },
   {
-   "id": "w-mudslide",
-   "term": "mudslide"
+   "id": "w-flagrant",
+   "term": "flagrant"
   },
   {
-   "id": "w-multiplex",
-   "term": "multiplex"
+   "id": "w-genocide",
+   "term": "genocide"
   },
   {
-   "id": "w-themed",
-   "term": "themed"
+   "id": "w-benchmark",
+   "term": "benchmark"
   },
   {
-   "id": "w-ticker",
-   "term": "ticker"
+   "id": "w-crackdown",
+   "term": "crackdown"
   },
   {
-   "id": "w-unraveled",
-   "term": "unraveled"
+   "id": "w-inaugural",
+   "term": "inaugural"
   },
   {
-   "id": "w-pariah",
-   "term": "pariah"
+   "id": "w-milestone",
+   "term": "milestone"
   },
   {
-   "id": "w-caretaker",
-   "term": "caretaker"
-  },
-  {
-   "id": "w-drone",
-   "term": "drone"
-  },
-  {
-   "id": "w-attacker",
-   "term": "attacker"
+   "id": "w-petroleum",
+   "term": "petroleum"
   },
   {
    "id": "w-dynamics",
    "term": "dynamics"
+  },
+  {
+   "id": "w-culminate",
+   "term": "culminate"
+  },
+  {
+   "id": "w-sibling",
+   "term": "sibling"
   },
   {
    "id": "w-grind",
@@ -79,28 +67,48 @@
    "term": "artillery"
   },
   {
+   "id": "w-diplomacy",
+   "term": "diplomacy"
+  },
+  {
    "id": "w-dismantle",
    "term": "dismantle"
   },
   {
-   "id": "w-hike",
-   "term": "hike"
+   "id": "w-landmark",
+   "term": "landmark"
+  },
+  {
+   "id": "w-scarce",
+   "term": "scarce"
+  },
+  {
+   "id": "w-raid",
+   "term": "raid"
   },
   {
    "id": "w-sanction",
    "term": "sanction"
   },
   {
-   "id": "w-curb",
-   "term": "curb"
+   "id": "w-verdict",
+   "term": "verdict"
   },
   {
-   "id": "w-joint-communique",
-   "term": "joint communique"
+   "id": "w-organ",
+   "term": "organ"
   },
   {
-   "id": "w-caretaker-government",
-   "term": "caretaker government"
+   "id": "w-flagrant-violation",
+   "term": "flagrant violation"
+  },
+  {
+   "id": "w-inaugural-meeting",
+   "term": "inaugural meeting"
+  },
+  {
+   "id": "w-petroleum-production",
+   "term": "petroleum production"
   }
  ]
 }

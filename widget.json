@@ -1,103 +1,103 @@
 {
- "date": "2026-11-19",
+ "date": "2026-11-20",
  "updated": "06:05",
  "total": 16,
  "items": [
   {
-   "t": "Jeffries Nominated as US House Speaker",
-   "s": "9.0",
+   "t": "ICJ Declares Myanmar Genocide Conviction, Sets New Legal Precedent",
+   "s": "10.0",
    "a": "item-world-news-1",
    "sec": "WORLD"
   },
   {
-   "t": "Fed Officials Expect More Rate Hikes, Cite AI Inflation Risk",
-   "s": "9.0",
-   "a": "item-finance-news-1",
-   "sec": "FIN"
-  },
-  {
-   "t": "Nginx HTTP/2 RCE Vulnerabilities \\(CVE-2026-123633, CVE-2026-123007\\)",
-   "s": "8.0",
-   "a": "item-tech-news-1",
-   "sec": "TECH"
-  },
-  {
-   "t": "OpenAI CEO Altman says AI industry can&\\#x27;t imagine without Jensen Huang",
-   "s": "8.0",
-   "a": "item-tech-news-2",
-   "sec": "TECH"
-  },
-  {
-   "t": "Xint 披露 5 个 nginx 漏洞，可打到主机 root",
-   "s": "8.0",
-   "a": "item-tech-news-3",
-   "sec": "TECH"
-  },
-  {
-   "t": "Trump, Putin, Xi Meet in China Ahead of Asia‑Pacific Summit",
-   "s": "8.0",
+   "t": "ICJ Declares Myanmar Military Genocide Against Rohingya",
+   "s": "10.0",
    "a": "item-world-news-2",
    "sec": "WORLD"
   },
   {
-   "t": "Israel launches rare Gaza ground operation beyond Yellow Line",
-   "s": "8.0",
+   "t": "ICJ Declares Myanmar Genocide Against Rohingya",
+   "s": "10.0",
    "a": "item-world-news-3",
    "sec": "WORLD"
   },
   {
-   "t": "Kuwait says it repelled first Iranian attack in two months after US strikes island",
-   "s": "8.0",
+   "t": "World court finds Myanmar committed genocide against the Rohingya - Courthouse News",
+   "s": "10.0",
    "a": "item-world-news-4",
    "sec": "WORLD"
   },
   {
-   "t": "Putin, Trump, Xi to meet in Shenzhen for historic mini‑summit",
-   "s": "8.0",
+   "t": "Anthropic hits $2T in Nasdaq debut",
+   "s": "9.0",
+   "a": "item-tech-news-1",
+   "sec": "TECH"
+  },
+  {
+   "t": "Anthropic IPO Valuation Hits $1.76 Trillion",
+   "s": "9.0",
    "a": "item-world-news-5",
    "sec": "WORLD"
   },
   {
-   "t": "The seven Anthropic founders who are about to become multi-billionaires",
-   "s": "8.0",
+   "t": "ICJ finds Myanmar guilty of genocide against Rohingya",
+   "s": "9.0",
    "a": "item-world-news-6",
    "sec": "WORLD"
   },
   {
-   "t": "UK‑EU Relationship Reset Draft to Be Signed in Brussels",
-   "s": "8.0",
+   "t": "Europe ready for talks with Russia on ending war in Ukraine, leaders say",
+   "s": "9.0",
    "a": "item-world-news-7",
    "sec": "WORLD"
   },
   {
-   "t": "Israel Postpones West Bank Settlement Contracts After UK Sanctions",
-   "s": "8.0",
+   "t": "Putin Threatens Stronger Retaliation Over Crimean Bridge Attacks",
+   "s": "9.0",
    "a": "item-world-news-8",
    "sec": "WORLD"
   },
   {
-   "t": "Anthropic Sets IPO Share Price at $83 Ahead of Nasdaq Debut",
-   "s": "8.0",
+   "t": "Rohingya genocide: What was said in court and what happens now?",
+   "s": "9.0",
    "a": "item-world-news-9",
    "sec": "WORLD"
   },
   {
-   "t": "NEPAL Urges Action at COP31 Amid Dire Climate Needs",
-   "s": "8.0",
+   "t": "UN Court Declares Myanmar Genocide Against Rohingya",
+   "s": "9.0",
    "a": "item-world-news-10",
    "sec": "WORLD"
   },
   {
-   "t": "William and Kate meet PM Modi as they wrap up India tour",
-   "s": "7.0",
+   "t": "Trump, Putin, Xi Issue Joint Peace Declaration in Shenzhen",
+   "s": "8.0",
    "a": "item-world-news-11",
    "sec": "WORLD"
   },
   {
-   "t": "Fed’s Waller says central bank may need to ‘shock people’ with half-point rate hike",
-   "s": "7.0",
-   "a": "item-finance-news-2",
-   "sec": "FIN"
+   "t": "Venezuela and US Sign Military Deal After Maduro Raid",
+   "s": "8.0",
+   "a": "item-world-news-12",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Israeli forces complete Gaza ground operation beyond Yellow Line",
+   "s": "8.0",
+   "a": "item-world-news-13",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Trump, Xi, Putin meet in Shenzhen, issue joint peace declaration",
+   "s": "8.0",
+   "a": "item-world-news-14",
+   "sec": "WORLD"
+  },
+  {
+   "t": "New page in history? Xi, Trump and Putin summit was more of a footnote",
+   "s": "8.0",
+   "a": "item-world-news-15",
+   "sec": "WORLD"
   }
  ]
 }
