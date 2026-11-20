@@ -56,6 +56,12 @@ MAX_PHRASES = 8
 MAX_TERMS = 6
 # 词频排位在多少名以内算“C1 已认识”。两套词频任一进入该名次即视为已知。
 COMMON_RANK = 8000
+# 超纲词层的词频下限：3000~4000 名以内、又没有新闻义的词（organ / raid 这类），
+# 对 C1 读者已经不算障碍，不出卡；它们仍然可以走“熟词生义”层。
+MIN_CARD_RANK = 4000
+# C1 词默认算“认识”，但词频掉到 8000 名以后的（persecution / tribunal），
+# 新闻里照样会卡住，按超纲处理。
+RARE_C1_RANK = 8000
 # 熟词生义只看排名 3500 之后的词：ceiling / rate 这类太基础的，即使在新闻里有专业义也不列。
 NEWS_SENSE_MIN_RANK = 3000
 ENRICH_CACHE = os.path.join("data", "vocab_enrich.json")
@@ -301,17 +307,42 @@ def scan_dict(dict_path: str, wanted: set[str], grams: set[str] | None = None):
     return bases, rev_multi, forms_of, terms
 
 
+def inflection_candidates(word: str) -> list[str]:
+    """规则变形 → 可能的原形，按“最像”的顺序给出。
+
+    为什么必须有这一层：词库的变形回指（exchange 字段）不全，dozens / reparations
+    这类词在词库里只登记了 dozen / reparation，变形行没有挂回去。
+    于是同一个洞会朝两个方向漏：dozens 查不到词频 → 被当成零证据的极难词收进来，
+    reparations 查不到原形 → 整条被跳过，真正的超纲词反而没出卡。
+    只做规则后缀，不做词干化；猜出来的词必须真的在词库里存在才算数。
+    """
+    out: list[str] = []
+    if len(word) < 5:
+        return out
+    for suf in ("ies", "ied"):
+        if word.endswith(suf) and len(word) > len(suf) + 2:
+            out.append(word[: -len(suf)] + "y")
+    for suf, restore_e in (("ing", False), ("ed", False), ("es", False), ("s", False)):
+        if suf == "s" and word.endswith("ss"):
+            continue
+        if not word.endswith(suf) or len(word) <= len(suf) + 2:
+            continue
+        stem = word[: -len(suf)]
+        out.append(stem)
+        out.append(stem + "e")
+        if len(stem) > 2 and stem[-1] == stem[-2] and stem[-1] not in "aeiou":
+            out.append(stem[:-1])
+    seen, uniq = set(), []
+    for w in out:
+        if w != word and w not in seen:
+            seen.add(w)
+            uniq.append(w)
+    return uniq
+
+
 def phonetic_guesses(word: str) -> list[str]:
     """变形词缺音标时，猜几个可能的原形拼法（只对规则后缀，避免把 startup 猜成 start）。"""
-    out = []
-    for suf, cut in (("ing", 3), ("ied", 3), ("ies", 3), ("ed", 2), ("es", 2), ("s", 1)):
-        if word.endswith(suf) and len(word) > cut + 3:
-            stem = word[:-cut]
-            out.append(stem)
-            out.append(stem + "e")
-            if stem and stem[-1] == stem[-2] if len(stem) > 1 else False:
-                out.append(stem[:-1])
-    return [w for w in out if w != word]
+    return inflection_candidates(word)
 
 
 def _intv(entry: dict, key: str) -> int:
@@ -345,16 +376,20 @@ def known_evidence(entry: dict) -> int:
     if not entry:
         return 99
     word = entry["word"]
+    ranks = [x for x in (_intv(entry, "frq"), _intv(entry, "bnc")) if x]
+    top = min(ranks) if ranks else 0
     level = CEFR.get(word)
     if level in CEFR_KNOWN:
         return 10
+    # C1 词整体算“认识”，但词频掉到 8000 名以后的真冷词（persecution / tribunal）
+    # 在新闻里一样卡人，这种按“没有任何证据”处理，正常进超纲层。
+    if level == "C1" and (top == 0 or top >= RARE_C1_RANK):
+        return 0
     score = 2 if level in ("C1", "C2") else 0
     if (entry.get("oxford") or "0").strip() == "1":
         score = max(score, 3)
     if _intv(entry, "collins") >= 3:
         score = max(score, 3)
-    ranks = [x for x in (_intv(entry, "frq"), _intv(entry, "bnc")) if x]
-    top = min(ranks) if ranks else 0
     if top and top <= COMMON_RANK // 2:
         score = max(score, 4)
     tags = entry["tag"]
@@ -421,13 +456,38 @@ def roots_of(word: str) -> list[str]:
     return [w for w in dict.fromkeys(out) if w and w != word]
 
 
+def resolve_form(token: str, rev_multi: dict[str, list[str]], bases: dict[str, dict]) -> str:
+    """变形 → 最可能的原形：取词频最靠前（最常用）的那个原形。
+
+    词库 exchange 里没有登记的变形（dozens / reparations），用规则后缀回推原形，
+    且原形必须真的在词库里；这样既不会把 dozens 当生词，也不会整条丢掉 reparations。
+    """
+    cands = rev_multi.get(token) or [g for g in inflection_candidates(token) if g in bases]
+    if not cands:
+        return token
+
+    def score(b: str):
+        e = bases.get(b)
+        if not e:
+            return (10**9, 10**9, len(b))
+        return (e["frq"] or 10**9, e["bnc"] or 10**9, len(b))
+
+    return min(cands, key=score)
+
+
 def derived_from_known(word: str, bases: dict[str, dict]) -> bool:
-    """判断是不是“本来认识的词的透明派生”（最多拆两层）。"""
+    """判断是不是“本来认识的词的透明派生”（最多拆两层）。
+
+    只有构词根**真的在词库里**、且证据足够硬时才算派生。早前漏了这道检查：
+    bases.get(r) 取不到时 known_evidence 返回 99（表示“词库里没这个词”），
+    于是 reparation（去掉 ation 后的 repar 不在库里）被当成“repar 的派生”，
+    convene（去掉 co 后的 nvene 不在库里）同样被吞掉，两条真超纲词整年都出不来。
+    """
     for r in roots_of(word):
-        if known_evidence(bases.get(r)) >= 3:
+        if r in bases and known_evidence(bases.get(r)) >= 3:
             return True
         for r2 in roots_of(r):
-            if known_evidence(bases.get(r2)) >= 3:
+            if r2 in bases and known_evidence(bases.get(r2)) >= 3:
                 return True
     return False
 
@@ -1106,24 +1166,16 @@ def main() -> None:
     wanted = candidates_from(text)
     # 把可能的构词根也一起查进来，才能判断 unconfirmed 是不是由认识的 confirm 派生而来
     wanted |= {r for t in list(wanted) for r in roots_of(t)}
+    # 变形词的原形也要一起查进来：词库的回指不全，dozens 的原形 dozen、
+    # reparations 的原形 reparation 都不在正文里，不主动加就查不到。
+    wanted |= {g for t in list(wanted) for g in inflection_candidates(t)}
     bases, rev_multi, forms_of, terms = scan_dict(dict_path, wanted, grams)
     if not bases:
         print(f"[skip] dictionary not found or nothing matched: {dict_path}")
         return
 
     def resolve(token: str) -> str:
-        """变形 → 最可能的原形：取词频最靠前（最常用）的那个原形。"""
-        cands = rev_multi.get(token)
-        if not cands:
-            return token
-
-        def score(b: str):
-            e = bases.get(b)
-            if not e:
-                return (10**9, 10**9, len(b))
-            return (e["frq"] or 10**9, e["bnc"] or 10**9, len(b))
-
-        return min(cands, key=score)
+        return resolve_form(token, rev_multi, bases)
 
     freq = Counter()
     lower_forms = Counter()
@@ -1175,6 +1227,11 @@ def main() -> None:
         # 判定：没有任何“读者认识”的证据 → 超纲词。证据来自教材词表 / 牛津 / Collins /
         # 高频榜，任一条足够硬就出局；不再要求几条阈值同时成立。
         if known_evidence(e) == 0:
+            # 词频下限：3000~4000 名的词对 C1 读者已经很熟，没有新闻义就不占版面。
+            ranks = [x for x in (e["frq"], e["bnc"]) if x]
+            top = min(ranks) if ranks else 0
+            if top and top < MIN_CARD_RANK:
+                continue
             seen_words.add(e["word"])
             picked.append((rarity_score(e), -count, e, None))
             continue
@@ -1203,6 +1260,9 @@ def main() -> None:
         if not term_worth_card(key, t, text, _known_of):
             continue
         if key in seen_words:
+            continue
+        # 组成词已经单独出了卡，整条术语再出一遍就是同一页两张卡（flagrant + flagrant violation）
+        if any(w in seen_words for w in key.split() if len(w) >= 4):
             continue
         ungraded = sum(1 for w in key.split() if w not in FUNC_WORDS and w not in CEFR)
         term_picked.append((-ungraded, len(key), key, t))
@@ -1302,10 +1362,15 @@ def main() -> None:
 
     # 短语卡片：新闻里高频、课本上少见的说法（clamp down / shore up / dial back）
     phrase_cards = []
+    carded = {w.lower() for w in words}
     found = find_phrases(text, news_phrases, sents)
+    found = [f for f in found if not any(t in carded for t in f[0].split() if len(t) >= 4)]
     seen_ph = {w for w, _, _ in found}
     for p, cn in ai.get("phrases", {}).items():
         if p in seen_ph:
+            continue
+        # 短语里的实词已经单独出卡时不再重复（flagrant violation 与 flagrant 同占一张版面）
+        if any(t in carded for t in p.split() if len(t) >= 4):
             continue
         pat_p = re.compile(r"\b" + re.escape(p.split()[0]) + r"[a-z]{0,3}\s+"
                            + r"\s+".join(re.escape(x) for x in p.split()[1:]) + r"\b", re.I)
