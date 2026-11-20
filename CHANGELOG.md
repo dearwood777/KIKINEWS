@@ -1,5 +1,22 @@
 # 更新记录
 
+## 难点词汇的四个判定漏洞（变形词、C1 冷词、派生误判、短语重复） (2026-11-20)
+
+起因：用户把 11-20 期词汇页的 27 张卡逐条对照 CEFR 与词频，认为至少要达到 C1 以上、并且是新闻里真正卡人的词。核对结果 20/24 合格，但有 2 个基础词混进来（dozens、organ），3 个短语与单词卡重复，另有 2 到 3 个真难词该出没出。逐条查下去是四个独立缺陷。
+
+1. **变形词在词库里没有回指时，两个方向都会漏**。词库 exchange 字段不全：`dozens` 只登记了原形 `dozen`（CEFR B1），变形行没有挂回去，于是 dozens 查不到词频、被当成零证据的极难词收进来还打了五颗星；`reparations`（原形 reparation，词频 13025）反过来在正文里根本找不到原形词条，整条被跳过。
+   改法：新增 `inflection_candidates()`，按规则后缀回推原形（ies/ied→y，ing/ed/es/s 去尾，双写辅音还原，补词尾 e），并把这些原形一并加入 `wanted` 参与扫库；`resolve()` 在 exchange 查不到时用回推结果，且只在原形确实在词库里时采用。
+2. **C1 词被整类当成“读者已认识”**。`known_evidence` 对 C1 直接给 2 分，只有 0 分才进超纲层，于是 persecution（8852）、tribunal（3467）这种真冷词永远出不来。
+   改法：C1 且词频 ≥8000（或没有任何词频）时按零证据处理，进超纲层；词频靠前的 C1 词（verdict 4163）仍然算认识。
+3. **派生词排除把“词库里没有”误当成“读者肯定认识”**。`derived_from_known` 用 `known_evidence(bases.get(root))` 判根，而 `known_evidence(None)` 返回 99（表示缺词条），于是任何拆出来的根只要不在词库里就被判成“熟词”，reparation（拆出 repar）与 convene（拆出 nvene）被整年吞掉。
+   改法：只有根**真的在 bases 里**且证据 ≥3 才算透明派生。
+4. **短语与单词重复出卡**。AI 返回的 `flagrant violation` / `inaugural meeting` / `petroleum production` 与单词卡 flagrant / inaugural / petroleum 同页并列，等于同一个词占两张版面。
+   改法：短语层与术语层在出卡前检查实词是否已经出过卡，命中就跳过。
+
+另加一条词频下限：3000–4000 名以内且没有新闻义的词（`MIN_CARD_RANK=4000`）不再进超纲层，留给“熟词生义”层处理；organ 因此只以“新闻义：机关报、机构”的身份出现，不再冒充超纲词。
+
+验证：用本期真实英文正文离线重建（`VOCAB_AI=0`、`VOCAB_NO_NET=1`），词表从 24 个单词（其中 dozens 误收、dynamics 被误吞）变为 31 张卡：dozens 消失，reparation、convene、persecution、exodus、escalation、compliant、precipitate 补上，3 个重复短语消失。新增 `tests/test_vocab_rules.py` 共 13 项，覆盖变形回推、原形优先、B1/B2 与 C1 冷词的证据分、缺失词条不参与派生判断，全部通过。
+
 ## 同一事件被写成多条精选：去重失效的根因与修正 (2026-11-20)
 
 现象：11-20 期"共 16 条精选"里，缅甸/罗兴亚种族灭绝判决占了 4~5 条（措辞不同、指向同一判决），Anthropic IPO 两条（"hits $2T in Nasdaq debut" 与 "估值 1.76 万亿美元"），同一场特朗普-普京-习会面也出现多条。
