@@ -1,103 +1,103 @@
 {
- "date": "2026-11-20",
- "updated": "06:05",
+ "date": "2026-11-21",
+ "updated": "06:04",
  "total": 16,
  "items": [
   {
-   "t": "ICJ Declares Myanmar Genocide Conviction, Sets New Legal Precedent",
-   "s": "10.0",
-   "a": "item-world-news-1",
-   "sec": "WORLD"
-  },
-  {
-   "t": "ICJ Declares Myanmar Military Genocide Against Rohingya",
-   "s": "10.0",
-   "a": "item-world-news-2",
-   "sec": "WORLD"
-  },
-  {
-   "t": "ICJ Declares Myanmar Genocide Against Rohingya",
-   "s": "10.0",
-   "a": "item-world-news-3",
-   "sec": "WORLD"
-  },
-  {
-   "t": "World court finds Myanmar committed genocide against the Rohingya - Courthouse News",
-   "s": "10.0",
-   "a": "item-world-news-4",
-   "sec": "WORLD"
-  },
-  {
-   "t": "Anthropic hits $2T in Nasdaq debut",
+   "t": "Behind Jensen Huang’s exit, questions about a management style reportedly built on fear",
    "s": "9.0",
    "a": "item-tech-news-1",
    "sec": "TECH"
   },
   {
-   "t": "Anthropic IPO Valuation Hits $1.76 Trillion",
+   "t": "ICJ Declares Myanmar Genocide; US Cautious, EU Praises",
    "s": "9.0",
+   "a": "item-world-news-1",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Inkling 2 Mini",
+   "s": "8.0",
+   "a": "item-tech-news-2",
+   "sec": "TECH"
+  },
+  {
+   "t": "Language Models Rewrite Their Own Weights via Reasoning",
+   "s": "8.0",
+   "a": "item-tech-news-3",
+   "sec": "TECH"
+  },
+  {
+   "t": "A transcription firm used by police, prosecutors, and tech giants exposed customer data online",
+   "s": "8.0",
+   "a": "item-tech-news-4",
+   "sec": "TECH"
+  },
+  {
+   "t": "CVE‑2026‑99312: KVM flaw lets VMs read AMD host memory",
+   "s": "8.0",
+   "a": "item-tech-news-5",
+   "sec": "TECH"
+  },
+  {
+   "t": "UK to explore even closer ties with EU after agreeing deal, says Burnham",
+   "s": "8.0",
+   "a": "item-world-news-2",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Russian missile hits Poland as Ukraine&\\#x27;s allies hold military exercise, says Tusk",
+   "s": "8.0",
+   "a": "item-world-news-3",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Russia Strikes Kyiv Bridges After Ukraine Damages Crimean Bridge",
+   "s": "8.0",
+   "a": "item-world-news-4",
+   "sec": "WORLD"
+  },
+  {
+   "t": "UK‑EU post‑Brexit trade deal covers food, emissions, youth scheme",
+   "s": "8.0",
    "a": "item-world-news-5",
    "sec": "WORLD"
   },
   {
-   "t": "ICJ finds Myanmar guilty of genocide against Rohingya",
-   "s": "9.0",
+   "t": "Russian missile strikes hit Kyiv bridges, killing nine",
+   "s": "8.0",
    "a": "item-world-news-6",
    "sec": "WORLD"
   },
   {
-   "t": "Europe ready for talks with Russia on ending war in Ukraine, leaders say",
-   "s": "9.0",
+   "t": "Nasdaq Loses 2026 Gains Amid AI Sell‑Off After Anthropic IPO",
+   "s": "8.0",
    "a": "item-world-news-7",
    "sec": "WORLD"
   },
   {
-   "t": "Putin Threatens Stronger Retaliation Over Crimean Bridge Attacks",
-   "s": "9.0",
+   "t": "Spain frees wealthy US-sought activist on bail as Irish police raid Dublin home",
+   "s": "8.0",
    "a": "item-world-news-8",
    "sec": "WORLD"
   },
   {
-   "t": "Rohingya genocide: What was said in court and what happens now?",
-   "s": "9.0",
+   "t": "EU wants ‘closest possible relationship’ with UK after agreeing Brexit reset deal – live",
+   "s": "8.0",
    "a": "item-world-news-9",
    "sec": "WORLD"
   },
   {
-   "t": "UN Court Declares Myanmar Genocide Against Rohingya",
-   "s": "9.0",
+   "t": "Burnham seals trade and youth mobility deals in biggest step towards EU since Brexit",
+   "s": "8.0",
    "a": "item-world-news-10",
    "sec": "WORLD"
   },
   {
-   "t": "Trump, Putin, Xi Issue Joint Peace Declaration in Shenzhen",
-   "s": "8.0",
-   "a": "item-world-news-11",
-   "sec": "WORLD"
-  },
-  {
-   "t": "Venezuela and US Sign Military Deal After Maduro Raid",
-   "s": "8.0",
-   "a": "item-world-news-12",
-   "sec": "WORLD"
-  },
-  {
-   "t": "Israeli forces complete Gaza ground operation beyond Yellow Line",
-   "s": "8.0",
-   "a": "item-world-news-13",
-   "sec": "WORLD"
-  },
-  {
-   "t": "Trump, Xi, Putin meet in Shenzhen, issue joint peace declaration",
-   "s": "8.0",
-   "a": "item-world-news-14",
-   "sec": "WORLD"
-  },
-  {
-   "t": "New page in history? Xi, Trump and Putin summit was more of a footnote",
-   "s": "8.0",
-   "a": "item-world-news-15",
-   "sec": "WORLD"
+   "t": "Experts warn: Nearly everyone in AI is susceptible to a honey-trap scheme right now",
+   "s": "7.0",
+   "a": "item-tech-news-6",
+   "sec": "TECH"
   }
  ]
 }

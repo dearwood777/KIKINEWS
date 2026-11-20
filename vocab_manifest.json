@@ -1,114 +1,158 @@
 {
- "source": "2026-11-19-summary-en.md",
- "date": "2026-11-20",
+ "source": "2026-11-20-summary-en.md",
+ "date": "2026-11-21",
  "terms": [
   {
-   "id": "w-trilateral",
-   "term": "trilateral"
+   "id": "w-iteratively",
+   "term": "iteratively"
   },
   {
-   "id": "w-dozens",
-   "term": "dozens"
+   "id": "w-record-breaking",
+   "term": "record-breaking"
   },
   {
-   "id": "w-genocidal",
-   "term": "genocidal"
+   "id": "w-unverified",
+   "term": "unverified"
   },
   {
-   "id": "w-flagrant",
-   "term": "flagrant"
+   "id": "w-adjudicate",
+   "term": "adjudicate"
+  },
+  {
+   "id": "w-extradition",
+   "term": "extradition"
+  },
+  {
+   "id": "w-pend",
+   "term": "pend"
+  },
+  {
+   "id": "w-airspace",
+   "term": "airspace"
+  },
+  {
+   "id": "w-finalize",
+   "term": "finalize"
+  },
+  {
+   "id": "w-logistic",
+   "term": "logistic"
+  },
+  {
+   "id": "w-sustainability",
+   "term": "sustainability"
+  },
+  {
+   "id": "w-transformer",
+   "term": "transformer"
+  },
+  {
+   "id": "w-upstream",
+   "term": "upstream"
   },
   {
    "id": "w-genocide",
    "term": "genocide"
   },
   {
-   "id": "w-benchmark",
-   "term": "benchmark"
+   "id": "w-kernel",
+   "term": "kernel"
   },
   {
-   "id": "w-crackdown",
-   "term": "crackdown"
+   "id": "w-retaliation",
+   "term": "retaliation"
   },
   {
-   "id": "w-inaugural",
-   "term": "inaugural"
+   "id": "w-ballistic",
+   "term": "ballistic"
   },
   {
-   "id": "w-milestone",
-   "term": "milestone"
+   "id": "w-betrayal",
+   "term": "betrayal"
   },
   {
-   "id": "w-petroleum",
-   "term": "petroleum"
+   "id": "w-cautiously",
+   "term": "cautiously"
   },
   {
-   "id": "w-dynamics",
-   "term": "dynamics"
+   "id": "w-diverge",
+   "term": "diverge"
   },
   {
-   "id": "w-culminate",
-   "term": "culminate"
+   "id": "w-exporter",
+   "term": "exporter"
   },
   {
-   "id": "w-sibling",
-   "term": "sibling"
+   "id": "w-leakage",
+   "term": "leakage"
   },
   {
-   "id": "w-grind",
-   "term": "grind"
+   "id": "w-neural",
+   "term": "neural"
+  },
+  {
+   "id": "w-transcription",
+   "term": "transcription"
+  },
+  {
+   "id": "w-lapse",
+   "term": "lapse"
+  },
+  {
+   "id": "w-workload",
+   "term": "workload"
+  },
+  {
+   "id": "w-tech",
+   "term": "tech"
+  },
+  {
+   "id": "w-reportedly",
+   "term": "reportedly"
+  },
+  {
+   "id": "w-susceptible",
+   "term": "susceptible"
+  },
+  {
+   "id": "w-erase",
+   "term": "erase"
+  },
+  {
+   "id": "w-paradigm",
+   "term": "paradigm"
+  },
+  {
+   "id": "w-bail",
+   "term": "bail"
   },
   {
    "id": "w-trillion",
    "term": "trillion"
   },
   {
-   "id": "w-artillery",
-   "term": "artillery"
-  },
-  {
-   "id": "w-diplomacy",
-   "term": "diplomacy"
-  },
-  {
-   "id": "w-dismantle",
-   "term": "dismantle"
+   "id": "w-deepen",
+   "term": "deepen"
   },
   {
    "id": "w-landmark",
    "term": "landmark"
   },
   {
-   "id": "w-scarce",
-   "term": "scarce"
+   "id": "w-precedent",
+   "term": "precedent"
   },
   {
    "id": "w-raid",
    "term": "raid"
   },
   {
-   "id": "w-sanction",
-   "term": "sanction"
-  },
-  {
-   "id": "w-verdict",
-   "term": "verdict"
-  },
-  {
    "id": "w-organ",
    "term": "organ"
   },
   {
-   "id": "w-flagrant-violation",
-   "term": "flagrant violation"
-  },
-  {
-   "id": "w-inaugural-meeting",
-   "term": "inaugural meeting"
-  },
-  {
-   "id": "w-petroleum-production",
-   "term": "petroleum production"
+   "id": "w-pending-case",
+   "term": "pending case"
   }
  ]
 }
