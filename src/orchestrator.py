@@ -659,68 +659,51 @@ class HorizonOrchestrator:
 
         return merged
 
-    async def merge_topic_duplicates(
+    def merge_title_duplicates(
         self,
         items: List[ContentItem],
         *,
         log: bool = True,
     ) -> List[ContentItem]:
-        """Merge items covering the same topic using AI semantic deduplication.
+        """Merge items whose titles are the same story, without calling AI.
 
-        This is a stable stage helper for integrations such as MCP.
-
-        Sends all item titles, tags, and summaries to AI in a single call.
-        The highest-scored item of each duplicate group is kept as the primary.
-        Source text and community comments from duplicate items are merged into
-        the primary's source text and comments respectively.
-
-        Falls back to returning items unchanged if the AI call fails.
+        This is the deterministic safety net in front of the AI stage. It catches
+        literal repeats, re-worded headlines and translation variants within one
+        batch, so a truncated or unparseable AI response can no longer ship
+        several copies of one story.
         """
         if len(items) <= 1:
             return items
 
-        from .ai.prompting.deduplication import TOPIC_DEDUP_SYSTEM, TOPIC_DEDUP_USER
-        from .ai.utils import parse_json_response
+        from .processing.title_dedup import cluster_duplicate_titles
 
-        # Build the item list for the prompt
-        lines = []
-        for i, item in enumerate(items):
-            analysis = item.processing.analysis if item.processing else None
-            tags = ", ".join(analysis.tags) if analysis and analysis.tags else "—"
-            summary = analysis.summary if analysis else "—"
-            lines.append(f"[{i}] {item.title}\n    Tags: {tags}\n    Summary: {summary}")
-        items_text = "\n\n".join(lines)
+        groups = cluster_duplicate_titles([item.title or "" for item in items])
+        if not groups:
+            return items
 
-        try:
-            ai_client = self.ai_client
-            response = await ai_client.complete(
-                system=TOPIC_DEDUP_SYSTEM,
-                user=TOPIC_DEDUP_USER.format(items=items_text),
+        merged = self._merge_duplicate_groups(items, groups, log=log, stage="title")
+        if log:
+            removed = len(items) - len(merged)
+            self.console.print(
+                f"{self.icons['cleanup']} Title dedup removed {removed} near-duplicate "
+                f"titles → {len(merged)} unique items\n"
             )
-            result = parse_json_response(response)
-            if result is None:
-                if log:
-                    self.console.print("[yellow]  dedup: could not parse AI response, skipping[/yellow]")
-                return items
+        return merged
 
-            duplicate_groups = result.get("duplicates", [])
-        except AIProviderUnavailableError:
-            raise
-        except Exception as e:
-            if log:
-                self.console.print(f"[yellow]  dedup: AI call failed ({e}), skipping[/yellow]")
-            return items
+    def _merge_duplicate_groups(
+        self,
+        items: List[ContentItem],
+        groups: List[List[int]],
+        *,
+        log: bool,
+        stage: str,
+    ) -> List[ContentItem]:
+        """Merge each index group into one primary item (highest score wins)."""
 
-        if not duplicate_groups:
-            return items
-
-        def score_of(idx: int) -> float:
-            analysis = items[idx].processing.analysis if items[idx].processing else None
+        def score_of(index: int) -> float:
+            analysis = items[index].processing.analysis if items[index].processing else None
             return analysis.score if analysis and analysis.score is not None else float("-inf")
 
-        # Keep valid indices only; groups that share an item describe one topic
-        if not isinstance(duplicate_groups, list):
-            duplicate_groups = []
         parent = list(range(len(items)))
 
         def find(idx: int) -> int:
@@ -730,7 +713,7 @@ class HorizonOrchestrator:
             return idx
 
         grouped: set[int] = set()
-        for group in duplicate_groups:
+        for group in groups:
             if not isinstance(group, list):
                 continue
             members = sorted({
@@ -747,7 +730,6 @@ class HorizonOrchestrator:
         for idx in sorted(grouped):
             clusters[find(idx)].append(idx)
 
-        # Build a set of indices to drop (all non-primary duplicates)
         drop_indices: set[int] = set()
         for members in clusters.values():
             # Highest analysis score wins; ties keep the earlier (higher-ranked) item
@@ -775,12 +757,86 @@ class HorizonOrchestrator:
                 primary.content = merged or primary.content
                 if log:
                     self.console.print(
-                        f"   [dim]dedup: keep [{primary_idx}] {primary.title}[/dim]\n"
-                        f"   [dim]       drop [{dup_idx}] {dup.title}[/dim]"
+                        f"   [dim]dedup({stage}): keep [{primary_idx}] {primary.title}[/dim]\n"
+                        f"   [dim]            drop [{dup_idx}] {dup.title}[/dim]"
                     )
                 drop_indices.add(dup_idx)
 
         return [item for i, item in enumerate(items) if i not in drop_indices]
+
+    async def merge_topic_duplicates(
+        self,
+        items: List[ContentItem],
+        *,
+        log: bool = True,
+    ) -> List[ContentItem]:
+        """Merge items covering the same story: title pass first, then AI.
+
+        This is a stable stage helper for integrations such as MCP.
+
+        1. Deterministic title clustering collapses literal / re-worded duplicates
+           with zero tokens. It always runs, so the stage can never silently
+           return everything unchanged.
+        2. AI semantic deduplication then reviews the survivors with titles, tags
+           and summaries, and is allowed its own token budget so the JSON cannot
+           be truncated by the shared ``max_tokens`` cap.
+        The highest-scored item of each group is the primary; duplicate source
+        text and comments are merged into it.
+        """
+        if len(items) <= 1:
+            return items
+
+        from .ai.prompting.deduplication import TOPIC_DEDUP_SYSTEM, TOPIC_DEDUP_USER
+        from .ai.utils import parse_json_response
+
+        items = self.merge_title_duplicates(items, log=log)
+        if len(items) <= 1:
+            return items
+
+        # Build the item list for the prompt
+        lines = []
+        for i, item in enumerate(items):
+            analysis = item.processing.analysis if item.processing else None
+            tags = ", ".join(analysis.tags) if analysis and analysis.tags else "—"
+            summary = analysis.summary if analysis else "—"
+            lines.append(f"[{i}] {item.title}\n    Tags: {tags}\n    Summary: {summary}")
+        items_text = "\n\n".join(lines)
+
+        # A full duplicate list is denser than an analysis answer, so do not let
+        # the shared config cap (768 tokens on Groq) truncate the JSON mid-array.
+        dedup_budget = max(1024, 64 + 16 * len(items))
+
+        try:
+            ai_client = self.ai_client
+            response = await ai_client.complete(
+                system=TOPIC_DEDUP_SYSTEM,
+                user=TOPIC_DEDUP_USER.format(items=items_text),
+                max_tokens=dedup_budget,
+            )
+            result = parse_json_response(response)
+            if result is None:
+                if log:
+                    self.console.print(
+                        "[yellow]  dedup: could not parse AI response; "
+                        "keeping the deterministic title merge[/yellow]"
+                    )
+                return items
+
+            duplicate_groups = result.get("duplicates", [])
+        except AIProviderUnavailableError:
+            raise
+        except Exception as e:
+            if log:
+                self.console.print(
+                    f"[yellow]  dedup: AI call failed ({e}); "
+                    "keeping the deterministic title merge[/yellow]"
+                )
+            return items
+
+        if not duplicate_groups or not isinstance(duplicate_groups, list):
+            return items
+
+        return self._merge_duplicate_groups(items, duplicate_groups, log=log, stage="ai")
 
     async def filter_items(
         self,
