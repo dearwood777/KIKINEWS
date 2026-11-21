@@ -253,6 +253,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -298,31 +299,23 @@ html{background-color:#0e1320}
 @keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
 
-/* 5. 卡片外框水波纹：用 box-shadow 的 spread 向外推两圈。
-   为什么不用子元素做环：词汇页的 .card 有 overflow:hidden（用来裁左侧色条），
-   子元素扩出去的部分会被裁掉，看上去就只剩"边框闪一下"。外阴影不受自身 overflow 裁剪。 */
-@keyframes kiki-card-rings{
-  0%{box-shadow:0 0 0 0 rgba(127,184,255,.9),0 0 0 0 rgba(127,184,255,0)}
-  34%{box-shadow:0 0 0 9px rgba(127,184,255,.42),0 0 0 0 rgba(127,184,255,.75)}
-  68%{box-shadow:0 0 0 17px rgba(127,184,255,.14),0 0 0 9px rgba(127,184,255,.3)}
-  100%{box-shadow:0 0 0 24px rgba(127,184,255,0),0 0 0 19px rgba(127,184,255,.05)}
+/* 5. 卡片水波纹：用 outline 的取反——只有 outline 能在**不改变线宽**的前提下向外平移，
+   而且不会被元素自身的 overflow:hidden 裁掉（box-shadow 的 spread 会越扩越粗，看上去很笨）。 */
+@keyframes kiki-outline-rip{
+  0%{outline-color:rgba(127,184,255,.85);outline-offset:-1px}
+  55%{outline-color:rgba(127,184,255,.45);outline-offset:9px}
+  100%{outline-color:rgba(127,184,255,0);outline-offset:18px}
 }
-/* 卡面被冷蓝光洗过一层（JS 生成，插在卡片最前面，压在文字底下） */
 @media (prefers-reduced-motion: no-preference){
-  .cards>.card.kiki-rings{animation:kiki-card-rings 1050ms cubic-bezier(.25,.1,.3,1) both}
+  .cards>.card.kiki-rings{outline:2px solid transparent;outline-offset:-1px;
+    animation:kiki-outline-rip 560ms cubic-bezier(.25,.4,.3,1) 2 both}
 }
 @keyframes kiki-wash{0%{opacity:0}30%{opacity:.75}100%{opacity:0}}
 .kiki-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
   background:linear-gradient(158deg,rgba(127,184,255,.16),rgba(127,184,255,0) 60%);
   animation:kiki-wash 1150ms ease forwards}
 
-/* 5b. 卡片入画时 3D 归正：像纸片被风掀起，随滚动被按平（纯滚动驱动，零 JS 逐帧） */
-@keyframes kiki-tilt{
-  from{opacity:.92;transform:perspective(1000px) rotateX(5deg) translateY(12px) scale(.985)}
-  to{opacity:1;transform:none}
-}
-
-/* 5c. 背景星尘视差：两层极淡光点，随滚动反向慢移 */
+/* 5b. 背景星尘视差：极淡光点，随滚动反向慢移 */
 @keyframes kiki-drift{to{transform:translateY(-96px)}}
 
 /* 5d. 顶部阅读进度光条 */
@@ -339,12 +332,12 @@ html{background-color:#0e1320}
   .card:target{animation:kiki-target 2400ms cubic-bezier(.2,.8,.2,1) both}
 }
 @keyframes kiki-target{
-  0%{box-shadow:0 0 0 3px var(--accent) inset,0 0 0 2px rgba(120,170,255,.9),0 0 34px rgba(120,170,255,.5);
-     background-color:rgba(120,170,255,.10)}
-  55%{box-shadow:0 0 0 2px rgba(120,170,255,.35) inset,0 0 0 10px rgba(120,170,255,.3),0 0 18px rgba(120,170,255,.18);
-     background-color:rgba(120,170,255,.04)}
-  100%{box-shadow:0 0 0 2px transparent inset,0 0 0 22px rgba(120,170,255,0),0 0 0 rgba(120,170,255,0);
-      background-color:transparent}
+  0%{box-shadow:0 0 0 3px rgba(120,170,255,.55) inset;background-color:rgba(120,170,255,.10);
+     outline:2px solid rgba(120,170,255,.85);outline-offset:-1px}
+  55%{box-shadow:0 0 0 2px rgba(120,170,255,.25) inset;background-color:rgba(120,170,255,.04);
+     outline:2px solid rgba(120,170,255,.4);outline-offset:8px}
+  100%{box-shadow:0 0 0 2px transparent inset;background-color:transparent;
+     outline:2px solid rgba(120,170,255,0);outline-offset:18px}
 }
 
 /* 6b. 滚动驱动 / 时间驱动的高级特效（Chrome 115+ 支持滚动时间线，不支持就完全不出现） */
@@ -363,15 +356,7 @@ html{background-color:#0e1320}
     .kiki-progress{opacity:1;animation:kiki-progress linear both;animation-timeline:scroll(root)}
   }
 }
-@supports (animation-timeline: view()){
-  @media (prefers-reduced-motion: no-preference){
-    /* 卡片进画面时 3D 归正；同时点水波纹时再加一条时间驱动的 box-shadow 动画 */
-    .cards>.card{animation:kiki-tilt linear both;animation-timeline:view();
-      animation-range:entry 0% cover 26%}
-    .cards>.card.kiki-rings{animation:kiki-tilt linear both,
-      kiki-card-rings 1050ms cubic-bezier(.25,.1,.3,1) both;animation-timeline:view(),auto}
-  }
-}
+/* 滚动驱动的 3D 归正已下掉：它的进度跟着手指走，快速滑动时会在中途"停住再弹回"，很尬。 */
 
 /* 7. 展开/收起平滑：Chrome 131+ 的 ::details-content 高度动画，老浏览器直接瞬开 */
 :root{interpolate-size:allow-keywords}
@@ -395,14 +380,15 @@ details[open]::details-content{height:auto}
 /* 焦点描边只加 outline，不改元素自己的圆角（否则胶囊会瞬间变方） */
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
-/* 9. 发音键水波纹：真的空心圆环，一层层往外扩（由内联 JS 生成 ring 元素） */
+/* 9. 发音键水波纹：一条**极细**的空心圆环一圈圈往外扩（由内联 JS 生成 ring 元素）
+   线宽 1.5px 且不随缩放变粗多少，保持精致感 */
 .kiki-ring{position:absolute;inset:0;border-radius:999px;pointer-events:none;
-  border:2px solid rgba(127,184,255,.8);opacity:0;
-  animation:kiki-rip 760ms cubic-bezier(.2,.7,.3,1) forwards}
+  border:1.5px solid rgba(127,184,255,.75);opacity:0;
+  animation:kiki-rip 860ms cubic-bezier(.2,.6,.3,1) forwards}
 @keyframes kiki-rip{
-  0%{opacity:.9;transform:scale(.6)}
-  60%{opacity:.45}
-  100%{opacity:0;transform:scale(2)}
+  0%{opacity:.85;transform:scale(.72)}
+  55%{opacity:.38}
+  100%{opacity:0;transform:scale(2.02)}
 }
 
 /* 10. 同页锚点跳转平滑 */
