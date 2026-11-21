@@ -72,38 +72,78 @@ html{background-color:{{BG}}}
 @keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
 
-/* 5. 卡片外框水波纹：真的空心圆环从卡片边缘往外扩一圈再淡掉（和发音键同一套视觉语言）。
-   只在卡片滚进视野 / 目录跳转落到目标卡时发一圈，不再做整列"绸带"位移——
-   卡片之间有间隙和圆角，不是一整块布，任何整列位移都会退化成"每张卡自己抖"。 */
-@keyframes kiki-halo-rip{
-  0%{opacity:.9;transform:scale(1)}
-  55%{opacity:.45}
-  100%{opacity:0;transform:scale(var(--kx,1.075),var(--ky,1.075))}
+/* 5. 卡片外框水波纹：用 box-shadow 的 spread 向外推两圈。
+   为什么不用子元素做环：词汇页的 .card 有 overflow:hidden（用来裁左侧色条），
+   子元素扩出去的部分会被裁掉，看上去就只剩"边框闪一下"。外阴影不受自身 overflow 裁剪。 */
+@keyframes kiki-card-rings{
+  0%{box-shadow:0 0 0 0 rgba(127,184,255,.9),0 0 0 0 rgba(127,184,255,0)}
+  34%{box-shadow:0 0 0 9px rgba(127,184,255,.42),0 0 0 0 rgba(127,184,255,.75)}
+  68%{box-shadow:0 0 0 17px rgba(127,184,255,.14),0 0 0 9px rgba(127,184,255,.3)}
+  100%{box-shadow:0 0 0 24px rgba(127,184,255,0),0 0 0 19px rgba(127,184,255,.05)}
 }
-/* 卡片「点亮」：一层冷蓝光洗过卡面，不动位置、不改尺寸 */
-@keyframes kiki-wash{0%{opacity:0}32%{opacity:.7}100%{opacity:0}}
-/* 卡片外框水波纹（由内联 JS 生成，卡片滚进视野时触发） */
-.kiki-halo{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
-  border:2px solid rgba(127,184,255,.85);box-shadow:0 0 16px rgba(127,184,255,.4);
-  animation:kiki-halo-rip 1020ms cubic-bezier(.25,.1,.3,1) forwards}
-/* 卡面被蓝光洗过一层（也由 JS 生成，插在卡片最前面，所以压在文字底下） */
+/* 卡面被冷蓝光洗过一层（JS 生成，插在卡片最前面，压在文字底下） */
+@media (prefers-reduced-motion: no-preference){
+  .cards>.card.kiki-rings{animation:kiki-card-rings 1050ms cubic-bezier(.25,.1,.3,1) both}
+}
+@keyframes kiki-wash{0%{opacity:0}30%{opacity:.75}100%{opacity:0}}
 .kiki-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
-  background:linear-gradient(158deg,rgba(127,184,255,.18),rgba(127,184,255,0) 58%);
-  animation:kiki-wash 1200ms ease forwards}
+  background:linear-gradient(158deg,rgba(127,184,255,.16),rgba(127,184,255,0) 60%);
+  animation:kiki-wash 1150ms ease forwards}
+
+/* 5b. 卡片入画时 3D 归正：像纸片被风掀起，随滚动被按平（纯滚动驱动，零 JS 逐帧） */
+@keyframes kiki-tilt{
+  from{opacity:.92;transform:perspective(1000px) rotateX(5deg) translateY(12px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+
+/* 5c. 背景星尘视差：两层极淡光点，随滚动反向慢移 */
+@keyframes kiki-drift{to{transform:translateY(-96px)}}
+
+/* 5d. 顶部阅读进度光条 */
+@keyframes kiki-progress{to{transform:scaleX(1)}}
+.kiki-progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:9997;pointer-events:none;
+  transform-origin:0 50%;transform:scaleX(0);opacity:0;
+  background:linear-gradient(90deg,rgba(90,166,255,.55),rgba(127,184,255,.95),rgba(210,235,255,.9));
+  box-shadow:0 0 12px rgba(127,184,255,.45)}
 {{CARDS}}
 
-/* 6. 目录跳转后的卡片：外框连扩两圈（水波纹），同时底色扫过，2.4s 收尾 */
+/* 6. 目录跳转后的目标卡：外框脉冲 + 底色扫过，2.4s 收尾 */
 @media (prefers-reduced-motion: no-preference){
   .card:target{animation:kiki-target 2400ms cubic-bezier(.2,.8,.2,1) both}
-  .card:target::after{animation:kiki-halo-rip 900ms cubic-bezier(.2,.7,.3,1) 2 both}
 }
 @keyframes kiki-target{
-  0%{box-shadow:0 0 0 3px var(--accent) inset,0 0 34px rgba(120,170,255,.5);
+  0%{box-shadow:0 0 0 3px var(--accent) inset,0 0 0 2px rgba(120,170,255,.9),0 0 34px rgba(120,170,255,.5);
      background-color:rgba(120,170,255,.10)}
-  55%{box-shadow:0 0 0 2px rgba(120,170,255,.35) inset,0 0 18px rgba(120,170,255,.18);
+  55%{box-shadow:0 0 0 2px rgba(120,170,255,.35) inset,0 0 0 10px rgba(120,170,255,.3),0 0 18px rgba(120,170,255,.18);
      background-color:rgba(120,170,255,.04)}
-  100%{box-shadow:0 0 0 2px transparent inset,0 0 0 rgba(120,170,255,0);
+  100%{box-shadow:0 0 0 2px transparent inset,0 0 0 22px rgba(120,170,255,0),0 0 0 rgba(120,170,255,0);
       background-color:transparent}
+}
+
+/* 6b. 滚动驱动 / 时间驱动的高级特效（Chrome 115+ 支持滚动时间线，不支持就完全不出现） */
+@supports (animation-timeline: scroll()){
+  @media (prefers-reduced-motion: no-preference){
+    /* 背景星尘：负 z-index 让它压在本页背景之上、内容之下 */
+    body::before{content:"";position:fixed;inset:-20% -10%;z-index:-1;pointer-events:none;opacity:.55;
+      background:
+        radial-gradient(1px 1px at 18% 26%,rgba(150,195,255,.55),transparent 60%),
+        radial-gradient(1px 1px at 72% 62%,rgba(150,195,255,.45),transparent 60%),
+        radial-gradient(1.6px 1.6px at 42% 84%,rgba(120,170,255,.34),transparent 60%),
+        radial-gradient(1px 1px at 88% 18%,rgba(185,215,255,.42),transparent 60%),
+        radial-gradient(1px 1px at 56% 44%,rgba(140,180,255,.28),transparent 60%);
+      background-size:460px 460px;
+      animation:kiki-drift linear both;animation-timeline:scroll(root)}
+    .kiki-progress{opacity:1;animation:kiki-progress linear both;animation-timeline:scroll(root)}
+  }
+}
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    /* 卡片进画面时 3D 归正；同时点水波纹时再加一条时间驱动的 box-shadow 动画 */
+    .cards>.card{animation:kiki-tilt linear both;animation-timeline:view();
+      animation-range:entry 0% cover 26%}
+    .cards>.card.kiki-rings{animation:kiki-tilt linear both,
+      kiki-card-rings 1050ms cubic-bezier(.25,.1,.3,1) both;animation-timeline:view(),auto}
+  }
 }
 
 /* 7. 展开/收起平滑：Chrome 131+ 的 ::details-content 高度动画，老浏览器直接瞬开 */
@@ -143,10 +183,8 @@ details[open]::details-content{height:auto}
 </style>
 """.strip()
 
-CARDS_SCROLL = """/* 日报卡：入场交给 JS 的「抖绸带」（.kiki-wave 按顺序延迟），这里只留外框水波纹容器 */
-.cards>.card{position:relative}
-.cards>.card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  border:2px solid rgba(127,184,255,.9);box-shadow:0 0 18px rgba(127,184,255,.5);opacity:0}"""
+CARDS_SCROLL = """/* 日报卡：入场由 CSS 的 3D 归正 + JS 的水波纹脉冲负责，这里只需要定位上下文 */
+.cards>.card{position:relative}"""
 
 
 def cards_stagger(n: int = 10) -> str:
@@ -197,30 +235,22 @@ JS = """
   //    现在卡片本体一动不动，只让发光元素在过渡结束后依次出现。
   function pop(card, delay) {
     setTimeout(function () {
-      // 环向外扩的**绝对距离**固定成 16px（不是按比例），小卡片上也能看出"一层圈扩出去"，
-      // 否则 3 列的小卡按 7.5% 扩只有几像素，看上去就是"边框闪了一下"。
-      var r = card.getBoundingClientRect();
-      var kx = (r.width + 32) / Math.max(r.width, 1);
-      var ky = (r.height + 32) / Math.max(r.height, 1);
-
       var glow = document.createElement('span');
       glow.className = 'kiki-glow';
       card.insertBefore(glow, card.firstChild);
-      setTimeout(function () { glow.remove(); }, 1400);
-      [0, 220].forEach(function (d) {
-        setTimeout(function () {
-          var halo = document.createElement('span');
-          halo.className = 'kiki-halo';
-          halo.style.setProperty('--kx', kx);
-          halo.style.setProperty('--ky', ky);
-          card.appendChild(halo);
-          setTimeout(function () { halo.remove(); }, 1200);
-        }, d);
-      });
+      setTimeout(function () { glow.remove(); }, 1300);
+      // 水波纹走 box-shadow 的 spread（外阴影不受卡片自己的 overflow:hidden 裁剪）
+      card.classList.add('kiki-rings');
+      setTimeout(function () { card.classList.remove('kiki-rings'); }, 1120);
     }, delay || 0);
   }
 
   function start() {
+    // 顶部阅读进度光条（滚动时间线驱动，不支持就查不到这个元素、也不显示）
+    var bar = document.createElement('div');
+    bar.className = 'kiki-progress';
+    document.body.appendChild(bar);
+
     var cards = document.querySelectorAll('.cards > .card');
 
     // 首屏已经在画面里的卡不参与：一进来就"依次闪下去"很别扭。只有后面滚进来的才发。
