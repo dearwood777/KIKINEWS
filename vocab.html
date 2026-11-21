@@ -139,29 +139,20 @@ html{background-color:#0e1320}
   background:linear-gradient(158deg,rgba(127,184,255,.16),rgba(127,184,255,0) 60%);
   animation:kiki-wash 1150ms ease forwards}
 
-/* 5c. 边缘流光（Border Beam）：一道 1px 光沿着胶囊描边循环跑一圈。
-   用 conic-gradient 画光带，再用 padding-box 遮罩 XOR 掉内部，只剩边框那 1px。 */
-@property --kiki-beam{syntax:'<angle>';initial-value:0deg;inherits:false}
-@keyframes kiki-beam-spin{to{--kiki-beam:360deg}}
+/* 5c. 边缘流光（Border Beam）：一道光沿胶囊描边匀速跑一圈。
+   注意：**不能用 conic-gradient 旋转**——胶囊是个又扁又长的"体育场"形，锥形渐变转角度时
+   边框上的落点速度跟角度不成正比（直边快、圆弧处几乎停），所以会出现"慢慢走、唰一下冲过弧"。
+   改成 offset-path 沿路径匀速跑：JS 按胶囊实际宽高生成体育场路径，光段用 offset-distance 走完全程。 */
 .cbtn{position:relative}
-@media (prefers-reduced-motion: no-preference){
-  .cbtn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-    padding:1px;
-    background:conic-gradient(from var(--kiki-beam,0deg),
-      rgba(127,184,255,0) 0deg, rgba(127,184,255,0) 245deg,
-      rgba(127,184,255,.5) 300deg, rgba(226,241,255,.95) 348deg, rgba(127,184,255,0) 360deg);
-    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-    -webkit-mask-composite:xor;
-    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-    mask-composite:exclude;
-    animation:kiki-beam-spin 4.5s linear infinite}
-}
+.kiki-beam{position:absolute;top:-1px;left:-1px;height:1px;pointer-events:none;
+  offset-anchor:50% 50%;offset-rotate:auto;offset-distance:0%;
+  background:linear-gradient(90deg,rgba(127,184,255,0),rgba(190,225,255,.95));
+  box-shadow:0 0 6px rgba(127,184,255,.55);border-radius:1px;
+  animation:kiki-beam-run 5200ms linear infinite}
+@keyframes kiki-beam-run{from{offset-distance:0%}to{offset-distance:100%}}
 
-/* 5d. 卡片入场淡入：只做 opacity（不加位移，避免和水波纹定位打架），滚进视野时错峰触发 */
-@keyframes kiki-card-in{from{opacity:0}to{opacity:1}}
-@media (prefers-reduced-motion: no-preference){
-  .kiki-in{animation:kiki-card-in 340ms cubic-bezier(.22,.8,.3,1) both}
-}
+/* 5d. 卡片入场淡入已下掉：`animation ... both` 会让卡片先被按到 opacity 0 再淡上来，
+   快速滑到中途触发时反而是"整张卡消失一下又回来"，看着比不动更闪。 */
 
 /* 5b. 背景星尘视差：极淡光点，随滚动反向慢移 */
 @keyframes kiki-drift{to{transform:translateY(-96px)}}
@@ -303,6 +294,39 @@ details[open]::details-content{height:auto}
     }, delay || 0);
   }
 
+  // 3c) 边缘流光：沿胶囊描边匀速跑一圈。不能用 conic-gradient 旋转——胶囊是又扁又长的
+  //     "体育场"形，锥形渐变的落点速度跟角度不成正比（直边快、两层圆弧处几乎卡住），
+  //     所以改走 offset-path，按实际宽高生成一条体育场路径，光段匀速走完全程。
+  function stadiumPath(w, h) {
+    var r = Math.min(h / 2, w / 2) - 0.5, t = 0.5;
+    var p = [[t + r, t], [w - t - r, t], [w - t, t + r], [w - t, h - t - r],
+             [w - t - r, h - t], [t + r, h - t], [t, h - t - r], [t, t + r]];
+    var arc = ' A' + r + ' ' + r + ' 0 0 1 ';
+    // 上边 → 右上角 → 右边 → 右下角 → 下边 → 左下角 → 左边 → 左上角 → 回到起点
+    return 'M' + p[0] + ' L' + p[1] + arc + p[2] + ' L' + p[3] + arc + p[4]
+         + ' L' + p[5] + arc + p[6] + ' L' + p[7] + arc + p[0];
+  }
+
+  var beamBtn = document.querySelector('.cbtn'), beamEl = null;
+  function placeBeam() {
+    if (!beamBtn) return;
+    if (beamEl) { beamEl.remove(); beamEl = null; }
+    if (!(window.CSS && CSS.supports && CSS.supports('offset-path', 'path("M0 0 L10 0")'))) return;
+    var w = beamBtn.offsetWidth, h = beamBtn.offsetHeight;
+    if (!w || !h) return;
+    var beam = document.createElement('span');
+    beam.className = 'kiki-beam';
+    beam.style.width = Math.max(14, Math.round(h * 1.6)) + 'px';
+    beam.style.offsetPath = 'path("' + stadiumPath(w, h) + '")';
+    beamBtn.appendChild(beam);
+    beamEl = beam;
+  }
+  placeBeam();
+  var rz;
+  window.addEventListener('resize', function () {
+    clearTimeout(rz); rz = setTimeout(placeBeam, 300);
+  });
+
   // 3b) 跳到某张卡（目录 / 跨页锚点）：等滚动真的停下来再发水波纹。
   //     以前是 :target 一改 hash 就开播，等滚到位动画只剩最后一帧，等于白播。
   var popped = {};
@@ -341,17 +365,14 @@ details[open]::details-content{height:auto}
       if (r.top < h - 40 && r.bottom > 0) initial.push(c);
     });
 
-    // 卡片滚进视野：错峰淡入（每张间隔 70ms）+ 水波纹
+    // 卡片滚进视野：发水波纹（淡入已去掉，见 CSS 5d 注释）
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
-        var i = 0;
         entries.forEach(function (en) {
           if (!en.isIntersecting) return;
           io.unobserve(en.target);
           if (initial.indexOf(en.target) >= 0) return;  // 进来时就在画面里，跳过
-          var el = en.target, d = i++ * 70;
-          setTimeout(function () { el.classList.add('kiki-in'); }, d);
-          pop(el, d);
+          pop(en.target, 0);
         });
       }, { threshold: 0.3, rootMargin: '0px 0px -8% 0px' });
       Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
@@ -367,12 +388,16 @@ details[open]::details-content{height:auto}
       var target = parseInt(m[0], 10);
       if (!target || target > 9999) return;
       var head = t.nodeValue.slice(0, m.index), tail = t.nodeValue.slice(m.index + m[0].length);
+      // 补零到目标位数：数到 9 时显示 09 而不是 9，避免位数变化把右边的内容顶得跳一下
+      var pad = String(target).length;
       var t0 = null, dur = 1000;
       function frame(ts) {
         if (t0 === null) t0 = ts;
         var p = Math.min(1, (ts - t0) / dur);
         var e = 1 - Math.pow(1 - p, 3);          // ease out cubic
-        t.nodeValue = head + Math.round(target * e) + tail;
+        var v = String(Math.round(target * e));
+        while (v.length < pad) v = '0' + v;
+        t.nodeValue = head + v + tail;
         if (p < 1) requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
@@ -402,6 +427,8 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
 
 
 
