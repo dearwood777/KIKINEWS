@@ -1,15 +1,19 @@
 """给静态页面注入「现代 Web 视觉增强」——幂等，可反复跑。
 
-做五件事（全部是渐进增强，老浏览器/关掉动效的用户完全无感）：
+做这几件事（全部是渐进增强，老浏览器/关掉动效的用户完全无感）：
 
 1. `<link rel="expect" href="#kiki-head" blocking="render">`：跨文档视图过渡开始前，
    等页面顶栏（hero / bar）解析完再拍快照，避免过渡动画拍到白页。
-2. `<script type="speculationrules">`：同源 html 预渲染（moderate），点「难点词汇」时基本零等待。
-3. 跨页过渡：有方向（`types` 静态声明）+ 共享元素（「难点词汇 ›」和「‹ 返回今日速递」是同一个
-   `view-transition-name`，会在两页之间飞过去）。所有过渡伪元素都刷成页面底色 `#0e1320`，
-   快照层背后那层 UA 白画布不会再露出来。
-4. 卡片：日报页滚动驱动入场；词汇页改「错峰点亮」（按序号 45ms 递增延迟，像灯一盏盏亮）。
-5. 细节：目标卡片描边闪一下、`<details>` 高度动画、发音键水波纹、点按去方形蓝底、焦点描边。
+2. 跨页过渡：**旧页不动，只有新页整幅从侧边盖过来**。旧页一旦被平移，画面边缘就会露出
+   过渡层底下那层画布（WebView 里就是白的，来回快速点几次必现）；旧页原地不动、新页完全
+   覆盖到位，中间没有任何"露底"的时机 —— 白闪从结构上消灭，不再依赖给伪元素刷底色。
+3. 共享元素：`.pill-link`（难点词汇 ›）与 `.back`（‹ 返回今日速递）共用
+   `view-transition-name: kiki-pill`，会跨页飞过去。
+4. 卡片：日报页滚动驱动入场；词汇页「错峰点亮」（序号递增 90ms）。
+5. 细节：目标卡片强高亮、`<details>` 高度动画、发音键「一圈一圈」的水波纹（真环形扩展）、
+   点按去方形蓝底、焦点描边。
+6. 一段极小的内联 JS（约 300 字节作用）：发音键水波纹的子元素生成 + 连续点击去抖，
+   防止 700ms 内反复触发跨页过渡（那也是白闪最容易出现的时机）。
 
 用法：python scripts/web_polish.py docs/latest.html docs/latest-en.html docs/vocab.html
 """
@@ -25,19 +29,18 @@ END = "<!-- kiki-polish:end -->"
 
 BG = "#0e1320"
 
-CSS_HEAD = """
+CSS_TEMPLATE = """
 <style id="kiki-polish-css">
-/* ——— KIKI 视觉增强：纯 CSS、零 JS ——— */
+/* ——— KIKI 视觉增强 ——— */
 *{-webkit-tap-highlight-color:transparent}
 
-/* 1. 跨页过渡的类型与方向 */
+/* 1. 过渡类型（目标页静态声明方向） */
 @view-transition{navigation:auto; types: {{TYPE}}}
 @media (prefers-reduced-motion: reduce){
   @view-transition{navigation:none}
 }
 
-/* 2. 白闪根治：过渡快照层背后是 UA 的白色画布，只要哪一帧快照不满/半透明就露白。
-   把画布和每一层伪元素都刷成页面底色，白色结构上不可能出现。 */
+/* 2. 画布兜底色：页面本身、过渡层、根分组全部铺满底色，任何一帧都不会露出 WebView 的白 */
 html{background-color:{{BG}}}
 ::view-transition{background-color:{{BG}}}
 ::view-transition-group(root),
@@ -45,57 +48,54 @@ html{background-color:{{BG}}}
 ::view-transition-old(root),
 ::view-transition-new(root){background-color:{{BG}}}
 
-/* 3. 共享元素：「难点词汇 ›」在日报页、「‹ 返回今日速递」在词汇页，同名 → 跨页形变飞过去 */
+/* 3. 共享元素胶囊：跨页飞过去 */
 .back,.pill-link{view-transition-name:kiki-pill}
 ::view-transition-group(kiki-pill){
-  animation-duration:600ms;
+  animation-duration:620ms;
   animation-timing-function:cubic-bezier(.22,1,.36,1);
-  z-index:2;
 }
 
+/* 4. 关键：旧页原地不动，只有新页整幅覆盖进来。
+   旧页一平移就会在边缘露出底下画布（白闪的根源），不移动就永远不会露出。 */
 @media (prefers-reduced-motion: no-preference){
-  /* 进词汇页：新页自右推入，旧页被推走 */
-  :active-view-transition-type(forward)::view-transition-old(root){
-    animation:kiki-out-l 520ms cubic-bezier(.4,0,.2,1) both}
+  :active-view-transition-type(forward)::view-transition-old(root),
+  :active-view-transition-type(previous)::view-transition-old(root){animation:none}
   :active-view-transition-type(forward)::view-transition-new(root){
-    animation:kiki-in-r 600ms cubic-bezier(.22,1,.36,1) both}
-  /* 返回：镜像 */
-  :active-view-transition-type(previous)::view-transition-old(root){
-    animation:kiki-out-r 520ms cubic-bezier(.4,0,.2,1) both}
+    animation:kiki-cover-r 620ms cubic-bezier(.32,.86,.3,1) both}
   :active-view-transition-type(previous)::view-transition-new(root){
-    animation:kiki-in-l 600ms cubic-bezier(.22,1,.36,1) both}
-  /* 无类型的同站链接：淡入淡出 */
-  ::view-transition-old(root){animation:kiki-fade-out 280ms ease both}
-  ::view-transition-new(root){animation:kiki-fade-in 340ms ease both}
+    animation:kiki-cover-l 620ms cubic-bezier(.32,.86,.3,1) both}
+  /* 无类型的同站链接：极短淡入，快照全程不透明 */
+  ::view-transition-old(root){animation:none}
+  ::view-transition-new(root){animation:kiki-fade-in 200ms ease both}
 }
-/* 只做位移，不碰 opacity / filter：快照一旦半透明就会透出底层画布 */
-@keyframes kiki-out-l{from{transform:none}to{transform:translateX(-20%)}}
-@keyframes kiki-out-r{from{transform:none}to{transform:translateX(20%)}}
-@keyframes kiki-in-r{from{transform:translateX(66%)}to{transform:none}}
-@keyframes kiki-in-l{from{transform:translateX(-66%)}to{transform:none}}
-@keyframes kiki-fade-out{to{opacity:0}}
-@keyframes kiki-fade-in{from{opacity:0}}
+@keyframes kiki-cover-r{from{transform:translateX(100%)}to{transform:none}}
+@keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
+@keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
 
-/* 4. 卡片入场 */
-@keyframes kiki-rise{from{opacity:.45;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* 5. 卡片入场 */
+@keyframes kiki-rise{from{opacity:.3;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
 {{CARDS}}
 
-/* 5. 目录点进去的卡片描边闪一下，让人知道跳到哪儿了 */
+/* 6. 目录跳转后的卡片：底色扫过 + 描边亮起，2.4s 慢慢淡掉 */
 @media (prefers-reduced-motion: no-preference){
-  .card:target{animation:kiki-target 1.1s ease-out both}
+  .card:target{animation:kiki-target 2400ms cubic-bezier(.2,.8,.2,1) both}
 }
 @keyframes kiki-target{
-  0%{box-shadow:0 0 0 2px var(--accent) inset,0 0 22px rgba(120,170,255,.35)}
-  100%{box-shadow:0 0 0 2px transparent inset,0 0 0 rgba(120,170,255,0)}
+  0%{box-shadow:0 0 0 3px var(--accent) inset,0 0 34px rgba(120,170,255,.5);
+     background-color:rgba(120,170,255,.10)}
+  55%{box-shadow:0 0 0 2px rgba(120,170,255,.35) inset,0 0 18px rgba(120,170,255,.18);
+     background-color:rgba(120,170,255,.04)}
+  100%{box-shadow:0 0 0 2px transparent inset,0 0 0 rgba(120,170,255,0);
+      background-color:transparent}
 }
 
-/* 6. 展开/收起平滑：Chrome 131+ 的 ::details-content 高度动画，老浏览器直接瞬开 */
+/* 7. 展开/收起平滑：Chrome 131+ 的 ::details-content 高度动画，老浏览器直接瞬开 */
 :root{interpolate-size:allow-keywords}
 details::details-content{height:0;overflow:hidden;
   transition:height 300ms cubic-bezier(.2,.9,.2,1),content-visibility 300ms;transition-behavior:allow-discrete}
 details[open]::details-content{height:auto}
 
-/* 7. 按钮与链接微交互 */
+/* 8. 按钮与链接微交互 */
 .pill,.back,.say,.vw,.cbtn,.cands summary,.toc a{transition:transform 150ms cubic-bezier(.2,.8,.2,1),
   box-shadow 220ms ease,border-color 220ms ease,color 150ms ease,background-color 150ms ease}
 /* <summary> 本身没有圆角，点按高亮会画成方块；补上跟 .cbtn 一致的圆角 */
@@ -111,35 +111,71 @@ details[open]::details-content{height:auto}
 /* 焦点描边只加 outline，不改元素自己的圆角（否则胶囊会瞬间变方） */
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
-/* 8. 发音键水波纹：按下从中心扩散一圈，松开淡出 */
-.say::before{content:"";position:absolute;inset:-6px;border-radius:999px;pointer-events:none;
-  background:radial-gradient(circle,rgba(127,184,255,.55),rgba(127,184,255,0) 70%);
-  opacity:0;transform:scale(.55);
-  transition:opacity 480ms ease-out,transform 480ms cubic-bezier(.2,.8,.2,1)}
-.say:active::before{opacity:1;transform:scale(1.45);transition-duration:160ms}
+/* 9. 发音键水波纹：真的空心圆环，一层层往外扩（由内联 JS 生成 ring 元素） */
+.kiki-ring{position:absolute;inset:0;border-radius:999px;pointer-events:none;
+  border:2px solid rgba(127,184,255,.8);opacity:0;
+  animation:kiki-rip 760ms cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes kiki-rip{
+  0%{opacity:.9;transform:scale(.6)}
+  60%{opacity:.45}
+  100%{opacity:0;transform:scale(2)}
+}
 
-/* 9. 同页锚点跳转平滑 */
+/* 10. 同页锚点跳转平滑 */
 @media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}
 </style>
 """.strip()
 
-# 日报页：卡片随滚动入场（滚动驱动，零 JS）
 CARDS_SCROLL = """@supports (animation-timeline: view()){
   @media (prefers-reduced-motion: no-preference){
-    .cards>.card{animation:kiki-rise linear both;animation-timeline:view();animation-range:entry 2% entry 40%}
+    .cards>.card{animation:kiki-rise linear both;animation-timeline:view();animation-range:entry 2% entry 45%}
   }
 }"""
 
-# 词汇页：错峰点亮（按序号递增 45ms 延迟，超 10 张就封顶，避免最后一张等太久）
-def cards_stagger(n: int = 10) -> str:
+
+def cards_stagger(n: int = 12) -> str:
+    """词汇页：按序号递增 90ms 延迟，一进页面像灯一盏盏亮起来。"""
     lines = ["@media (prefers-reduced-motion: no-preference){",
-             "  .cards>.card{animation:kiki-rise .5s cubic-bezier(.22,1,.36,1) both;",
-             "    animation-delay:calc(min(var(--kiki-i,0)," + str(n) + ") * 45ms)}"]
+             "  .cards>.card{animation:kiki-rise .62s cubic-bezier(.22,1,.36,1) both;",
+             "    animation-delay:calc(min(var(--kiki-i,0)," + str(n) + ") * 90ms)}"]
     for i in range(1, n + 2):
         lines.append(f"  .cards>.card:nth-child({i}){{--kiki-i:{min(i - 1, n)}}}")
     lines.append("}")
     return "\n".join(lines)
 
+
+JS = """
+<script id="kiki-polish-js">
+(function () {
+  // 1) 发音键水波纹：点一次发两圈，先后 140ms
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.say') : null;
+    if (!btn) return;
+    [0, 140].forEach(function (delay) {
+      var ring = document.createElement('span');
+      ring.className = 'kiki-ring';
+      ring.style.animationDelay = delay + 'ms';
+      btn.appendChild(ring);
+      setTimeout(function () { ring.remove(); }, 1000 + delay);
+    });
+  }, true);
+
+  // 2) 连续点击去抖：700ms 内只允许发起一次跨页跳转。
+  //    来回快速连点是白闪最容易出现的时机，也不符合"一次操作一次过渡"的直觉。
+  var last = 0;
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a) return;
+    if (a.target === '_blank' || a.hasAttribute('download')) return;
+    var href = a.getAttribute('href') || '';
+    if (href.charAt(0) === '#' || href.indexOf('javascript:') === 0) return;
+    var now = Date.now();
+    if (now - last < 700) { e.preventDefault(); e.stopPropagation(); return; }
+    last = now;
+  }, true);
+})();
+</script>
+""".strip()
 
 SPECULATION = ('<script type="speculationrules">'
                '{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}'
@@ -151,6 +187,7 @@ def strip_previous(html: str) -> str:
     """去掉上一次注入的块，保证幂等。"""
     html = re.sub(re.escape(START) + r".*?" + re.escape(END), "", html, flags=re.S)
     html = re.sub(r'<style id="kiki-polish-css">.*?</style>', "", html, flags=re.S)
+    html = re.sub(r'<script id="kiki-polish-js">.*?</script>', "", html, flags=re.S)
     html = re.sub(r'<link rel="expect" href="#kiki-head" blocking="render">\n?', "", html)
     html = re.sub(r'<script type="speculationrules">.*?</script>\n?', "", html, flags=re.S)
     return html
@@ -175,14 +212,14 @@ def polish(html: str) -> str:
     html = strip_previous(html)
     html = ensure_head_id(html)
     vocab = is_vocab(html)
-    css = (CSS_HEAD.replace("{{TYPE}}", "forward" if vocab else "previous")
-                    .replace("{{BG}}", BG)
-                    .replace("{{CARDS}}", cards_stagger() if vocab else CARDS_SCROLL))
+    css = (CSS_TEMPLATE.replace("{{TYPE}}", "forward" if vocab else "previous")
+                       .replace("{{BG}}", BG)
+                       .replace("{{CARDS}}", cards_stagger() if vocab else CARDS_SCROLL))
     parts = [START]
     # 只有真找到锚点才加 rel=expect：找不到时它会把首屏渲染一直挡到文档解析结束
     if 'id="kiki-head"' in html:
         parts.append(EXPECT)
-    parts += [SPECULATION, css, END]
+    parts += [SPECULATION, css, JS, END]
     block = "\n".join(parts) + "\n"
     if "</head>" in html:
         return html.replace("</head>", block + "</head>", 1)
