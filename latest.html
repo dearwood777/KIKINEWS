@@ -253,6 +253,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -298,16 +299,17 @@ html{background-color:#0e1320}
 @keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
 
-/* 5. 卡片水波纹：用 outline 的取反——只有 outline 能在**不改变线宽**的前提下向外平移，
-   而且不会被元素自身的 overflow:hidden 裁掉（box-shadow 的 spread 会越扩越粗，看上去很笨）。 */
+/* 5. 卡片水波纹：三圈**细线**依次荡出去（和发音键同一套观感）。
+   只有 outline 能在**不改变线宽**的前提下向外平移，而且不会被元素自身的 overflow:hidden 裁掉。
+   外扩距离必须小于卡片间距（词汇卡间距 10px），否则圈会压进相邻卡片里，所以收到 7px。 */
 @keyframes kiki-outline-rip{
-  0%{outline-color:rgba(127,184,255,.85);outline-offset:-1px}
-  55%{outline-color:rgba(127,184,255,.45);outline-offset:9px}
-  100%{outline-color:rgba(127,184,255,0);outline-offset:18px}
+  0%{outline-color:rgba(127,184,255,.82);outline-offset:-1px}
+  45%{outline-color:rgba(127,184,255,.4);outline-offset:3px}
+  100%{outline-color:rgba(127,184,255,0);outline-offset:7px}
 }
 @media (prefers-reduced-motion: no-preference){
-  .cards>.card.kiki-rings{outline:2px solid transparent;outline-offset:-1px;
-    animation:kiki-outline-rip 560ms cubic-bezier(.25,.4,.3,1) 2 both}
+  .cards>.card.kiki-rings{outline:1.5px solid transparent;outline-offset:-1px;
+    animation:kiki-outline-rip 400ms cubic-bezier(.25,.4,.3,1) 3 both}
 }
 @keyframes kiki-wash{0%{opacity:0}30%{opacity:.75}100%{opacity:0}}
 .kiki-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
@@ -334,9 +336,9 @@ html{background-color:#0e1320}
   0%{box-shadow:0 0 0 3px rgba(120,170,255,.55) inset;background-color:rgba(120,170,255,.10);
      outline:2px solid rgba(120,170,255,.85);outline-offset:-1px}
   55%{box-shadow:0 0 0 2px rgba(120,170,255,.25) inset;background-color:rgba(120,170,255,.04);
-     outline:2px solid rgba(120,170,255,.4);outline-offset:8px}
+     outline:2px solid rgba(120,170,255,.4);outline-offset:5px}
   100%{box-shadow:0 0 0 2px transparent inset;background-color:transparent;
-     outline:2px solid rgba(120,170,255,0);outline-offset:18px}
+     outline:2px solid rgba(120,170,255,0);outline-offset:10px}
 }
 
 /* 6b. 滚动驱动 / 时间驱动的高级特效（Chrome 115+ 支持滚动时间线，不支持就完全不出现） */
@@ -436,7 +438,7 @@ details[open]::details-content{height:auto}
       setTimeout(function () { glow.remove(); }, 1300);
       // 水波纹走 box-shadow 的 spread（外阴影不受卡片自己的 overflow:hidden 裁剪）
       card.classList.add('kiki-rings');
-      setTimeout(function () { card.classList.remove('kiki-rings'); }, 1120);
+      setTimeout(function () { card.classList.remove('kiki-rings'); }, 1260);
     }, delay || 0);
   }
 
