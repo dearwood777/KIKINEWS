@@ -119,7 +119,9 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
-        web.setBackgroundColor(Color.TRANSPARENT)
+        // 不能是透明底：跨页导航/视图过渡的那一两帧如果页面还没画，透明底会直接露出
+        // Activity 窗口（默认白色），表现就是"点一下白一下"。给 WebView 也刷成页面底色。
+        web.setBackgroundColor(Color.parseColor("#0E1320"))
         web.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
