@@ -1,5 +1,18 @@
 # 更新记录
 
+## 11-21 期词表审计：常用词频段的 7 张假超纲卡，以及 AI 去重在生产失效的两处加固 (2026-11-21)
+
+起因：11-21 期线上词表 38 张卡逐条对照 CEFR/词频后，发现有 7 个词是 C1 读者本来就认识的日常词（tech、reportedly、trillion、landmark、precedent、paradigm、deepen），另有 3 张“熟词生义”卡的注释只是把词典主释义重说一遍（bail、raid、organ）。追下去是两个独立成因。
+
+1. **词库 4000–8000 名这一档被判成“零证据”**。`known_evidence` 只在词频 ≤4000 时给 4 分、C1/C2 给 2 分，其余一律 0 分；而词库给 tech（4973）、reportedly（4397）、trillion（5167）、landmark（4715）、precedent（5093）、paradigm（5201）、deepen（6730）都没挂 CEFR 等级，于是全部按超纲层出卡，还打了 ★★。
+   改法：新增 `FAMILIAR_RANK = 5500`，词频落在 5500 名内一律给 2 分弱证据；5500–8000 名但 Collins ≥2 星（口语/新闻语料里明显常见）同样给 2 分。低于 1 星或更冷的一档不动，宁可多留一张也不漏真生词。
+2. **AI 去重层在生产上两次都没跑成**。11-20 21:55 的 run 55（digest job 136593635730）日志里，`dedup: AI call failed (Error code: 400 ... "Failed to generate JSON", 'failed_generation': '')` 出现两次：Groq 对一次性输出整批重复组 JSON 直接拒绝，代码走 except 分支只留下确定性标题层，而当天 71 条候选在标题层最高只到 0.67，低于 0.72 阈值 → 线上仍是 UK/EU 脱欧协议 4 条、基辅桥梁 2 条、Nasdaq/Anthropic 3 条、锡克教刺杀 2 条。
+   改法：`merge_topic_duplicates` 改为**分块评审**（`AI_DEDUP_BLOCK = 16`，抽出 `_ai_dedup_block`），单块被拒就二分递归再试（`_collect_ai_dedup_groups`），索引带 offset 回拼，任一块成功即生效，不再一条失败就整批放弃。标题层阈值由 0.72 降到 0.62（今天 71 条候选在 0.55–0.75 区间只有锡克教那一对，无假阳性），使“19 years”/“19-plus years”这类改措辞的同事件也能兜住。
+
+验证：11-21 期真实英文正文离线重建（`VOCAB_AI=0`、`VOCAB_NO_NET=1`），38 张卡 → 31 张，正好去掉 tech、reportedly、trillion、landmark、precedent、paradigm、deepen，无新增、无误删（adjudicate / extradition / ballistic / retaliation 等真超纲词全部保留）。`tests/test_vocab_rules.py` 追加 4 项（词频段弱证据、Collins 弱证据、冷词边界、超 8000 名不收），`tests/test_title_dedup.py` 追加 3 项（改措辞同事件合并、单块被拒后二分仍能合并、跨块 offset 不串组），两套共 29 项全绿。
+
+遗留：bail / raid / organ 仍以“熟词生义”卡出现，注释（保释、突袭、机关报）与词典主释义高度重合，属于注水卡；要治得改 `data/news_senses.json` 的注释口径（只写“本义之外”的新闻义），单靠代码过滤会误伤 hawk / sanction / bill / verdict 这批真正有用的法律政治义。
+
 ## 难点词汇的四个判定漏洞（变形词、C1 冷词、派生误判、短语重复） (2026-11-20)
 
 起因：用户把 11-20 期词汇页的 27 张卡逐条对照 CEFR 与词频，认为至少要达到 C1 以上、并且是新闻里真正卡人的词。核对结果 20/24 合格，但有 2 个基础词混进来（dozens、organ），3 个短语与单词卡重复，另有 2 到 3 个真难词该出没出。逐条查下去是四个独立缺陷。
