@@ -67,6 +67,13 @@ RARE_C1_RANK = 8000
 # landark(landmark) / tech 这类日常词如果没有 CEFR 等级，早前会被当成“零证据”
 # 直接进超纲层，白白占版面；给一份弱证据后它们只剩熟词生义层可以出卡。
 FAMILIAR_RANK = 5500
+# Zipf 词频（wordfreq，1.7k★ 的开源词频库）：比词库的排名连续得多，直接说
+# “每十亿词里出现多少次”。参考值：tech 4.69 / bail 4.01 / genocide 3.91 /
+# paradigm 3.61 / adjudicate 2.47。装了 wordfreq 就多一份证据，没装就跳过，
+# 不改变原有判定（词库证据仍然生效）。
+ZIPF_STRONG = 4.15   # 强证据：这词在语料里极其常见（≈ 前 1500）
+ZIPF_FAMILIAR = 3.85  # 弱证据：常用词（≈ 前 3000）
+_ZIPF_CACHE: dict = {}
 # 熟词生义只看排名 3500 之后的词：ceiling / rate 这类太基础的，即使在新闻里有专业义也不列。
 NEWS_SENSE_MIN_RANK = 3000
 ENRICH_CACHE = os.path.join("data", "vocab_enrich.json")
@@ -367,6 +374,20 @@ def _is_proper(entry: dict) -> bool:
     return any(k in head for k in ("人名", "地名", "姓氏", "女子名", "男子名", "国名", "州名"))
 
 
+def _zipf(word: str) -> float:
+    """Zipf 词频（每十亿词的出现频次）。没装 wordfreq 就返回 0，判定不受影响。"""
+    if word in _ZIPF_CACHE:
+        return _ZIPF_CACHE[word]
+    value = 0.0
+    try:
+        from wordfreq import zipf_frequency
+        value = float(zipf_frequency(word.lower(), "en"))
+    except Exception:
+        value = 0.0
+    _ZIPF_CACHE[word] = value
+    return value
+
+
 def known_evidence(entry: dict) -> int:
     """读者“已经认识”这个词的证据强度，0 表示没有任何证据（视为超纲）。
 
@@ -407,6 +428,12 @@ def known_evidence(entry: dict) -> int:
     tags = entry["tag"]
     if any(t in tags for t in ("zk", "gk")) and top and top <= COMMON_RANK:
         score = max(score, 1)
+    # Zipf 词频：词库里查不到排名（长词、复合词）时这是唯一可靠的信号。
+    zf = _zipf(word)
+    if zf >= ZIPF_STRONG:
+        score = max(score, 3)
+    elif zf >= ZIPF_FAMILIAR:
+        score = max(score, 2)
     # cet4 标签在词库里噪声很大（colonel / lieutenant 都被标成四级），
     # 所以它只在词频也明显靠前（5000 以内）时才算证据，不能单独判“认识”。
     if "cet4" in tags and top and top <= 5000:
@@ -1197,12 +1224,15 @@ def load_verdicts() -> dict:
 
 
 def save_verdicts(verdicts: dict) -> None:
-    try:
-        os.makedirs(os.path.dirname(VERDICT_CACHE) or ".", exist_ok=True)
-        with open(VERDICT_CACHE, "w", encoding="utf-8", newline="\n") as f:
-            json.dump(verdicts, f, ensure_ascii=False, indent=1, sort_keys=True)
-    except Exception as exc:
-        print(f"[warn] 词卡复核缓存写入失败：{exc}")
+    """落盘两处：data/ 给本次运行用，docs/ 随 Pages 一起发布，
+    下一期开工时从 gh-pages 拉回来，裁决库才能跨期积累。"""
+    for path in (VERDICT_CACHE, os.path.join(DOCS, "vocab_verdicts.json")):
+        try:
+            os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+            with open(path, "w", encoding="utf-8", newline="\n") as f:
+                json.dump(verdicts, f, ensure_ascii=False, indent=1, sort_keys=True)
+        except Exception as exc:
+            print(f"[warn] 词卡复核缓存写入失败（{path}）：{exc}")
 
 
 def _rank_of(entry: dict) -> int:
