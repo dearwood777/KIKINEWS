@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Sequence
 from urllib.parse import unquote_plus, urlsplit
 import httpx
 from rich.console import Console
@@ -793,7 +793,31 @@ class HorizonOrchestrator:
         if len(items) <= 1:
             return items
 
-        # Build the item list for the prompt
+        duplicate_groups = await self._collect_ai_dedup_groups(items, log=log)
+        if not duplicate_groups:
+            return items
+
+        return self._merge_duplicate_groups(items, duplicate_groups, log=log, stage="ai")
+
+    # Groq rejects huge JSON generations outright ("Failed to generate JSON",
+    # HTTP 400), so the AI review runs on bounded blocks instead of one call.
+    AI_DEDUP_BLOCK = 16
+
+    async def _ai_dedup_block(
+        self,
+        items: Sequence[ContentItem],
+        *,
+        log: bool,
+    ) -> Optional[List[List[int]]]:
+        """Ask the model which items of one block cover the same story.
+
+        Returns index groups relative to ``items``, or ``None`` when the call
+        failed. ``None`` is distinct from ``[]``: an empty list means the model
+        reviewed the block and found nothing to merge.
+        """
+        from .ai.prompting.deduplication import TOPIC_DEDUP_SYSTEM, TOPIC_DEDUP_USER
+        from .ai.utils import parse_json_response
+
         lines = []
         for i, item in enumerate(items):
             analysis = item.processing.analysis if item.processing else None
@@ -804,39 +828,70 @@ class HorizonOrchestrator:
 
         # A full duplicate list is denser than an analysis answer, so do not let
         # the shared config cap (768 tokens on Groq) truncate the JSON mid-array.
-        dedup_budget = max(1024, 64 + 16 * len(items))
-
+        budget = max(1024, 64 + 16 * len(items))
         try:
-            ai_client = self.ai_client
-            response = await ai_client.complete(
+            response = await self.ai_client.complete(
                 system=TOPIC_DEDUP_SYSTEM,
                 user=TOPIC_DEDUP_USER.format(items=items_text),
-                max_tokens=dedup_budget,
+                max_tokens=budget,
             )
-            result = parse_json_response(response)
-            if result is None:
-                if log:
-                    self.console.print(
-                        "[yellow]  dedup: could not parse AI response; "
-                        "keeping the deterministic title merge[/yellow]"
-                    )
-                return items
-
-            duplicate_groups = result.get("duplicates", [])
         except AIProviderUnavailableError:
             raise
         except Exception as e:
             if log:
+                self.console.print(f"[yellow]  dedup: AI call failed ({e})[/yellow]")
+            return None
+
+        result = parse_json_response(response)
+        if result is None:
+            if log:
                 self.console.print(
-                    f"[yellow]  dedup: AI call failed ({e}); "
-                    "keeping the deterministic title merge[/yellow]"
+                    "[yellow]  dedup: could not parse AI response[/yellow]"
                 )
-            return items
+            return None
 
-        if not duplicate_groups or not isinstance(duplicate_groups, list):
-            return items
+        groups = result.get("duplicates", [])
+        if not isinstance(groups, list):
+            return []
+        return [group for group in groups if isinstance(group, list)]
 
-        return self._merge_duplicate_groups(items, duplicate_groups, log=log, stage="ai")
+    async def _collect_ai_dedup_groups(
+        self,
+        items: Sequence[ContentItem],
+        *,
+        offset: int = 0,
+        block_size: int | None = None,
+        log: bool = True,
+    ) -> List[List[int]]:
+        """Review ``items`` block by block; split a block again when it fails."""
+        size = block_size or self.AI_DEDUP_BLOCK
+        groups: List[List[int]] = []
+        for start in range(0, len(items), size):
+            block = items[start : start + size]
+            if len(block) <= 1:
+                continue
+            found = await self._ai_dedup_block(block, log=log)
+            if found is None and len(block) > 2:
+                half = len(block) // 2
+                groups += await self._collect_ai_dedup_groups(
+                    block[:half], offset=offset + start, block_size=half, log=log
+                )
+                groups += await self._collect_ai_dedup_groups(
+                    block[half:], offset=offset + start + half,
+                    block_size=len(block) - half, log=log,
+                )
+                continue
+            for group in found or []:
+                members = sorted({
+                    offset + start + idx
+                    for idx in group
+                    if isinstance(idx, int)
+                    and not isinstance(idx, bool)
+                    and 0 <= idx < len(block)
+                })
+                if len(members) >= 2:
+                    groups.append(members)
+        return groups
 
     async def filter_items(
         self,
