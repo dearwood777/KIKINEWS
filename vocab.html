@@ -332,7 +332,8 @@ details[open]::details-content{height:auto}
       p.setAttribute('stroke', color);
       p.setAttribute('stroke-width', width);
       p.setAttribute('stroke-linecap', 'round');
-      p.setAttribute('stroke-dasharray', dash + ' 9999');
+      p.setAttribute('stroke-dasharray', dash + ' 9999'); // 占位，len 算出来后再按"整圈"改
+      p.__dash = dash;
       if (blur) p.style.filter = 'blur(' + blur + 'px)';
       p.setAttribute('class', cls);
       svg.appendChild(p);
@@ -370,6 +371,11 @@ details[open]::details-content{height:auto}
       var behind = Math.min(offs[cls] * s, len / 2 - 10);
       el.style.animationDuration = dur + 'ms';
       el.style.animationDelay = (-dur * (len - behind) / len) + 'ms';
+      // 关键：虚线周期必须正好等于整圈周长（dash + gap = len）。
+      // 用 9999 这种超大 gap 时，光跑到起点(左上圆角)那一刻会被路径末端截断，
+      // 出现"断一下再冒出来"；周期=len 时末端被截掉的那段会同时从起点补回来，接缝是连着的。
+      var gap = Math.max(0.5, len - el.__dash);
+      el.setAttribute('stroke-dasharray', el.__dash.toFixed(2) + ' ' + gap.toFixed(2));
     });
   }
 
@@ -549,6 +555,8 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
 
 
 
