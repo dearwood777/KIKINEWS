@@ -124,9 +124,13 @@ html{background-color:#0e1320}
 
 /* 5. 卡片入场 */
 @keyframes kiki-rise{from{opacity:.3;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
+/* 多米诺：从右侧滑进来 */
+@keyframes kiki-domino{from{opacity:.15;transform:translateX(72px)}to{opacity:1;transform:none}}
+/* 卡片入画时，外框像水波纹一样向外扩一圈再消失 */
+@keyframes kiki-card-ring{from{opacity:.85;transform:scale(.97)}to{opacity:0;transform:scale(1.045)}}
 @media (prefers-reduced-motion: no-preference){
-  .cards>.card{animation:kiki-rise .62s cubic-bezier(.22,1,.36,1) both;
-    animation-delay:calc(min(var(--kiki-i,0),12) * 90ms)}
+  .cards>.card{animation:kiki-domino .62s cubic-bezier(.25,1,.3,1) both;
+    animation-delay:calc(min(var(--kiki-i,0),12) * 80ms)}
   .cards>.card:nth-child(1){--kiki-i:0}
   .cards>.card:nth-child(2){--kiki-i:1}
   .cards>.card:nth-child(3){--kiki-i:2}
@@ -142,9 +146,10 @@ html{background-color:#0e1320}
   .cards>.card:nth-child(13){--kiki-i:12}
 }
 
-/* 6. 目录跳转后的卡片：底色扫过 + 描边亮起，2.4s 慢慢淡掉 */
+/* 6. 目录跳转后的卡片：外框连扩两圈（水波纹），同时底色扫过，2.4s 收尾 */
 @media (prefers-reduced-motion: no-preference){
   .card:target{animation:kiki-target 2400ms cubic-bezier(.2,.8,.2,1) both}
+  .card:target::after{animation:kiki-card-ring 1100ms cubic-bezier(.2,.7,.3,1) 2 both}
 }
 @keyframes kiki-target{
   0%{box-shadow:0 0 0 3px var(--accent) inset,0 0 34px rgba(120,170,255,.5);
@@ -221,6 +226,8 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
 
 
 
