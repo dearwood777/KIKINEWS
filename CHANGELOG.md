@@ -22,18 +22,26 @@
 
 - ①`conic-gradient` 旋转：**速度不均**（直边慢、冲过两端圆弧”唰”一下）。根因是胶囊为又扁又长的”体育场”形，锥形渐变转同一角度，落点在直边和圆弧上走的距离差好几倍，几何上不可能匀速。废弃。
 - ②`offset-path` 沿路径（JS 生成体育场路径 + `offset-distance` 0→100%）：原理对，但**实机 WebView 里整条光渲染不出来，直接消失**。废弃。
-- ③定版：沿用已验证能亮的「`padding-box` 双层遮罩只剩 1px 描边」+ 线性渐变光带横向位移。`animation: kiki-beam-sweep 3400ms linear infinite`，`background-position -64% → 164%` 线性变化 = 严格匀速；`background-size:64% 100%` 控制光带长度。纯 CSS、零 JS、`prefers-reduced-motion` 下不出现。
+- ③`padding-box` 遮罩 + 线性渐变横向位移：匀速了，但**上下两条边同时亮**，是"两束光并排走"，不是"一道光溜边"。废弃。
+- ④定版：**SVG 描边 + `stroke-dashoffset`**。JS 按胶囊实际宽高（`offsetWidth/offsetHeight`）生成体育场路径（4 段直线 + 4 段 90° 圆弧，半径 = 高/2），一条 9px 短亮线沿轮廓走完，后面拖一条 34px 暗尾，`6000ms linear infinite`，`stroke-dashoffset` 0 → `-路径总长`（长度由 JS 用 `getTotalLength()` 写进 `--len`）。路径参数天生按弧长均匀，因此严格匀速，且只可能有一条光。实测：2 条 path、`dashoffset` 1.2s 内 -435 → -869px（≈362px/s 匀速）。
 
 **三、数字递增（Count Up）**
 
-- 纯 JS，`TreeWalker` 只动第一个含数字的文本节点，保留前后文字（”从 0 条中筛出” → “从 71 条中筛出”）；ease-out cubic，1000ms。
+- 纯 JS，`TreeWalker` 只动第一个含数字的文本节点，保留前后文字（"从 0 条中筛出" → "从 71 条中筛出"）；ease-out cubic，**1800ms + 180ms 起跑延迟**（1000ms 太快，"一进页面就数完了"，看不出效果）。
 - **补零到目标位数**：目标 29 就按两位显示，数到 9 时是 `09` 而不是 `9` —— 位数一变右边内容会被顶得闪一下。
 - 触发元素：`.cbtn .l`、`.cbtn .r`、`.summary > div`、`.bar .count`；滚进视野触发一次，不重复。
 
 **四、卡片错峰淡入：试用后撤掉**
 
-- 原因：`.kiki-in` 用 `animation-fill-mode: both`，卡片一拿到 class 就被按到 `opacity:0` 再淡上来；而在快速滑动时 IO 是在卡片已经露一半时才触发，视觉上等于”整张卡消失一下又回来”，比原来更闪。
+- 原因：`.kiki-in` 用 `animation-fill-mode: both`，卡片一拿到 class 就被按到 `opacity:0` 再淡上来；而在快速滑动时 IO 是在卡片已经露一半时才触发，视觉上等于"整张卡消失一下又回来"，比原来更闪。
 - 已整体删除（CSS + JS），入场只保留水波纹。
+
+**五、修：点正文超纲词跳词汇页不定位**
+
+- 现象：主页正文点 `cautiously` 等超纲词，跳到词汇页后停在页面顶部，没滚到对应卡片。
+- 排查：33 个正文词链 / 27 个唯一目标，全部能在 `vocab.html` 找到对应 `id="w-…"`，**锚点本身没错**；直接打开 `vocab.html#w-x` 能正常滚到位（scrollY 1342），只有"从另一页点链接进来"才落回 0。
+- 根因：跨文档带 `#` 进入时，浏览器自己的锚点滚动与「`scroll-behavior:smooth` + View Transition」撞车 —— 平滑滚动的动画刚起跑就被过渡快照打断，退回顶部。属于全局机制问题，所以不止 `cautiously`，**所有**超纲词跳转都受影响。
+- 修法：新增 `hardLand()`，落地时临时把 `scroll-behavior` 设为 `auto` 做一次"硬跳"（瞬间到位，不走平滑），跳完立即还原，页内目录点击仍是平滑滚动；在 `start()`、`load` 各跳一次，900ms 后再校正一次（图片/字体加载可能把落点顶偏）。实测点击后 `scrollY 1342`、卡片顶端 `64px` = 顶栏底边 `64px`，刚好贴住不被压。
 
 ## 检查更新有回音 + 网页视觉升级（1.6.008） (2026-11-21)
 
