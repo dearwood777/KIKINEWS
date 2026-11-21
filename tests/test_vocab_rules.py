@@ -88,6 +88,30 @@ def test_missing_entry_is_unknown_to_reader():
     assert bv.known_evidence(None) == 99
 
 
+# ---------- 常用词频段：词库没给 CEFR 也不能算超纲 ----------
+# 11-21 期线上 38 张卡里，tech / reportedly / trillion / landmark / precedent /
+# paradigm / deepen 这一批都是“词库排 4500–8000 名、又没 CEFR 等级”，
+# 早前按零证据进超纲层，读者其实都认识。
+
+def test_midfrequency_word_counts_as_familiar():
+    assert bv.known_evidence(entry("tech", frq=4973)) == 2
+
+
+def test_familiar_band_upper_edge():
+    assert bv.known_evidence(entry("bail", frq=6736, collins=2)) == 2
+
+
+def test_collins_one_star_beyond_familiar_band_is_unknown():
+    # 5700 名之后、Collins 只给 1 星：没有别的证据，仍然按超纲处理（erase 这类
+    # 边界词留着，宁可多一张也不漏掉真生词）。
+    assert bv.known_evidence(entry("erase", frq=5776, collins=1)) == 0
+    assert bv.known_evidence(entry("drizzle", frq=6200, collins=1)) == 0
+
+
+def test_collins_weak_evidence_stops_at_common_rank():
+    assert bv.known_evidence(entry("obsidian", frq=8500, collins=2)) == 0
+
+
 # ---------- 派生词排除 ----------
 
 def test_derived_rejects_when_root_not_in_dictionary():
