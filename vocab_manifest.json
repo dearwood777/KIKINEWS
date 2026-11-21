@@ -1,122 +1,106 @@
 {
- "source": "2026-11-20-summary-en.md",
- "date": "2026-11-21",
+ "source": "2026-11-21-summary-en.md",
+ "date": "2026-11-22",
  "terms": [
   {
-   "id": "w-iteratively",
-   "term": "iteratively"
+   "id": "w-screenshot",
+   "term": "screenshot"
   },
   {
-   "id": "w-unverified",
-   "term": "unverified"
+   "id": "w-generative",
+   "term": "generative"
   },
   {
-   "id": "w-adjudicate",
-   "term": "adjudicate"
+   "id": "w-melodramatic",
+   "term": "melodramatic"
   },
   {
-   "id": "w-extradition",
-   "term": "extradition"
+   "id": "w-retaliatory",
+   "term": "retaliatory"
   },
   {
-   "id": "w-pend",
-   "term": "pend"
+   "id": "w-serie",
+   "term": "serie"
+  },
+  {
+   "id": "w-spillover",
+   "term": "spillover"
+  },
+  {
+   "id": "w-exclave",
+   "term": "exclave"
+  },
+  {
+   "id": "w-fentanyl",
+   "term": "fentanyl"
+  },
+  {
+   "id": "w-groundbreaking",
+   "term": "groundbreaking"
+  },
+  {
+   "id": "w-indistinguishable",
+   "term": "indistinguishable"
+  },
+  {
+   "id": "w-mathematic",
+   "term": "mathematic"
+  },
+  {
+   "id": "w-monetize",
+   "term": "monetize"
+  },
+  {
+   "id": "w-serialize",
+   "term": "serialize"
+  },
+  {
+   "id": "w-incursion",
+   "term": "incursion"
+  },
+  {
+   "id": "w-verification",
+   "term": "verification"
   },
   {
    "id": "w-airspace",
    "term": "airspace"
   },
   {
-   "id": "w-finalize",
-   "term": "finalize"
+   "id": "w-existential",
+   "term": "existential"
   },
   {
-   "id": "w-logistic",
-   "term": "logistic"
+   "id": "w-incremental",
+   "term": "incremental"
   },
   {
-   "id": "w-sustainability",
-   "term": "sustainability"
+   "id": "w-seamless",
+   "term": "seamless"
   },
   {
-   "id": "w-transformer",
-   "term": "transformer"
+   "id": "w-unsolved",
+   "term": "unsolved"
   },
   {
-   "id": "w-upstream",
-   "term": "upstream"
+   "id": "w-automation",
+   "term": "automation"
   },
   {
-   "id": "w-kernel",
-   "term": "kernel"
+   "id": "w-deadlock",
+   "term": "deadlock"
   },
   {
-   "id": "w-retaliation",
-   "term": "retaliation"
+   "id": "w-cartel",
+   "term": "cartel"
   },
   {
-   "id": "w-ballistic",
-   "term": "ballistic"
+   "id": "w-expulsion",
+   "term": "expulsion"
   },
   {
-   "id": "w-betrayal",
-   "term": "betrayal"
-  },
-  {
-   "id": "w-cautiously",
-   "term": "cautiously"
-  },
-  {
-   "id": "w-diverge",
-   "term": "diverge"
-  },
-  {
-   "id": "w-exporter",
-   "term": "exporter"
-  },
-  {
-   "id": "w-leakage",
-   "term": "leakage"
-  },
-  {
-   "id": "w-neural",
-   "term": "neural"
-  },
-  {
-   "id": "w-transcription",
-   "term": "transcription"
-  },
-  {
-   "id": "w-lapse",
-   "term": "lapse"
-  },
-  {
-   "id": "w-workload",
-   "term": "workload"
-  },
-  {
-   "id": "w-susceptible",
-   "term": "susceptible"
-  },
-  {
-   "id": "w-erase",
-   "term": "erase"
-  },
-  {
-   "id": "w-bail",
-   "term": "bail"
-  },
-  {
-   "id": "w-raid",
-   "term": "raid"
-  },
-  {
-   "id": "w-organ",
-   "term": "organ"
-  },
-  {
-   "id": "w-pending-case",
-   "term": "pending case"
+   "id": "w-sanction",
+   "term": "sanction"
   }
  ]
 }

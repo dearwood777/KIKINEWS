@@ -1,103 +1,103 @@
 {
- "date": "2026-11-21",
- "updated": "06:04",
+ "date": "2026-11-22",
+ "updated": "06:01",
  "total": 16,
  "items": [
   {
-   "t": "Behind Jensen Huang’s exit, questions about a management style reportedly built on fear",
+   "t": "Lean verification of the Riemann Hypothesis",
    "s": "9.0",
    "a": "item-tech-news-1",
    "sec": "TECH"
   },
   {
-   "t": "ICJ Declares Myanmar Genocide; US Cautious, EU Praises",
+   "t": "Two groups verify mathematician’s claim that Claude helped prove mathematics problem",
    "s": "9.0",
    "a": "item-world-news-1",
    "sec": "WORLD"
   },
   {
-   "t": "Inkling 2 Mini",
-   "s": "8.0",
-   "a": "item-tech-news-2",
-   "sec": "TECH"
-  },
-  {
-   "t": "Language Models Rewrite Their Own Weights via Reasoning",
-   "s": "8.0",
-   "a": "item-tech-news-3",
-   "sec": "TECH"
-  },
-  {
-   "t": "A transcription firm used by police, prosecutors, and tech giants exposed customer data online",
-   "s": "8.0",
-   "a": "item-tech-news-4",
-   "sec": "TECH"
-  },
-  {
-   "t": "CVE‑2026‑99312: KVM flaw lets VMs read AMD host memory",
-   "s": "8.0",
-   "a": "item-tech-news-5",
-   "sec": "TECH"
-  },
-  {
-   "t": "UK to explore even closer ties with EU after agreeing deal, says Burnham",
+   "t": "COP31 stalls over fossil‑fuel dispute",
    "s": "8.0",
    "a": "item-world-news-2",
    "sec": "WORLD"
   },
   {
-   "t": "Russian missile hits Poland as Ukraine&\\#x27;s allies hold military exercise, says Tusk",
+   "t": "Mexican drug lord on FBI&\\#x27;s 10 most wanted list arrested in shoot‑out",
    "s": "8.0",
    "a": "item-world-news-3",
    "sec": "WORLD"
   },
   {
-   "t": "Russia Strikes Kyiv Bridges After Ukraine Damages Crimean Bridge",
+   "t": "International UN talks on controlling use of autonomous weapons collapse",
    "s": "8.0",
    "a": "item-world-news-4",
    "sec": "WORLD"
   },
   {
-   "t": "UK‑EU post‑Brexit trade deal covers food, emissions, youth scheme",
+   "t": "UK considers rejoining EU after new trade and youth deals",
    "s": "8.0",
    "a": "item-world-news-5",
    "sec": "WORLD"
   },
   {
-   "t": "Russian missile strikes hit Kyiv bridges, killing nine",
+   "t": "NATO Secretary General pledges solidarity with Poland after missile incursion - Vatican News",
    "s": "8.0",
    "a": "item-world-news-6",
    "sec": "WORLD"
   },
   {
-   "t": "Nasdaq Loses 2026 Gains Amid AI Sell‑Off After Anthropic IPO",
-   "s": "8.0",
+   "t": "Signal restricts mobile screenshots as it confronts ‘existential threat’ of AI surveillance",
+   "s": "7.0",
+   "a": "item-tech-news-2",
+   "sec": "TECH"
+  },
+  {
+   "t": "AI Agents Now Operate via Text Messaging",
+   "s": "7.0",
+   "a": "item-tech-news-3",
+   "sec": "TECH"
+  },
+  {
+   "t": "Zelensky Justifies Crimean Bridge Strikes as Fair Response",
+   "s": "7.0",
    "a": "item-world-news-7",
    "sec": "WORLD"
   },
   {
-   "t": "Spain frees wealthy US-sought activist on bail as Irish police raid Dublin home",
-   "s": "8.0",
+   "t": "FBI Investigates Alleged NCIC Hack",
+   "s": "7.0",
    "a": "item-world-news-8",
    "sec": "WORLD"
   },
   {
-   "t": "EU wants ‘closest possible relationship’ with UK after agreeing Brexit reset deal – live",
-   "s": "8.0",
+   "t": "Denmark to Expel Russian Defence Attache Over Murder Plot",
+   "s": "7.0",
    "a": "item-world-news-9",
    "sec": "WORLD"
   },
   {
-   "t": "Burnham seals trade and youth mobility deals in biggest step towards EU since Brexit",
-   "s": "8.0",
+   "t": "Shortical offers AI digital actors for microdrama",
+   "s": "6.0",
+   "a": "item-tech-news-4",
+   "sec": "TECH"
+  },
+  {
+   "t": "Russian cargo ship hit by drone in Gulf of Finland",
+   "s": "6.0",
    "a": "item-world-news-10",
    "sec": "WORLD"
   },
   {
-   "t": "Experts warn: Nearly everyone in AI is susceptible to a honey-trap scheme right now",
-   "s": "7.0",
-   "a": "item-tech-news-6",
-   "sec": "TECH"
+   "t": "‘Six, seven, maybe more preventable deaths’: Queensland’s LNP faces reckoning over broken health system",
+   "s": "6.0",
+   "a": "item-world-news-11",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Australian neo-Nazis among far-right groups raising hundreds of thousands via global crowdfunding platform",
+   "s": "6.0",
+   "a": "item-world-news-12",
+   "sec": "WORLD"
   }
  ]
 }
