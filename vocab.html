@@ -122,39 +122,24 @@ html{background-color:#0e1320}
 @keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
 
-/* 5. 卡片「抖绸带」入场：只有一个波峰顺着卡片往下走（不是每张卡自己抖）。
-   每张卡只被波峰扫过一次：抬起 → 甩过头 → 落定，全程单调，绝不来回振荡。
-   相邻卡之间延迟 100ms（远小于 860ms 的波宽），所以同一时刻相邻卡处在这道波的
-   不同位置上，连起来就是一道往下走的波。只动 transform。 */
-/* 5. 卡片「滑奏」入场：像指头从左往右划过琴键——一道平滑的波峰顺着卡片往下走。
-   采样点按正弦取（不来回振荡、不带角度旋转），缓动是 easeInOutSine，
-   相邻卡只差 72ms、单卡时长 760ms，所以同一时刻有十来张卡处在波的不同高度上，
-   连起来就是一道连续的波，而不是每张卡自己抖。只动 transform。 */
-@keyframes kiki-ribbon{
-  0%{transform:translateY(0)}
-  30%{transform:translateY(-10px)}
-  55%{transform:translateY(1.5px)}
-  72%{transform:translateY(0)}
-  100%{transform:translateY(0)}
-}
-.kiki-wave{animation:kiki-ribbon 760ms cubic-bezier(.37,0,.63,1) both;
-  animation-delay:calc(var(--kiki-i,0) * 72ms);will-change:transform}
-/* 卡片外框水波纹：真的空心圆环从卡片边缘往外扩一圈再淡掉（和发音键同一套视觉语言） */
+/* 5. 卡片外框水波纹：真的空心圆环从卡片边缘往外扩一圈再淡掉（和发音键同一套视觉语言）。
+   只在卡片滚进视野 / 目录跳转落到目标卡时发一圈，不再做整列"绸带"位移——
+   卡片之间有间隙和圆角，不是一整块布，任何整列位移都会退化成"每张卡自己抖"。 */
 @keyframes kiki-halo-rip{
-  0%{opacity:.92;transform:scale(1)}
-  55%{opacity:.5}
-  100%{opacity:0;transform:scale(1.075)}
+  0%{opacity:.9;transform:scale(1)}
+  55%{opacity:.45}
+  100%{opacity:0;transform:scale(1.07)}
 }
 /* 卡片「点亮」：一层冷蓝光洗过卡面，不动位置、不改尺寸 */
-@keyframes kiki-wash{0%{opacity:0}32%{opacity:.9}100%{opacity:0}}
-/* 卡片外框水波纹（由内联 JS 生成，日报页滚动到卡片 / 词汇页卡片落地时触发） */
+@keyframes kiki-wash{0%{opacity:0}32%{opacity:.7}100%{opacity:0}}
+/* 卡片外框水波纹（由内联 JS 生成，卡片滚进视野时触发） */
 .kiki-halo{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
-  border:2px solid rgba(127,184,255,.9);box-shadow:0 0 18px rgba(127,184,255,.5);
-  animation:kiki-halo-rip 880ms cubic-bezier(.2,.7,.3,1) forwards}
+  border:2px solid rgba(127,184,255,.85);box-shadow:0 0 16px rgba(127,184,255,.4);
+  animation:kiki-halo-rip 1020ms cubic-bezier(.25,.1,.3,1) forwards}
 /* 卡面被蓝光洗过一层（也由 JS 生成，插在卡片最前面，所以压在文字底下） */
 .kiki-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
-  background:linear-gradient(158deg,rgba(127,184,255,.22),rgba(127,184,255,0) 58%);
-  animation:kiki-wash 1100ms ease forwards}
+  background:linear-gradient(158deg,rgba(127,184,255,.18),rgba(127,184,255,0) 58%);
+  animation:kiki-wash 1200ms ease forwards}
 /* 词汇卡：入场由 JS 的抖绸带驱动，这里只保留波纹容器 */
 .cards>.card{position:relative}
 
@@ -261,57 +246,26 @@ details[open]::details-content{height:auto}
 
   function start() {
     var cards = document.querySelectorAll('.cards > .card');
-    var isVocab = !!document.querySelector('.back');
 
-    // 抖绸带：只让**首屏能看见的**元素参与，编号从 0 起按可见顺序递增（100ms 一张），
-    // 这样波峰是一道连续的波往下走；看不见的元素不动，免得它们在屏外一起跳、回来时已经跑完。
-    function ribbon(nodes, margin) {
-      var out = [], idx = 0, h = window.innerHeight + (margin || 120);
-      Array.prototype.forEach.call(nodes, function (el) {
-        var r = el.getBoundingClientRect();
-        if (r.top > h || r.bottom < -60) return;
-        var i = idx++;
-        el.style.setProperty('--kiki-i', i);
-        el.setAttribute('data-kiki-lit', '1');
-        el.classList.add('kiki-wave');
-        setTimeout(function () { el.classList.remove('kiki-wave'); }, 950 + i * 72);
-        out.push({ el: el, i: i });
+    // 首屏已经在画面里的卡不参与：一进来就"依次闪下去"很别扭。只有后面滚进来的才发。
+    var initial = [];
+    var h = window.innerHeight;
+    Array.prototype.forEach.call(cards, function (c) {
+      var r = c.getBoundingClientRect();
+      if (r.top < h - 40 && r.bottom > 0) initial.push(c);
+    });
+
+    // 卡片滚进视野时发一圈水波纹（两个页面同一套观感，不再做整列位移的"绸带"）
+    if (!('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        if (initial.indexOf(en.target) >= 0) return;  // 进来时就在画面里，跳过
+        pop(en.target, 0);
       });
-      return out;
-    }
-
-    if (isVocab) {
-      // 词汇页：首屏那几张卡依次被波峰扫过，落定时外框爆一圈水波纹；下面的卡滚出来时再发
-      var waved = ribbon(cards, 200);
-      waved.forEach(function (o) { pop(o.el, o.i * 72 + 200); });
-      if ('IntersectionObserver' in window) {
-        var io1 = new IntersectionObserver(function (entries) {
-          entries.forEach(function (en) {
-            if (!en.isIntersecting) return;
-            io1.unobserve(en.target);
-            if (en.target.getAttribute('data-kiki-lit')) return;  // 已经跟着绸带爆过了
-            pop(en.target, 0);
-          });
-        }, { threshold: 0.35 });
-        Array.prototype.forEach.call(cards, function (c) { io1.observe(c); });
-      }
-    } else {
-      // 日报页：摘要、目录卡与首屏正文卡一起抖一次
-      ribbon(document.querySelectorAll('.flow > .summary, .toc, .cards > .card'), 120);
-
-      // 往下滚时，卡片进画面再爆一圈水波纹（时间驱动，和发音键同一套观感）
-      if ('IntersectionObserver' in window) {
-        var io = new IntersectionObserver(function (entries) {
-          entries.forEach(function (en) {
-            if (!en.isIntersecting) return;
-            io.unobserve(en.target);
-            if (en.target.getAttribute('data-kiki-lit')) return;  // 已经跟着绸带爆过了
-            pop(en.target, 0);
-          });
-        }, { threshold: 0.35 });
-        Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
-      }
-    }
+    }, { threshold: 0.3, rootMargin: '0px 0px -8% 0px' });
+    Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
   }
   var wait = 640;
   if (document.readyState === 'loading') {
@@ -322,6 +276,8 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
 
 
 
