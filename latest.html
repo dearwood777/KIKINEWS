@@ -254,6 +254,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -299,18 +300,18 @@ html{background-color:#0e1320}
 @keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
 
-/* 5. 卡片水波纹：三圈**细线**依次荡出去（和发音键同一套观感）。
-   只有 outline 能在**不改变线宽**的前提下向外平移，而且不会被元素自身的 overflow:hidden 裁掉。
-   外扩距离必须小于卡片间距（词汇卡间距 10px），否则圈会压进相邻卡片里，所以收到 7px。 */
-@keyframes kiki-outline-rip{
-  0%{outline-color:rgba(127,184,255,.82);outline-offset:-1px}
-  45%{outline-color:rgba(127,184,255,.4);outline-offset:3px}
-  100%{outline-color:rgba(127,184,255,0);outline-offset:7px}
+/* 5. 卡片水波纹：和发音键**完全同一套**——几圈细线同时往外荡，最外圈先到边、里圈依次接上，
+   最后一起淡掉。卡片自己的子元素会被 overflow:hidden 裁掉，所以环挂在卡片外面（.cards 里），
+   按卡片的实际位置摆好，随页面一起滚动。线宽恒定 1.5px，外扩总量 9px（小于 10px 卡片间距）。 */
+@keyframes kiki-cring-rip{
+  0%{opacity:.82;transform:scale(1)}
+  55%{opacity:.4}
+  100%{opacity:0;transform:scale(var(--kx,1.06),var(--ky,1.06))}
 }
-@media (prefers-reduced-motion: no-preference){
-  .cards>.card.kiki-rings{outline:1.5px solid transparent;outline-offset:-1px;
-    animation:kiki-outline-rip 400ms cubic-bezier(.25,.4,.3,1) 3 both}
-}
+.kiki-cring{position:absolute;pointer-events:none;opacity:0;
+  border:1.5px solid rgba(127,184,255,.75);
+  animation:kiki-cring-rip 1000ms cubic-bezier(.22,.5,.32,1) forwards;will-change:transform,opacity}
+.cards{position:relative}
 @keyframes kiki-wash{0%{opacity:0}30%{opacity:.75}100%{opacity:0}}
 .kiki-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
   background:linear-gradient(158deg,rgba(127,184,255,.16),rgba(127,184,255,0) 60%);
@@ -328,18 +329,8 @@ html{background-color:#0e1320}
 /* 日报卡：入场由 CSS 的 3D 归正 + JS 的水波纹脉冲负责，这里只需要定位上下文 */
 .cards>.card{position:relative}
 
-/* 6. 目录跳转后的目标卡：外框脉冲 + 底色扫过，2.4s 收尾 */
-@media (prefers-reduced-motion: no-preference){
-  .card:target{animation:kiki-target 2400ms cubic-bezier(.2,.8,.2,1) both}
-}
-@keyframes kiki-target{
-  0%{box-shadow:0 0 0 3px rgba(120,170,255,.55) inset;background-color:rgba(120,170,255,.10);
-     outline:2px solid rgba(120,170,255,.85);outline-offset:-1px}
-  55%{box-shadow:0 0 0 2px rgba(120,170,255,.25) inset;background-color:rgba(120,170,255,.04);
-     outline:2px solid rgba(120,170,255,.4);outline-offset:5px}
-  100%{box-shadow:0 0 0 2px transparent inset;background-color:transparent;
-     outline:2px solid rgba(120,170,255,0);outline-offset:10px}
-}
+/* 6. 跳转到某张卡：等滚动真的停下来之后再发水波纹（之前一改 hash 就开始播，
+   等滚到位时动画已经只剩最后一帧了，等于白播） */
 
 /* 6b. 滚动驱动 / 时间驱动的高级特效（Chrome 115+ 支持滚动时间线，不支持就完全不出现） */
 @supports (animation-timeline: scroll()){
@@ -427,23 +418,68 @@ details[open]::details-content{height:auto}
 
   if (reduce) return;
 
-  // 3) 跨页过渡（620ms）收尾后才开始入场特效。
-  //    以前特效跟转场同时起跑，转场快照拍到的是"动到一半"的画面，切回实时页面就会抖一下。
-  //    现在卡片本体一动不动，只让发光元素在过渡结束后依次出现。
+  // 3) 卡片水波纹：和发音键**完全同一套**——几圈细线同时往外荡，最外圈先到边，
+  //    里圈依次接上，最后一起淡掉。卡片自己的子元素会被 overflow:hidden 裁掉，
+  //    所以环挂在卡片外面（挂在 .cards 里），按卡片位置摆好，跟着页面一起滚。
   function pop(card, delay) {
     setTimeout(function () {
       var glow = document.createElement('span');
       glow.className = 'kiki-glow';
       card.insertBefore(glow, card.firstChild);
-      setTimeout(function () { glow.remove(); }, 1300);
-      // 水波纹走 box-shadow 的 spread（外阴影不受卡片自己的 overflow:hidden 裁剪）
-      card.classList.add('kiki-rings');
-      setTimeout(function () { card.classList.remove('kiki-rings'); }, 1260);
+      setTimeout(function () { glow.remove(); }, 1400);
+
+      var host = card.parentNode;
+      if (!host) return;
+      if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+
+      var cr = card.getBoundingClientRect(), pr = host.getBoundingClientRect();
+      if (!cr.width) return;
+      var kx = (cr.width + 18) / cr.width;     // 总共外扩 18px（每边 9px，小于 10px 卡片间距）
+      var ky = (cr.height + 18) / cr.height;
+      var radius = getComputedStyle(card).borderTopLeftRadius;
+
+      [[0, 1050], [140, 970], [280, 900]].forEach(function (p) {
+        var ring = document.createElement('span');
+        ring.className = 'kiki-cring';
+        ring.style.left = (cr.left - pr.left) + 'px';
+        ring.style.top = (cr.top - pr.top) + 'px';
+        ring.style.width = cr.width + 'px';
+        ring.style.height = cr.height + 'px';
+        ring.style.borderRadius = radius;
+        ring.style.setProperty('--kx', kx);
+        ring.style.setProperty('--ky', ky);
+        ring.style.animationDelay = p[0] + 'ms';
+        ring.style.animationDuration = p[1] + 'ms';
+        host.appendChild(ring);
+        setTimeout(function () { ring.remove(); }, p[0] + p[1] + 60);
+      });
     }, delay || 0);
   }
 
+  // 3b) 跳到某张卡（目录 / 跨页锚点）：等滚动真的停下来再发水波纹。
+  //     以前是 :target 一改 hash 就开播，等滚到位动画只剩最后一帧，等于白播。
+  var popped = {};
+  function popHash() {
+    var id = location.hash.slice(1);
+    try { id = decodeURIComponent(id); } catch (e) { /* 保持原样 */ }
+    if (!id || popped[id]) return;
+    var el = document.getElementById(id);
+    if (!el || !el.classList || !el.classList.contains('card')) return;
+    popped[id] = 1;
+    setTimeout(function () { delete popped[id]; }, 1600);
+    pop(el, 0);
+  }
+
+  function afterScroll(fn) {
+    var done = false;
+    var go = function () { if (done) return; done = true; fn(); };
+    if ('onscrollend' in window) window.addEventListener('scrollend', go, { once: true });
+    setTimeout(go, 720);
+  }
+  window.addEventListener('hashchange', function () { afterScroll(popHash); });
+
   function start() {
-    // 顶部阅读进度光条（滚动时间线驱动，不支持就查不到这个元素、也不显示）
+    // 顶部阅读进度光条（滚动时间线驱动，不支持就什么都不显示）
     var bar = document.createElement('div');
     bar.className = 'kiki-progress';
     document.body.appendChild(bar);
@@ -458,17 +494,21 @@ details[open]::details-content{height:auto}
       if (r.top < h - 40 && r.bottom > 0) initial.push(c);
     });
 
-    // 卡片滚进视野时发一圈水波纹（两个页面同一套观感，不再做整列位移的"绸带"）
-    if (!('IntersectionObserver' in window)) return;
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        io.unobserve(en.target);
-        if (initial.indexOf(en.target) >= 0) return;  // 进来时就在画面里，跳过
-        pop(en.target, 0);
-      });
-    }, { threshold: 0.3, rootMargin: '0px 0px -8% 0px' });
-    Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
+    // 卡片滚进视野时发一圈水波纹
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          io.unobserve(en.target);
+          if (initial.indexOf(en.target) >= 0) return;  // 进来时就在画面里，跳过
+          pop(en.target, 0);
+        });
+      }, { threshold: 0.3, rootMargin: '0px 0px -8% 0px' });
+      Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
+    }
+
+    // 带锚点进来的（比如从主页点超纲词跳到某张卡）：滚到位后再发
+    if (location.hash) setTimeout(popHash, 120);
   }
   var wait = 640;
   if (document.readyState === 'loading') {
