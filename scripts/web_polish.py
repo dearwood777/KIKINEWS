@@ -74,11 +74,16 @@ html{background-color:{{BG}}}
 
 /* 5. 卡片入场 */
 @keyframes kiki-rise{from{opacity:.3;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
+/* 多米诺：从右侧滑进来 */
+@keyframes kiki-domino{from{opacity:.15;transform:translateX(72px)}to{opacity:1;transform:none}}
+/* 卡片入画时，外框像水波纹一样向外扩一圈再消失 */
+@keyframes kiki-card-ring{from{opacity:.85;transform:scale(.97)}to{opacity:0;transform:scale(1.045)}}
 {{CARDS}}
 
-/* 6. 目录跳转后的卡片：底色扫过 + 描边亮起，2.4s 慢慢淡掉 */
+/* 6. 目录跳转后的卡片：外框连扩两圈（水波纹），同时底色扫过，2.4s 收尾 */
 @media (prefers-reduced-motion: no-preference){
   .card:target{animation:kiki-target 2400ms cubic-bezier(.2,.8,.2,1) both}
+  .card:target::after{animation:kiki-card-ring 1100ms cubic-bezier(.2,.7,.3,1) 2 both}
 }
 @keyframes kiki-target{
   0%{box-shadow:0 0 0 3px var(--accent) inset,0 0 34px rgba(120,170,255,.5);
@@ -126,18 +131,24 @@ details[open]::details-content{height:auto}
 </style>
 """.strip()
 
-CARDS_SCROLL = """@supports (animation-timeline: view()){
+CARDS_SCROLL = """/* 卡片外框的水波纹环：滚动进画面时向外扩一圈 */
+.cards>.card{position:relative}
+.cards>.card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  border:2px solid rgba(127,184,255,.75);opacity:0}
+@supports (animation-timeline: view()){
   @media (prefers-reduced-motion: no-preference){
     .cards>.card{animation:kiki-rise linear both;animation-timeline:view();animation-range:entry 2% entry 45%}
+    .cards>.card::after{animation:kiki-card-ring linear both;animation-timeline:view();
+      animation-range:entry 0% entry 28%}
   }
 }"""
 
 
 def cards_stagger(n: int = 12) -> str:
-    """词汇页：按序号递增 90ms 延迟，一进页面像灯一盏盏亮起来。"""
+    """词汇页：多米诺式从右侧依次推入，序号递增 80ms，走 12 张封顶。"""
     lines = ["@media (prefers-reduced-motion: no-preference){",
-             "  .cards>.card{animation:kiki-rise .62s cubic-bezier(.22,1,.36,1) both;",
-             "    animation-delay:calc(min(var(--kiki-i,0)," + str(n) + ") * 90ms)}"]
+             "  .cards>.card{animation:kiki-domino .62s cubic-bezier(.25,1,.3,1) both;",
+             "    animation-delay:calc(min(var(--kiki-i,0)," + str(n) + ") * 80ms)}"]
     for i in range(1, n + 2):
         lines.append(f"  .cards>.card:nth-child({i}){{--kiki-i:{min(i - 1, n)}}}")
     lines.append("}")
