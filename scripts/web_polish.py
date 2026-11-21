@@ -9,11 +9,12 @@
    覆盖到位，中间没有任何"露底"的时机 —— 白闪从结构上消灭，不再依赖给伪元素刷底色。
 3. 共享元素：`.pill-link`（难点词汇 ›）与 `.back`（‹ 返回今日速递）共用
    `view-transition-name: kiki-pill`，会跨页飞过去。
-4. 卡片：日报页滚动驱动入场；词汇页「错峰点亮」（序号递增 90ms）。
-5. 细节：目标卡片强高亮、`<details>` 高度动画、发音键「一圈一圈」的水波纹（真环形扩展）、
-   点按去方形蓝底、焦点描边。
-6. 一段极小的内联 JS（约 300 字节作用）：发音键水波纹的子元素生成 + 连续点击去抖，
-   防止 700ms 内反复触发跨页过渡（那也是白闪最容易出现的时机）。
+4. 卡片：日报页滚动到卡片时外框爆一圈水波纹 + 轻上浮；词汇页在跨页过渡收尾后，
+   顺着卡片顺序每隔 90ms 爆一圈波纹、卡面被蓝光洗过一层（卡片本体一动不动）。
+5. 细节：目标卡片连扩两圈、`<details>` 高度动画、发音键「一圈一圈」的水波纹（真环形扩展）、
+   切页后一道细光带从上往下扫过整屏、点按去方形蓝底、焦点描边。
+6. 一段极小的内联 JS：卡片发光元素生成（过渡结束后才起跑，避免和转场快照打架 = 不抖）、
+   发音键水波纹、连续点击去抖（防止 700ms 内反复触发跨页过渡）。
 
 用法：python scripts/web_polish.py docs/latest.html docs/latest-en.html docs/vocab.html
 """
@@ -72,18 +73,41 @@ html{background-color:{{BG}}}
 @keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
 
-/* 5. 卡片入场 */
+/* 5. 卡片入场：只动 opacity / transform，绝不改尺寸与布局，所以不会抖 */
 @keyframes kiki-rise{from{opacity:.3;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
-/* 多米诺：从右侧滑进来 */
-@keyframes kiki-domino{from{opacity:.15;transform:translateX(72px)}to{opacity:1;transform:none}}
-/* 卡片入画时，外框像水波纹一样向外扩一圈再消失 */
-@keyframes kiki-card-ring{from{opacity:.85;transform:scale(.97)}to{opacity:0;transform:scale(1.045)}}
+/* 卡片外框水波纹：真的空心圆环从卡片边缘往外扩一圈再淡掉（和发音键同一套视觉语言） */
+@keyframes kiki-halo-rip{
+  0%{opacity:.92;transform:scale(1)}
+  55%{opacity:.5}
+  100%{opacity:0;transform:scale(1.075)}
+}
+/* 卡片「点亮」：一层冷蓝光洗过卡面，不动位置、不改尺寸 */
+@keyframes kiki-wash{0%{opacity:0}32%{opacity:.9}100%{opacity:0}}
+/* 切页后一道细光带从上往下扫过整屏，一次性 */
+@keyframes kiki-scan{
+  0%{transform:translateY(-6px);opacity:0}
+  12%{opacity:.95}
+  75%{opacity:.7}
+  100%{transform:translateY(100vh);opacity:0}
+}
+.kiki-scan{position:fixed;left:-12%;right:-12%;top:0;height:2px;z-index:9998;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(127,184,255,.95),transparent);
+  box-shadow:0 0 24px rgba(127,184,255,.7);
+  animation:kiki-scan 900ms cubic-bezier(.4,0,.2,1) both}
+/* 卡片外框水波纹（由内联 JS 生成，日报页滚动到卡片 / 词汇页过渡收尾后顺次触发） */
+.kiki-halo{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  border:2px solid rgba(127,184,255,.9);box-shadow:0 0 18px rgba(127,184,255,.5);
+  animation:kiki-halo-rip 880ms cubic-bezier(.2,.7,.3,1) forwards}
+/* 卡面被蓝光洗过一层（也由 JS 生成，插在卡片最前面，所以压在文字底下） */
+.kiki-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  background:linear-gradient(158deg,rgba(127,184,255,.22),rgba(127,184,255,0) 58%);
+  animation:kiki-wash 1100ms ease forwards}
 {{CARDS}}
 
 /* 6. 目录跳转后的卡片：外框连扩两圈（水波纹），同时底色扫过，2.4s 收尾 */
 @media (prefers-reduced-motion: no-preference){
   .card:target{animation:kiki-target 2400ms cubic-bezier(.2,.8,.2,1) both}
-  .card:target::after{animation:kiki-card-ring 1100ms cubic-bezier(.2,.7,.3,1) 2 both}
+  .card:target::after{animation:kiki-halo-rip 900ms cubic-bezier(.2,.7,.3,1) 2 both}
 }
 @keyframes kiki-target{
   0%{box-shadow:0 0 0 3px var(--accent) inset,0 0 34px rgba(120,170,255,.5);
@@ -131,33 +155,33 @@ details[open]::details-content{height:auto}
 </style>
 """.strip()
 
-CARDS_SCROLL = """/* 卡片外框的水波纹环：滚动进画面时向外扩一圈 */
+CARDS_SCROLL = """/* 日报卡：轻上浮留着滚动驱动；外框水波纹改由 JS 在卡片入画时发一圈（时间驱动的才看得见） */
 .cards>.card{position:relative}
 .cards>.card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  border:2px solid rgba(127,184,255,.75);opacity:0}
+  border:2px solid rgba(127,184,255,.9);box-shadow:0 0 18px rgba(127,184,255,.5);opacity:0}
 @supports (animation-timeline: view()){
   @media (prefers-reduced-motion: no-preference){
     .cards>.card{animation:kiki-rise linear both;animation-timeline:view();animation-range:entry 2% entry 45%}
-    .cards>.card::after{animation:kiki-card-ring linear both;animation-timeline:view();
-      animation-range:entry 0% entry 28%}
   }
 }"""
 
 
-def cards_stagger(n: int = 12) -> str:
-    """词汇页：多米诺式从右侧依次推入，序号递增 80ms，走 12 张封顶。"""
-    lines = ["@media (prefers-reduced-motion: no-preference){",
-             "  .cards>.card{animation:kiki-domino .62s cubic-bezier(.25,1,.3,1) both;",
-             "    animation-delay:calc(min(var(--kiki-i,0)," + str(n) + ") * 80ms)}"]
-    for i in range(1, n + 2):
-        lines.append(f"  .cards>.card:nth-child({i}){{--kiki-i:{min(i - 1, n)}}}")
-    lines.append("}")
-    return "\n".join(lines)
+def cards_stagger(n: int = 10) -> str:
+    """词汇页卡片：本体完全静止（原来是从右侧滑进来，跨页快照拍到"滑到一半"的卡，
+    转场结束切回实时页面状态对不上 → 第一张卡抖一下）。
+
+    现在改由内联 JS 在跨页过渡收尾后，顺着卡片顺序每隔 90ms 让外框爆一圈水波纹、
+    卡面被蓝光洗过一层；只动 opacity / transform，卡片本体没有任何可抖的东西。
+    """
+    return ("/* 词汇卡：本体静止，外框波纹与卡面蓝光由内联 JS 顺次点亮（90ms 递增） */\n"
+            ".cards>.card{position:relative}")
 
 
 JS = """
 <script id="kiki-polish-js">
 (function () {
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   // 1) 发音键水波纹：点一次发两圈，先后 140ms
   document.addEventListener('click', function (e) {
     var btn = e.target.closest ? e.target.closest('.say') : null;
@@ -172,7 +196,6 @@ JS = """
   }, true);
 
   // 2) 连续点击去抖：700ms 内只允许发起一次跨页跳转。
-  //    来回快速连点是白闪最容易出现的时机，也不符合"一次操作一次过渡"的直觉。
   var last = 0;
   document.addEventListener('click', function (e) {
     var a = e.target.closest ? e.target.closest('a[href]') : null;
@@ -184,6 +207,61 @@ JS = """
     if (now - last < 700) { e.preventDefault(); e.stopPropagation(); return; }
     last = now;
   }, true);
+
+  if (reduce) return;
+
+  // 3) 跨页过渡（620ms）收尾后才开始入场特效。
+  //    以前特效跟转场同时起跑，转场快照拍到的是"动到一半"的画面，切回实时页面就会抖一下。
+  //    现在卡片本体一动不动，只让发光元素在过渡结束后依次出现。
+  function pop(card, delay) {
+    setTimeout(function () {
+      var glow = document.createElement('span');
+      glow.className = 'kiki-glow';
+      card.insertBefore(glow, card.firstChild);
+      setTimeout(function () { glow.remove(); }, 1300);
+      [0, 200].forEach(function (d) {
+        setTimeout(function () {
+          var halo = document.createElement('span');
+          halo.className = 'kiki-halo';
+          card.appendChild(halo);
+          setTimeout(function () { halo.remove(); }, 1100);
+        }, d);
+      });
+    }, delay || 0);
+  }
+
+  function start() {
+    var scan = document.createElement('div');
+    scan.className = 'kiki-scan';
+    document.body.appendChild(scan);
+    setTimeout(function () { scan.remove(); }, 1800);
+
+    var cards = document.querySelectorAll('.cards > .card');
+    var isVocab = !!document.querySelector('.back');
+
+    if (isVocab) {
+      // 词汇页：一道波纹顺着卡片顺序往下扫，每张间隔 90ms（到第 10 张封顶）
+      Array.prototype.forEach.call(cards, function (c, i) {
+        pop(c, Math.min(i, 10) * 90);
+      });
+    } else if ('IntersectionObserver' in window) {
+      // 日报页：卡片滚进画面时发一圈水波纹（时间驱动，和发音键同一套观感）
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          io.unobserve(en.target);
+          pop(en.target, 0);
+        });
+      }, { threshold: 0.35 });
+      Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
+    }
+  }
+  var wait = 640;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(start, wait); });
+  } else {
+    setTimeout(start, wait);
+  }
 })();
 </script>
 """.strip()
