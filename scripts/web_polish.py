@@ -73,18 +73,23 @@ html{background-color:{{BG}}}
 @keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
 
-/* 5. 卡片「抖绸带」入场：整列像一块布被提起再往下甩，波峰顺着卡片往下走。
-   只动 transform，卡片本体不淡入不出场，所以不会和跨页转场快照打架（也就不会抖） */
+/* 5. 卡片「抖绸带」入场：只有一个波峰顺着卡片往下走（不是每张卡自己抖）。
+   每张卡只被波峰扫过一次：抬起 → 甩过头 → 落定，全程单调，绝不来回振荡。
+   相邻卡之间延迟 100ms（远小于 860ms 的波宽），所以同一时刻相邻卡处在这道波的
+   不同位置上，连起来就是一道往下走的波。只动 transform。 */
+/* 5. 卡片「滑奏」入场：像指头从左往右划过琴键——一道平滑的波峰顺着卡片往下走。
+   采样点按正弦取（不来回振荡、不带角度旋转），缓动是 easeInOutSine，
+   相邻卡只差 72ms、单卡时长 760ms，所以同一时刻有十来张卡处在波的不同高度上，
+   连起来就是一道连续的波，而不是每张卡自己抖。只动 transform。 */
 @keyframes kiki-ribbon{
-  0%{transform:translateY(0) rotate(0deg)}
-  20%{transform:translateY(-15px) rotate(-.7deg)}
-  46%{transform:translateY(7px) rotate(.35deg)}
-  68%{transform:translateY(-2.5px) rotate(-.12deg)}
-  86%{transform:translateY(1px)}
-  100%{transform:translateY(0) rotate(0deg)}
+  0%{transform:translateY(0)}
+  30%{transform:translateY(-10px)}
+  55%{transform:translateY(1.5px)}
+  72%{transform:translateY(0)}
+  100%{transform:translateY(0)}
 }
-.kiki-wave{animation:kiki-ribbon 940ms cubic-bezier(.3,.72,.22,1) both;
-  animation-delay:calc(min(var(--kiki-i,0),12) * 72ms);will-change:transform}
+.kiki-wave{animation:kiki-ribbon 760ms cubic-bezier(.37,0,.63,1) both;
+  animation-delay:calc(var(--kiki-i,0) * 72ms);will-change:transform}
 /* 卡片外框水波纹：真的空心圆环从卡片边缘往外扩一圈再淡掉（和发音键同一套视觉语言） */
 @keyframes kiki-halo-rip{
   0%{opacity:.92;transform:scale(1)}
@@ -227,26 +232,41 @@ JS = """
     var cards = document.querySelectorAll('.cards > .card');
     var isVocab = !!document.querySelector('.back');
 
-    // 抖绸带：给每个元素编号 --kiki-i，CSS 按编号递增延迟 → 波峰顺着列表往下走
-    function ribbon(nodes, cap) {
-      Array.prototype.forEach.call(nodes, function (el, i) {
-        el.style.setProperty('--kiki-i', Math.min(i, cap));
+    // 抖绸带：只让**首屏能看见的**元素参与，编号从 0 起按可见顺序递增（100ms 一张），
+    // 这样波峰是一道连续的波往下走；看不见的元素不动，免得它们在屏外一起跳、回来时已经跑完。
+    function ribbon(nodes, margin) {
+      var out = [], idx = 0, h = window.innerHeight + (margin || 120);
+      Array.prototype.forEach.call(nodes, function (el) {
+        var r = el.getBoundingClientRect();
+        if (r.top > h || r.bottom < -60) return;
+        var i = idx++;
+        el.style.setProperty('--kiki-i', i);
+        el.setAttribute('data-kiki-lit', '1');
         el.classList.add('kiki-wave');
-        setTimeout(function () { el.classList.remove('kiki-wave'); },
-          1100 + Math.min(i, cap) * 72);
+        setTimeout(function () { el.classList.remove('kiki-wave'); }, 950 + i * 72);
+        out.push({ el: el, i: i });
       });
+      return out;
     }
 
     if (isVocab) {
-      // 词汇页：整列卡片抖一次绸带，每张落地时爆一圈水波纹
-      ribbon(cards, 12);
-      Array.prototype.forEach.call(cards, function (c, i) {
-        pop(c, Math.min(i, 12) * 72 + 430);
-      });
+      // 词汇页：首屏那几张卡依次被波峰扫过，落定时外框爆一圈水波纹；下面的卡滚出来时再发
+      var waved = ribbon(cards, 200);
+      waved.forEach(function (o) { pop(o.el, o.i * 72 + 200); });
+      if ('IntersectionObserver' in window) {
+        var io1 = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            io1.unobserve(en.target);
+            if (en.target.getAttribute('data-kiki-lit')) return;  // 已经跟着绸带爆过了
+            pop(en.target, 0);
+          });
+        }, { threshold: 0.35 });
+        Array.prototype.forEach.call(cards, function (c) { io1.observe(c); });
+      }
     } else {
-      // 日报页：摘要、目录卡与正文卡一起抖一次
-      var blocks = document.querySelectorAll('.flow > .summary, .toc, .cards > .card');
-      ribbon(blocks, 8);
+      // 日报页：摘要、目录卡与首屏正文卡一起抖一次
+      ribbon(document.querySelectorAll('.flow > .summary, .toc, .cards > .card'), 120);
 
       // 往下滚时，卡片进画面再爆一圈水波纹（时间驱动，和发音键同一套观感）
       if ('IntersectionObserver' in window) {
@@ -254,6 +274,7 @@ JS = """
           entries.forEach(function (en) {
             if (!en.isIntersecting) return;
             io.unobserve(en.target);
+            if (en.target.getAttribute('data-kiki-lit')) return;  // 已经跟着绸带爆过了
             pop(en.target, 0);
           });
         }, { threshold: 0.35 });
@@ -345,3 +366,4 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv))
+
