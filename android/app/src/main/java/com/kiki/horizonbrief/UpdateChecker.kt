@@ -44,27 +44,55 @@ object UpdateChecker {
 
     fun check(activity: Activity, manual: Boolean = false) {
         if (activity.isFinishing) return
+        // 手动检查先给一个即时反馈，否则用户会觉得"点了没反应"
+        if (manual) toast(activity, "正在检查更新…")
         executor.execute {
-            val remote = runCatching { fetch() }.getOrNull()
+            val result = runCatching { fetch() }
+            val remote = result.getOrNull()
+            val error = result.exceptionOrNull()
             activity.runOnUiThread {
                 if (activity.isFinishing) return@runOnUiThread
                 if (remote == null) {
-                    if (manual) toast(activity, "检查更新失败，请稍后再试")
+                    if (manual) {
+                        val reason = when {
+                            error != null -> error.message ?: error.javaClass.simpleName
+                            else -> "更新清单内容不完整"
+                        }
+                        info(
+                            activity,
+                            "检查更新失败",
+                            "没能连上更新服务器。\n\n原因：$reason\n\n请确认网络可用后重试；如果反复失败，可以直接下载最新安装包覆盖安装。"
+                        )
+                    }
                     return@runOnUiThread
                 }
                 val local = localVersionCode(activity)
-                when {
-                    remote.code <= local -> if (manual) toast(activity, "已是最新版本 ${remote.name}")
-                    else -> {
-                        val prefs = activity.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-                        val prompted = prefs.getLong(KEY_PROMPTED, 0L)
-                        // 同一个版本只自动提醒一次，避免每次打开都弹
-                        if (!manual && prompted == remote.code) return@runOnUiThread
-                        showDialog(activity, remote, prefs)
+                if (remote.code <= local) {
+                    if (manual) {
+                        info(
+                            activity,
+                            "已是最新版本",
+                            "当前版本：v${localVersionName(activity)}（$local）\n线上版本：v${remote.name}（${remote.code}）\n\n已经是最新版本，无需更新。"
+                        )
                     }
+                    return@runOnUiThread
                 }
+                val prefs = activity.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+                // 同一个版本只自动提醒一次，避免每次打开都弹
+                if (!manual && prefs.getLong(KEY_PROMPTED, 0L) == remote.code) return@runOnUiThread
+                showDialog(activity, remote, prefs)
             }
         }
+    }
+
+    /** 明确的模态提示：点一下一定看得到，不会像 toast 那样一闪而过 */
+    private fun info(activity: Activity, title: String, message: String) {
+        AlertDialog.Builder(activity)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("知道了", null)
+            .setCancelable(true)
+            .show()
     }
 
     private fun showDialog(activity: Activity, remote: Remote, prefs: SharedPreferences) {
