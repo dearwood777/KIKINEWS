@@ -127,12 +127,12 @@ html{background-color:#0e1320}
    按卡片的实际位置摆好，随页面一起滚动。线宽恒定 1.5px，外扩总量 9px（小于 10px 卡片间距）。 */
 @keyframes kiki-cring-rip{
   0%{opacity:.82;transform:scale(1)}
-  55%{opacity:.4}
+  55%{opacity:.42}
   100%{opacity:0;transform:scale(var(--kx,1.06),var(--ky,1.06))}
 }
 .kiki-cring{position:absolute;pointer-events:none;opacity:0;
-  border:1.5px solid rgba(127,184,255,.75);
-  animation:kiki-cring-rip 1000ms cubic-bezier(.22,.5,.32,1) forwards;will-change:transform,opacity}
+  border:1px solid rgba(127,184,255,.7);
+  animation:kiki-cring-rip 2000ms cubic-bezier(.3,.4,.4,1) forwards;will-change:transform,opacity}
 .cards{position:relative}
 @keyframes kiki-wash{0%{opacity:0}30%{opacity:.75}100%{opacity:0}}
 .kiki-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
@@ -260,7 +260,8 @@ details[open]::details-content{height:auto}
       var ky = (cr.height + 18) / cr.height;
       var radius = getComputedStyle(card).borderTopLeftRadius;
 
-      [[0, 1050], [140, 970], [280, 900]].forEach(function (p) {
+      // 三圈细线：起跑间隔 320ms（肉眼能看出先后），收束时长递减 → 最后几乎同时淡掉
+      [[0, 2050], [320, 1850], [640, 1680]].forEach(function (p) {
         var ring = document.createElement('span');
         ring.className = 'kiki-cring';
         ring.style.left = (cr.left - pr.left) + 'px';
@@ -341,6 +342,8 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
 
 
 
