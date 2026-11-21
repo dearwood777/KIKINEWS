@@ -242,6 +242,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -254,25 +255,31 @@ footer .dot{opacity:.45;margin:0 6px}
 @media (prefers-reduced-motion: reduce){
   @view-transition{navigation:none}
 }
+/* 顶层兜底底色：view-transition 的快照层背后是 UA 的白色画布，来回快速点几次一旦
+   某一帧快照没画满，就会露出白底。先把这一层刷成页面底色，从结构上堵死白闪。 */
+::view-transition{background-color:var(--bg)}
+html{background-color:var(--bg)}
 @media (prefers-reduced-motion: no-preference){
-  /* 进词汇页：新页从右侧推入，旧页被推走并压暗 */
+  /* 进词汇页：新页从右侧推入，旧页被推走 */
   :active-view-transition-type(forward)::view-transition-old(root){
-    animation:kiki-out-l 420ms cubic-bezier(.32,.72,.24,1) both}
+    animation:kiki-out-l 500ms cubic-bezier(.32,.72,.24,1) both}
   :active-view-transition-type(forward)::view-transition-new(root){
-    animation:kiki-in-r 460ms cubic-bezier(.2,.9,.2,1) both}
+    animation:kiki-in-r 560ms cubic-bezier(.22,1,.36,1) both}
   /* 返回：方向镜像 */
   :active-view-transition-type(previous)::view-transition-old(root){
-    animation:kiki-out-r 420ms cubic-bezier(.32,.72,.24,1) both}
+    animation:kiki-out-r 500ms cubic-bezier(.32,.72,.24,1) both}
   :active-view-transition-type(previous)::view-transition-new(root){
-    animation:kiki-in-l 460ms cubic-bezier(.2,.9,.2,1) both}
+    animation:kiki-in-l 560ms cubic-bezier(.22,1,.36,1) both}
   /* 没有类型的导航（同站其它链接）走淡入淡出 */
-  ::view-transition-old(root){animation:kiki-fade-out 260ms ease both}
-  ::view-transition-new(root){animation:kiki-fade-in 320ms ease both}
+  ::view-transition-old(root){animation:kiki-fade-out 280ms ease both}
+  ::view-transition-new(root){animation:kiki-fade-in 340ms ease both}
 }
-@keyframes kiki-out-l{from{transform:none;filter:none}to{transform:translateX(-18%);filter:brightness(.82)}}
-@keyframes kiki-out-r{from{transform:none;filter:none}to{transform:translateX(18%);filter:brightness(.82)}}
-@keyframes kiki-in-r{from{transform:translateX(68%);opacity:.75}to{transform:none;opacity:1}}
-@keyframes kiki-in-l{from{transform:translateX(-68%);opacity:.75}to{transform:none;opacity:1}}
+/* 只用位移讲纵深，不做亮度/透明度动画：
+   快照一旦半透明就会透出底层画布，来回快点几次很容易闪白。 */
+@keyframes kiki-out-l{from{transform:none}to{transform:translateX(-20%)}}
+@keyframes kiki-out-r{from{transform:none}to{transform:translateX(20%)}}
+@keyframes kiki-in-r{from{transform:translateX(72%)}to{transform:none}}
+@keyframes kiki-in-l{from{transform:translateX(-72%)}to{transform:none}}
 @keyframes kiki-fade-out{to{opacity:0}}
 @keyframes kiki-fade-in{from{opacity:0}}
 
