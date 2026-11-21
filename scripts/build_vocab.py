@@ -1164,6 +1164,105 @@ def pos_of(entry: dict, enrich: dict) -> str:
     return ""
 
 
+# ---------- 卡片复核：把“人工审计”那套判断做成流水线的一道关卡 ----------
+# 规则层算得出词库证据（CEFR 等级、词频、Collins 星），算不出“这个词 C1 读者
+# 到底认不认识”。11-21 期人工审计证明模型判断得准，所以在这里加一道复核：
+# 只对规则层判不准的灰区词（词频 4000–9000）和全部“熟词生义”卡问一遍，
+# 结论按词写进 data/vocab_verdicts.json，以后同一个词直接复用，不再重复问。
+VERDICT_CACHE = os.path.join("data", "vocab_verdicts.json")
+AUDIT_MIN_RANK = MIN_CARD_RANK
+AUDIT_MAX_RANK = 9000
+AUDIT_MAX_ITEMS = 45
+
+AUDIT_PROMPT = """读者是中文母语的英语学习者，水平 CEFR C1（约等于英语专业八级），每天读英文新闻。
+下面是从今天新闻里挑出的候选词卡。每行：单词 | 词库词频排位 | 中文释义 | 新闻义（无则为 -） | 原文语境。
+
+请只做两个判断：
+1) 哪些单词 C1 读者其实早就认识，出成“难点词汇”等于白占版面（例如 tech、trillion、landmark、reportedly、deepen 这类日常词）。判断看这个词在新闻里的常见程度与语义透明度，不要因为“词库没给 CEFR 等级”就认为它难。
+2) 哪些“新闻义”只是把词典释义原样重说一遍、没有带来读者不知道的信息（例如 bail 的“保释”、raid 的“突袭”）。
+
+没有把握就不要列。只输出 JSON：{"drop": ["单词", ...], "drop_sense": ["单词", ...]}
+
+候选：
+"""
+
+
+def load_verdicts() -> dict:
+    try:
+        with open(VERDICT_CACHE, encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def save_verdicts(verdicts: dict) -> None:
+    try:
+        os.makedirs(os.path.dirname(VERDICT_CACHE) or ".", exist_ok=True)
+        with open(VERDICT_CACHE, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(verdicts, f, ensure_ascii=False, indent=1, sort_keys=True)
+    except Exception as exc:
+        print(f"[warn] 词卡复核缓存写入失败：{exc}")
+
+
+def _rank_of(entry: dict) -> int:
+    ranks = [x for x in (_intv(entry, "frq"), _intv(entry, "bnc")) if x]
+    return min(ranks) if ranks else 0
+
+
+def audit_cards(cards: list[dict], enabled: bool = True, verdicts: dict | None = None) -> dict:
+    """问模型“这些卡该不该出”，返回 {单词: "keep"/"drop"}。
+
+    cards 每项：{"word", "gloss", "sense", "ctx", "rank"}。删卡只对灰区
+    （4000≤词频<9000）的词生效——词频 9000 以后的词模型说删也不删；“新闻义
+    注水”的判断只对带 sense 的卡生效。任何失败（没 key、输出坏了）都全部保留。
+    """
+    verdicts = dict(verdicts or {})
+    unknown = [c for c in cards if c["word"] not in verdicts]
+    if not enabled or not unknown:
+        return verdicts
+    if not (os.environ.get("GROQ_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+            or os.environ.get("GEMINI_API_KEY")):
+        return verdicts
+
+    lines = []
+    for c in unknown[:AUDIT_MAX_ITEMS]:
+        lines.append(
+            f"- {c['word']} | {c['rank'] or '-'} | {short(c['gloss'], 40)} | "
+            f"{short(c['sense'], 26) if c['sense'] else '-'} | {short(c['ctx'], 90)}"
+        )
+    content, _, provider = _llm_call(AUDIT_PROMPT + "\n".join(lines))
+    start, end = content.find("{"), content.rfind("}")
+    if start < 0 or end < start:
+        print("[warn] 卡片复核没拿到可解析的 JSON，本轮全部保留")
+        return verdicts
+    try:
+        data = json.loads(content[start:end + 1])
+    except ValueError:
+        print("[warn] 卡片复核 JSON 解析失败，本轮全部保留")
+        return verdicts
+
+    cand = {c["word"]: c for c in unknown}
+    sense_words = {w for w, c in cand.items() if c["sense"]}
+    dropped = sensed = 0
+    for raw in data.get("drop") or []:
+        w = str(raw).strip().lower()
+        c = cand.get(w)
+        if not c or not (AUDIT_MIN_RANK <= (c["rank"] or 0) < AUDIT_MAX_RANK):
+            continue  # 灰区之外（真难词或缺词频）不接受删卡
+        verdicts[w] = "drop"
+        dropped += 1
+    for raw in data.get("drop_sense") or []:
+        w = str(raw).strip().lower()
+        if w in sense_words:
+            verdicts[w] = "drop"
+            sensed += 1
+    for c in unknown:
+        verdicts.setdefault(c["word"], "keep")
+    print(f"[ai] 卡片复核（{provider or 'n/a'}）：删 {dropped} 个灰区词、{sensed} 张注水新闻义卡")
+    return verdicts
+
+
 def main() -> None:
     dict_path = os.environ.get("ECDICT_PATH") or os.path.join("data", "ecdict.csv")
     post = newest_post("en")
@@ -1314,6 +1413,30 @@ def main() -> None:
         picked.extend((x[0], 0, x[1], None) for x in added)
         sense_picked.extend((x[0], 0, x[1], x[2]) for x in ai_picked[len(added):][:MAX_SENSE_WORDS]
                             if x[2])
+
+    # 卡片复核：规则层判不准的灰区词、以及“新闻义”卡，交给模型按“C1 读者
+    # 认不认识 / 这条新闻义有没有新信息”再投一次票；结论写进缓存，跨期复用。
+    verdicts = load_verdicts()
+    audit_inputs = []
+    for _, _, e, sense in picked + sense_picked:
+        if sense or (AUDIT_MIN_RANK <= (_rank_of(e) or 0) < AUDIT_MAX_RANK):
+            audit_inputs.append({
+                "word": e["word"],
+                "rank": _rank_of(e),
+                "gloss": e["translation"].replace("\\n", " "),
+                "sense": sense[1] if sense else "",
+                "ctx": raw_sentence(e["word"], sents,
+                                    forms_of.get(e["word"], [])),
+            })
+    verdicts = audit_cards(audit_inputs, enabled=os.environ.get("VOCAB_AUDIT", "1") != "0",
+                           verdicts=verdicts)
+    save_verdicts(verdicts)
+    before = len(picked) + len(sense_picked)
+    picked = [x for x in picked if verdicts.get(x[2]["word"]) != "drop"]
+    sense_picked = [x for x in sense_picked if verdicts.get(x[2]["word"]) != "drop"]
+    cut = before - len(picked) - len(sense_picked)
+    if cut:
+        print(f"[ok] 卡片复核去掉 {cut} 张（灰区日常词 / 注水新闻义）")
 
     # 音标兜底：变形词（millions / canceling / prototyping）本行往往没音标，
     # 回到原形词条去取，取到就补上。
