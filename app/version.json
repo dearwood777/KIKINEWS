@@ -1,9 +1,9 @@
 {
- "versionCode": 160008,
- "versionName": "1.6.008",
- "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.008.apk",
- "sha256": "1c1cc10bf713ee3a4af4c09bb871d31dc685c82edd6e82e9137218c748afaaee",
- "size": 2555370,
- "notes": "检查更新：加即时反馈与结果弹窗（已是最新/发现新版/检查失败都说清）；网页加跨页过渡、卡片滚动入场、按钮微交互",
+ "versionCode": 160009,
+ "versionName": "1.6.009",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.009.apk",
+ "sha256": "5ec03303db82f836ba231c9d26d0a0474424dac099c14f555d8bcfbe24bb716e",
+ "size": 2555302,
+ "notes": "修复点难点词汇/返回时的白闪：WebView 与窗口底色改成和网页一致的深色（之前是透明底，跨页瞬间露出白色窗口）；网页侧卡片改成多米诺式从右入场、卡片外框加滚动水波纹。",
  "minSdk": 24
 }
