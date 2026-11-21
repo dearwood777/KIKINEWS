@@ -1,5 +1,35 @@
 # 更新记录
 
+## 依赖开源、机制补全、APK 自更新 (2026-11-21)
+
+**一、先查现成实现再动手（本轮结论）**
+
+| 需求 | 上游项目 | 星数 | 结论 |
+| --- | --- | --- | --- |
+| 词频证据 | `rspeer/wordfreq` | 1769★ | **采纳**：Zipf 词频（每十亿词出现次数）比 ECDICT 的 frq/bnc 排名连续得多，且能覆盖词库查不到的长词/复合词，作为额外一份“已认识”证据接入 |
+| 近重复检测 | `seomoz/simhash-py` | 423★ | 不采纳：SimHash 靠几十上百个特征位的汉明距离，新闻标题只有 6–12 个词元，特征太少会随机碰撞；我们的重叠系数 + AI 语义两层在这个尺度上更稳 |
+| CEFR 词表 | `michigan-musicer/cefr-text-vocab-scanner` | 4★ | 不采纳：思路与现有 CEFR-J + Octanove 完全相同，数据源一致 |
+| Android 自更新 | `burgyl/SelfUpdatingApp` 18★、`alltechdev/APK-MultiUpdate` 10★ | — | 不引依赖，按同一套标准做法自实现：版本清单 → 下载 → FileProvider → 系统安装器 |
+
+**二、词表：Zipf 词频接入 + 复核层闭环**
+
+- `known_evidence` 增加 zipf 证据：≥4.15（≈前 1500）记 3 分，≥3.85（≈前 3000）记 2 分；没装 wordfreq 就跳过，判定退回 ECDICT。今天这期复算：再多去掉 `record-breaking`（zipf 4.61，透明复合词）与 `genocide`（3.91），38 张 → **29 张**，真难词（adjudicate 2.47 / extradition 3.28 / divider 2.83）一个没动。
+- 复核裁决库跨期：`save_verdicts` 同时写 `data/` 与 `docs/vocab_verdicts.json`，随 Pages 发布，下一期开工先 `curl` 回来再追加，模型对每个词的判断变成可累积的资产。
+- 今天这期已按新规则重建上线（29 卡，日期 2026-11-21），并自动修剪正文失效锚点（中英各一轮）。
+
+**三、流水线**
+
+- 新增 `scripts/prune_vocab_links.py`：按 `vocab_manifest.json` 把正文页里指向已删词的 `<a class="vw">` 还原成文字，build_latest 之后自动跑，死链不再上线。
+- 新增 `scripts/touch_pages.py` + workflow 末尾「Pages 构建兜底」：轮询 `pages/builds/latest`，`errored` 就自动往 gh-pages 的 `_config.yml` 追加触发注释重建，不用再靠人发现。
+- workflow：vocab 步骤前 `pip install wordfreq`（失败不阻塞）、先拉回 gh-pages 的复核缓存。
+
+**四、APK 自更新（1.6.007）**
+
+- `UpdateChecker.kt`：启动静默查一次 `https://…/KIKINEWS/app/version.json`（带 `Cache-Control: no-cache` 和随机串绕 CDN），比 `versionCode` 决定提示；同一版本只自动提示一次（prefs 记 `update_prompted_code`）；设置菜单常驻「检查更新」可手动触发。
+- 下载到 `cache/apk/`，按清单里的 `sha256` 校验，`FileProvider`（authority `${applicationId}.files`，仅开放 cache/apk）交给系统安装器；Android 8+ 先检查 `canRequestPackageInstalls()`，没权限就跳 `ACTION_MANAGE_UNKNOWN_APP_SOURCES`。
+- 清单字段：`versionCode / versionName / apk / sha256 / size / notes / minSdk`，由 `scripts/publish_apk.py` 从 `build.gradle.kts` 读版本、算哈希后生成，APK 放 `docs/app/`。
+- 已发布并验证：`app/version.json` 160007、APK 2495 KB 可下载、sha256 一致；Pages 构建 built。
+
 ## 把“人工审计”做成流水线的一道关卡：卡片复核层 (2026-11-21)
 
 起因：11-21 期那份逐条审计（38 张卡判出 7 张该删）是靠人读一遍判出来的，而规则层永远算不出“这个词 C1 读者到底认不认识”。既然模型判得准，就把它固定成一道关卡，而不是每次靠人工。
