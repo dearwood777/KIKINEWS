@@ -90,6 +90,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         load(digestUrl())
+
+        // 每次启动静默查一次新版本（同一个版本只自动提示一次）
+        UpdateChecker.check(this)
     }
 
     /** 沉浸式全屏：隐藏状态栏和导航栏，滑动边缘可临时唤出，松手后自动收起。 */
@@ -246,7 +249,7 @@ class MainActivity : AppCompatActivity() {
     private fun showMenu(anchor: View, advanced: Boolean = false) {
         val menu = androidx.appcompat.widget.PopupMenu(this, anchor, Gravity.END)
         val group = menu.menu
-        val items = mutableListOf("重新加载", "强制刷新（清缓存）", "回到顶部", "调整字号")
+        val items = mutableListOf("重新加载", "强制刷新（清缓存）", "回到顶部", "调整字号", "检查更新")
         if (advanced) {
             items.add("在浏览器中打开")
             items.add("复制日报链接")
@@ -268,6 +271,7 @@ class MainActivity : AppCompatActivity() {
                     toast("已回到顶部")
                 }
                 "调整字号" -> pickTextZoom()
+                "检查更新" -> UpdateChecker.check(this, manual = true)
                 "在浏览器中打开" -> runCatching {
                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(digestUrl())))
                 }
