@@ -250,6 +250,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -301,7 +302,7 @@ html{background-color:#0e1320}
 @keyframes kiki-halo-rip{
   0%{opacity:.9;transform:scale(1)}
   55%{opacity:.45}
-  100%{opacity:0;transform:scale(1.07)}
+  100%{opacity:0;transform:scale(var(--kx,1.075),var(--ky,1.075))}
 }
 /* 卡片「点亮」：一层冷蓝光洗过卡面，不动位置、不改尺寸 */
 @keyframes kiki-wash{0%{opacity:0}32%{opacity:.7}100%{opacity:0}}
@@ -404,16 +405,24 @@ details[open]::details-content{height:auto}
   //    现在卡片本体一动不动，只让发光元素在过渡结束后依次出现。
   function pop(card, delay) {
     setTimeout(function () {
+      // 环向外扩的**绝对距离**固定成 16px（不是按比例），小卡片上也能看出"一层圈扩出去"，
+      // 否则 3 列的小卡按 7.5% 扩只有几像素，看上去就是"边框闪了一下"。
+      var r = card.getBoundingClientRect();
+      var kx = (r.width + 32) / Math.max(r.width, 1);
+      var ky = (r.height + 32) / Math.max(r.height, 1);
+
       var glow = document.createElement('span');
       glow.className = 'kiki-glow';
       card.insertBefore(glow, card.firstChild);
-      setTimeout(function () { glow.remove(); }, 1300);
-      [0, 200].forEach(function (d) {
+      setTimeout(function () { glow.remove(); }, 1400);
+      [0, 220].forEach(function (d) {
         setTimeout(function () {
           var halo = document.createElement('span');
           halo.className = 'kiki-halo';
+          halo.style.setProperty('--kx', kx);
+          halo.style.setProperty('--ky', ky);
           card.appendChild(halo);
-          setTimeout(function () { halo.remove(); }, 1100);
+          setTimeout(function () { halo.remove(); }, 1200);
         }, d);
       });
     }, delay || 0);
