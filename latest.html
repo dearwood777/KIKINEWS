@@ -258,6 +258,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -320,17 +321,29 @@ html{background-color:#0e1320}
   background:linear-gradient(158deg,rgba(127,184,255,.16),rgba(127,184,255,0) 60%);
   animation:kiki-wash 1150ms ease forwards}
 
-/* 5c. 边缘流光（Border Beam）：一道光沿胶囊描边匀速跑一圈。
-   注意：**不能用 conic-gradient 旋转**——胶囊是个又扁又长的"体育场"形，锥形渐变转角度时
-   边框上的落点速度跟角度不成正比（直边快、圆弧处几乎停），所以会出现"慢慢走、唰一下冲过弧"。
-   改成 offset-path 沿路径匀速跑：JS 按胶囊实际宽高生成体育场路径，光段用 offset-distance 走完全程。 */
+/* 5c. 边缘流光（Border Beam）：一道 1px 光沿胶囊描边匀速扫过去。
+   演进过两版，都失败过，别回头：
+   ① conic-gradient 旋转 —— 胶囊是又扁又长的"体育场"形，锥形渐变转同一角度，落点在直边和两端
+      圆弧上走的距离差好几倍，几何上就不可能匀速（"慢慢走、唰一下冲过弧"）。
+   ② offset-path 沿路径 —— 原理对（匀速），但在实机 WebView 里整条光渲染不出来，直接消失。
+   现在用已验证能亮的「padding-box 遮罩只剩 1px 描边」+ 线性渐变光带做横向匀速位移：
+   background-position 随时间线性变化 = 严格匀速，纯 CSS，零 JS。 */
 .cbtn{position:relative}
-.kiki-beam{position:absolute;top:-1px;left:-1px;height:1px;pointer-events:none;
-  offset-anchor:50% 50%;offset-rotate:auto;offset-distance:0%;
-  background:linear-gradient(90deg,rgba(127,184,255,0),rgba(190,225,255,.95));
-  box-shadow:0 0 6px rgba(127,184,255,.55);border-radius:1px;
-  animation:kiki-beam-run 5200ms linear infinite}
-@keyframes kiki-beam-run{from{offset-distance:0%}to{offset-distance:100%}}
+@media (prefers-reduced-motion: no-preference){
+  .cbtn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    padding:1px;
+    background-image:linear-gradient(96deg,
+      rgba(127,184,255,0) 0%, rgba(127,184,255,0) 40%,
+      rgba(150,200,255,.55) 48%, rgba(226,241,255,.92) 52%,
+      rgba(150,200,255,.55) 56%, rgba(127,184,255,0) 64%, rgba(127,184,255,0) 100%);
+    background-size:64% 100%;background-repeat:no-repeat;background-position:-64% 0;
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    mask-composite:exclude;
+    animation:kiki-beam-sweep 3400ms linear infinite}
+}
+@keyframes kiki-beam-sweep{from{background-position:-64% 0}to{background-position:164% 0}}
 
 /* 5d. 卡片入场淡入已下掉：`animation ... both` 会让卡片先被按到 opacity 0 再淡上来，
    快速滑到中途触发时反而是"整张卡消失一下又回来"，看着比不动更闪。 */
@@ -475,38 +488,7 @@ details[open]::details-content{height:auto}
     }, delay || 0);
   }
 
-  // 3c) 边缘流光：沿胶囊描边匀速跑一圈。不能用 conic-gradient 旋转——胶囊是又扁又长的
-  //     "体育场"形，锥形渐变的落点速度跟角度不成正比（直边快、两层圆弧处几乎卡住），
-  //     所以改走 offset-path，按实际宽高生成一条体育场路径，光段匀速走完全程。
-  function stadiumPath(w, h) {
-    var r = Math.min(h / 2, w / 2) - 0.5, t = 0.5;
-    var p = [[t + r, t], [w - t - r, t], [w - t, t + r], [w - t, h - t - r],
-             [w - t - r, h - t], [t + r, h - t], [t, h - t - r], [t, t + r]];
-    var arc = ' A' + r + ' ' + r + ' 0 0 1 ';
-    // 上边 → 右上角 → 右边 → 右下角 → 下边 → 左下角 → 左边 → 左上角 → 回到起点
-    return 'M' + p[0] + ' L' + p[1] + arc + p[2] + ' L' + p[3] + arc + p[4]
-         + ' L' + p[5] + arc + p[6] + ' L' + p[7] + arc + p[0];
-  }
-
-  var beamBtn = document.querySelector('.cbtn'), beamEl = null;
-  function placeBeam() {
-    if (!beamBtn) return;
-    if (beamEl) { beamEl.remove(); beamEl = null; }
-    if (!(window.CSS && CSS.supports && CSS.supports('offset-path', 'path("M0 0 L10 0")'))) return;
-    var w = beamBtn.offsetWidth, h = beamBtn.offsetHeight;
-    if (!w || !h) return;
-    var beam = document.createElement('span');
-    beam.className = 'kiki-beam';
-    beam.style.width = Math.max(14, Math.round(h * 1.6)) + 'px';
-    beam.style.offsetPath = 'path("' + stadiumPath(w, h) + '")';
-    beamBtn.appendChild(beam);
-    beamEl = beam;
-  }
-  placeBeam();
-  var rz;
-  window.addEventListener('resize', function () {
-    clearTimeout(rz); rz = setTimeout(placeBeam, 300);
-  });
+  // 3c) 边缘流光已在 CSS 里（.cbtn::after + 横向匀速位移），这里不需要 JS。
 
   // 3b) 跳到某张卡（目录 / 跨页锚点）：等滚动真的停下来再发水波纹。
   //     以前是 :target 一改 hash 就开播，等滚到位动画只剩最后一帧，等于白播。
