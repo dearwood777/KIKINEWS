@@ -238,10 +238,50 @@ footer .dot{opacity:.45;margin:0 6px}
 }
 .top.show{display:flex}
 </style>
+<!-- kiki-polish:start -->
+<link rel="expect" href="#kiki-head" blocking="render">
+<script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
+<style id="kiki-polish-css">
+/* ——— KIKI 视觉增强：纯 CSS、零 JS、全部跑在合成层 ——— */
+@view-transition{navigation:auto}
+@media (prefers-reduced-motion: reduce){
+  @view-transition{navigation:none}
+}
+/* 跨页衔接：旧页轻微上浮淡出，新页自下淡入。念「难点词汇」和「返回」都走这条 */
+@media (prefers-reduced-motion: no-preference){
+  ::view-transition-old(root){animation:kiki-out 240ms cubic-bezier(.32,.72,.24,1) both}
+  ::view-transition-new(root){animation:kiki-in 300ms cubic-bezier(.22,.82,.26,1) both}
+}
+@keyframes kiki-out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-10px)}}
+@keyframes kiki-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* 卡片随滚动入场：滚动驱动动画，不监听 scroll，不影响滚动流畅度 */
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    .card{animation:kiki-rise linear both;animation-timeline:view();animation-range:entry 2% entry 40%}
+  }
+}
+@keyframes kiki-rise{from{opacity:.4;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* 按钮与链接微交互：只改 transform / 阴影 / 颜色 */
+.pill,.back,.say,.vw{transition:transform 150ms cubic-bezier(.2,.8,.2,1),box-shadow 220ms ease,
+  border-color 220ms ease,color 150ms ease,background-color 150ms ease}
+@media (hover: hover){
+  .pill:hover,.back:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,.28)}
+  .vw:hover{color:#8fc4ff;background:rgba(90,166,255,.12);border-radius:5px}
+}
+.pill:active,.back:active{transform:translateY(0) scale(.97)}
+.vw{border-radius:5px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+
+/* 同页锚点跳转（词卡互链）平滑滚动 */
+@media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}
+</style>
+<!-- kiki-polish:end -->
 </head>
 <body>
 <div class="wrap">
-  <div class="hero">
+  <div class="hero" id="kiki-head">
     <div class="brand">KIKI DAILY · 每日速递</div>
     <div class="day">2026-11-21<span class="upd">北京时间 06:04 · 自动生成</span></div>
     <h1>Tech · Finance · World</h1>
