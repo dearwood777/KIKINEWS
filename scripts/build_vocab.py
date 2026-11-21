@@ -62,6 +62,11 @@ MIN_CARD_RANK = 4000
 # C1 词默认算“认识”，但词频掉到 8000 名以后的（persecution / tribunal），
 # 新闻里照样会卡住，按超纲处理。
 RARE_C1_RANK = 8000
+# 词库词频排进前 5500 的词，按“读者认识”计一份证据（score 2）。
+# 词库把 top-5000 左右算作常用词，这一档里 erase / deepen / bail / trillion /
+# landark(landmark) / tech 这类日常词如果没有 CEFR 等级，早前会被当成“零证据”
+# 直接进超纲层，白白占版面；给一份弱证据后它们只剩熟词生义层可以出卡。
+FAMILIAR_RANK = 5500
 # 熟词生义只看排名 3500 之后的词：ceiling / rate 这类太基础的，即使在新闻里有专业义也不列。
 NEWS_SENSE_MIN_RANK = 3000
 ENRICH_CACHE = os.path.join("data", "vocab_enrich.json")
@@ -392,6 +397,13 @@ def known_evidence(entry: dict) -> int:
         score = max(score, 3)
     if top and top <= COMMON_RANK // 2:
         score = max(score, 4)
+    elif top and top <= FAMILIAR_RANK:
+        # 前 5500 名：常用词，C1 读者基本都认识，只是词库没给 CEFR 等级
+        score = max(score, 2)
+    elif top and top <= COMMON_RANK and _intv(entry, "collins") >= 2:
+        # 5500–8000 名但 Collins 给到 2 星（口语/新闻语料里相当常见，
+        # deepen / bail / billion 这一档），同样算认识。
+        score = max(score, 2)
     tags = entry["tag"]
     if any(t in tags for t in ("zk", "gk")) and top and top <= COMMON_RANK:
         score = max(score, 1)
