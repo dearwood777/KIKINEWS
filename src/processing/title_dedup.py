@@ -14,7 +14,7 @@ Matching rules:
 - The token set mixes latin word tokens (len >= 3, stop words dropped) and CJK
   character bigrams, so Chinese titles are comparable without a segmenter.
 - Two plain (non-IDF) metrics are combined, both stable regardless of batch size:
-  * overlap coefficient = |A and B| / min(|A|, |B|), threshold 0.72 — catches a
+  * overlap coefficient = |A and B| / min(|A|, |B|), threshold 0.62 — catches a
     re-worded headline that reuses most of the shorter title's content;
   * Jaccard = |A and B| / |A or B|, threshold 0.20 — rejects pairs that only
     share a couple of words while each title carries a lot of other material.
@@ -57,7 +57,7 @@ _LATIN_TOKEN = re.compile(r"[a-z0-9']+")
 _CJK_RUN = re.compile(r"[\u4e00-\u9fff]+")
 _TAG = re.compile(r"<[^>]+>")
 
-OVERLAP_THRESHOLD = 0.72
+OVERLAP_THRESHOLD = 0.62
 JACCARD_THRESHOLD = 0.20
 MIN_TOKENS = 3
 MIN_SHARED_TOKENS = 2
