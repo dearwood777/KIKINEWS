@@ -1,0 +1,9 @@
+{
+ "versionCode": 160007,
+ "versionName": "1.6.007",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.007.apk",
+ "sha256": "dcbcb99ed7ded1e3d4b9ef2f278f7a749a71d6e21e06e786ef1b03bd581a7425",
+ "size": 2554894,
+ "notes": "新增“检查更新”：启动时自动比对新版本，点一下即可下载安装",
+ "minSdk": 24
+}
