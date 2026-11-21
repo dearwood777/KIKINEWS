@@ -1,5 +1,34 @@
 # 更新记录
 
+## 检查更新有回音 + 网页视觉升级（1.6.008） (2026-11-21)
+
+**一、先查现成的，再决定自己写**
+
+| 需求 | 上游项目 | 星数 | 结论 |
+| --- | --- | --- | --- |
+| 全局动效引擎 | `mrdoob/three.js` 119039★ / `greensock/GSAP` 31000★ / `juliangarnier/anime` 74940★ | — | 不采纳：都要额外下 30–600 KB JS 并在 WebView 里跑逐帧循环，为“看起来酷”付帧率和电量代价，与“不能影响体验”冲突 |
+| 滚动入场 | `michalsnik/aos` 28056★ | — | 不采纳：它的做法是 `IntersectionObserver` + 主线程回调，我们直接上原生 `animation-timeline: view()`（滚动驱动、合成层，零 JS） |
+| CSS 动效库 | `animate-css/animate.css` 83043★ | — | 不采纳：关键帧命名体系庞大，本项目只需要 3 组；自写 40 行 CSS 更可控，也不多一次请求 |
+| 平滑滚动 | `darkroomengineering/lenis` 17389★ / `dixonandmoe/rellax` 7115★ | — | 不采纳：Lenis 会接管滚轮/触摸（拦截默认滚动，WebView 里易与下拉刷新、小组件锚点滚动打架）；rellax 是视差滚动，本页不需要 |
+| 跨页过渡 | 浏览器原生 View Transitions（Baseline 2025-10） | — | **采纳**：跨文档 `@view-transition` + `rel=expect`，零 JS、零依赖、不支持就瞬切 |
+
+**二、检查更新不再“点了没反应”（1.6.008）**
+
+- 点「检查更新」立刻弹 `正在检查更新…` 的即时反馈，结果不再是转瞬即逝的 toast，而是模态弹窗：
+  - 无新版 →「已是最新版本」，正文列出当前版本号+versionCode 与线上版本号+versionCode；
+  - 有新版 → 原有「发现新版本」对话框（保留“下载并安装/稍后”）；
+  - 失败 →「检查更新失败」，正文附带真实原因（网络异常类名/信息，或“更新清单内容不完整”），并提示可直接下载安装包覆盖安装。
+- 启动时的静默检查保持不变：只有发现新版本才提示，且同一版本只自动提示一次。
+
+**三、网页视觉升级（同色调，纯 CSS）**
+
+- 新增 `scripts/web_polish.py`：幂等注入，可反复跑；`docs/latest.html`、`docs/latest-en.html`、`docs/vocab.html` 三页统一，部署前自动执行（workflow 新增一步）。
+- 跨页过场：点「难点词汇」/「返回」时旧页轻微上浮淡出、新页自下淡入（240/300ms，`cubic-bezier` 缓出）；`<link rel="expect" href="#kiki-head" blocking="render">` 保证快照时顶栏已解析，不会淡到白页。
+- 预渲染：`speculationrules` 以 `moderate` 粒度预渲染同源 html，点进词汇页基本零等待。
+- 卡片滚动入场：`animation-timeline: view()` + `entry 2%→40%`，只动 opacity/transform，不监听 scroll。
+- 微交互：胶囊/返回键 hover 上浮 2px + 阴影、tap 缩放 0.97；正文超纲词 `a.vw` 悬停变亮；`focus-visible` 统一 2px accent 描边（键盘可用性）。
+- 无障碍与降级：全部动效包在 `@media (prefers-reduced-motion: no-preference)` 里，开启“减少动态效果”时逐条关闭并 `@view-transition` 改为 `none`；不支持 View Transitions / 滚动驱动动画的浏览器直接瞬切、无入场动画，功能零影响。
+
 ## 依赖开源、机制补全、APK 自更新 (2026-11-21)
 
 **一、先查现成实现再动手（本轮结论）**
