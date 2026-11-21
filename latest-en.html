@@ -265,6 +265,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -497,9 +498,12 @@ details[open]::details-content{height:auto}
     return 'M' + p[0] + ' L' + p[1] + a + p[2] + ' L' + p[3] + a + p[4]
          + ' L' + p[5] + a + p[6] + ' L' + p[7] + a + p[0];
   }
-  // 线速度：与屏幕宽度无关的"匀速"基准（px/秒）。一圈时长由胶囊周长算出来，
-  // 手机窄、周长短 → 时长短也不会显快；平板宽、周长长 → 时长自动拉长。
-  var BEAM_SPEED = 185;
+  // 线速度：与屏幕宽度无关的"匀速"基准（px/秒）。一圈时长由胶囊周长算出来。
+  // 但纯匀速有个副作用：手机竖屏周长只有 744px，一圈 4s 就跑完，虽然线速度一样，
+  // 观感上"绕得太勤"显得快。所以再给一圈时长加下限 MIN_DUR，把短胶囊压慢一点；
+  // 大小屏的圈时差距也从 2.4 倍收到 1.8 倍以内。
+  var BEAM_SPEED = 160;
+  var MIN_DUR = 6200;
   function buildBeam() {
     var btn = document.querySelector('.cbtn');
     if (!btn || !document.createElementNS) return;
@@ -550,7 +554,7 @@ details[open]::details-content{height:auto}
     var head = svg.querySelector('.b0');
     btn.appendChild(svg);
     var len = head.getTotalLength();
-    var dur = Math.min(15000, Math.max(3200, Math.round(len / BEAM_SPEED * 1000)));
+    var dur = Math.min(18000, Math.max(MIN_DUR, Math.round(len / BEAM_SPEED * 1000)));
     svg.style.setProperty('--len', len + 'px');
     var offs = { b0: 0, bg: 0, b1: 6, b2: 14, b3: 24, b4: 36, b5: 50, b6: 66, b7: 84, b8: 104 };
     Object.keys(offs).forEach(function (cls) {
