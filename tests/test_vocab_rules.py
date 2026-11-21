@@ -122,3 +122,66 @@ def test_derived_rejects_when_root_not_in_dictionary():
 def test_derived_accepts_when_root_is_well_known():
     bases = {"care": entry("care", frq=1200, collins=4, oxford=1)}
     assert bv.derived_from_known("careless", bases) is True
+
+
+# ---------- 卡片复核：模型投票的边界 ----------
+
+def _card(word, rank, *, sense="", gloss="n. 测试"):
+    return {"word": word, "rank": rank, "gloss": gloss, "sense": sense, "ctx": "ctx ..."}
+
+
+def test_audit_drops_only_grey_band_words(monkeypatch):
+    calls = []
+
+    def fake_llm(prompt):
+        calls.append(prompt)
+        return '{"drop": ["trillion", "adjudicate"], "drop_sense": []}', {}, "fake"
+
+    monkeypatch.setattr(bv, "_llm_call", fake_llm)
+    monkeypatch.setenv("GROQ_API_KEY", "x")
+    monkeypatch.setattr(bv, "save_verdicts", lambda v: None)
+
+    verdicts = bv.audit_cards(
+        [_card("trillion", 5167), _card("adjudicate", 18877)], verdicts={}
+    )
+    assert verdicts["trillion"] == "drop"      # 灰区，采纳
+    assert verdicts["adjudicate"] == "keep"    # 9000 名以后的真难词，不接受删卡
+    assert len(calls) == 1
+
+
+def test_audit_ignores_sense_flag_on_plain_cards(monkeypatch):
+    monkeypatch.setattr(bv, "_llm_call",
+                        lambda p: ('{"drop": [], "drop_sense": ["susceptible"]}', {}, "fake"))
+    monkeypatch.setenv("GROQ_API_KEY", "x")
+    verdicts = bv.audit_cards([_card("susceptible", 6934)], verdicts={})
+    assert verdicts["susceptible"] == "keep"
+
+
+def test_audit_respects_cached_verdicts(monkeypatch):
+    calls = []
+
+    def fake_llm(prompt):
+        calls.append(prompt)
+        return '{"drop": [], "drop_sense": []}', {}, "fake"
+
+    monkeypatch.setattr(bv, "_llm_call", fake_llm)
+    monkeypatch.setenv("GROQ_API_KEY", "x")
+    verdicts = bv.audit_cards(
+        [_card("deepen", 6730)], verdicts={"deepen": "drop"}
+    )
+    assert verdicts["deepen"] == "drop"
+    assert calls == []  # 缓存命中就不再花一次模型调用
+
+
+def test_audit_keeps_everything_when_model_output_is_broken(monkeypatch):
+    monkeypatch.setattr(bv, "_llm_call", lambda p: ("抱歉，我无法判断。", {}, "fake"))
+    monkeypatch.setenv("GROQ_API_KEY", "x")
+    verdicts = bv.audit_cards([_card("landmark", 4715)], verdicts={})
+    assert verdicts.get("landmark") in (None, "keep")
+
+
+def test_audit_noop_without_api_key(monkeypatch):
+    for key in ("GROQ_API_KEY", "GOOGLE_API_KEY", "GEMINI_API_KEY"):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setattr(bv, "_llm_call", lambda p: (_ for _ in ()).throw(AssertionError))
+    assert bv.audit_cards([_card("tech", 4973)], verdicts={}) == {}
