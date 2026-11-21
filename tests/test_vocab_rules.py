@@ -29,7 +29,9 @@ def entry(word, frq=0, bnc=0, collins="0", oxford="0", tag="", translation="n. �
 
 @pytest.fixture(autouse=True)
 def _cefr(monkeypatch):
+    """默认关掉 CEFR 与 Zipf 两路外部数据，让每条测试只测自己要测的那条规则。"""
     monkeypatch.setattr(bv, "CEFR", {})
+    monkeypatch.setattr(bv, "_zipf", lambda word: 0.0)
 
 
 # ---------- 变形回推 ----------
@@ -110,6 +112,29 @@ def test_collins_one_star_beyond_familiar_band_is_unknown():
 
 def test_collins_weak_evidence_stops_at_common_rank():
     assert bv.known_evidence(entry("obsidian", frq=8500, collins=2)) == 0
+
+
+# ---------- Zipf 词频（wordfreq）作为额外证据 ----------
+
+def test_zipf_strong_marks_known(monkeypatch):
+    monkeypatch.setattr(bv, "_zipf", lambda w: 4.69)   # tech
+    assert bv.known_evidence(entry("tech", frq=4973)) == 3
+
+
+def test_zipf_familiar_marks_known_weakly(monkeypatch):
+    monkeypatch.setattr(bv, "_zipf", lambda w: 3.9)    # genocide / trillion 一档
+    assert bv.known_evidence(entry("trillion", frq=5167)) == 2
+
+
+def test_zipf_low_leaves_rare_word_unknown(monkeypatch):
+    monkeypatch.setattr(bv, "_zipf", lambda w: 2.47)   # adjudicate
+    assert bv.known_evidence(entry("adjudicate", frq=18877)) == 0
+
+
+def test_zipf_marks_unranked_compound_known(monkeypatch):
+    # 词库查不到排名的透明复合词（record-breaking），Zipf 是唯一信号
+    monkeypatch.setattr(bv, "_zipf", lambda w: 4.61)
+    assert bv.known_evidence(entry("record-breaking", frq=0)) == 3
 
 
 # ---------- 派生词排除 ----------
