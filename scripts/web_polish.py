@@ -86,11 +86,19 @@ def ensure_head_id(html: str) -> str:
 
 def polish(html: str) -> str:
     html = strip_previous(html)
-    if "</head>" not in html:
-        return html
     html = ensure_head_id(html)
-    block = "\n".join([START, EXPECT, SPECULATION, CSS, END]) + "\n"
-    return html.replace("</head>", block + "</head>", 1)
+    # 只有真找到锚点才加 rel=expect：找不到时它会把首屏渲染一直挡到文档解析结束
+    parts = [START]
+    if 'id="kiki-head"' in html:
+        parts.append(EXPECT)
+    parts += [SPECULATION, CSS, END]
+    block = "\n".join(parts) + "\n"
+    if "</head>" in html:
+        return html.replace("</head>", block + "</head>", 1)
+    # 词汇页没写 <head>/</head>（隐式 head），退回到第一个 <style> 之后插入，效果等价
+    if "</style>" in html:
+        return html.replace("</style>", "</style>\n" + block, 1)
+    return html
 
 
 def main(argv: list[str]) -> int:
