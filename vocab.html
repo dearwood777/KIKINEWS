@@ -149,14 +149,16 @@ html{background-color:#0e1320}
    拖一条暗尾；几何上天然匀速，只可能出现一条光。 */
 .cbtn{position:relative}
 .kiki-beam{position:absolute;top:-1px;left:-1px;pointer-events:none;overflow:visible}
-.kiki-beam .bh{animation:kiki-beam-head 6000ms linear infinite;
-  filter:drop-shadow(0 0 2px rgba(150,200,255,.85))}
-.kiki-beam .bt{animation:kiki-beam-tail 6000ms linear infinite}
-@keyframes kiki-beam-head{from{stroke-dashoffset:0}to{stroke-dashoffset:calc(-1 * var(--len))}}
-@keyframes kiki-beam-tail{from{stroke-dashoffset:34px}to{stroke-dashoffset:calc(34px - var(--len))}}
+/* 路径本身不动，靠每层自己的 animation-delay 决定它在亮头后面多远（延迟由 JS 按路径长度算） */
+.kiki-beam path{animation:kiki-beam-run 6000ms linear infinite both}
+@keyframes kiki-beam-run{from{stroke-dashoffset:0}to{stroke-dashoffset:calc(-1 * var(--len))}}
 
 /* 5d. 卡片入场淡入已下掉：`animation ... both` 会让卡片先被按到 opacity 0 再淡上来，
    快速滑到中途触发时反而是"整张卡消失一下又回来"，看着比不动更闪。 */
+
+/* 5e. 数字递增用的数字容器：等宽数字 + 预留 2 位宽度，
+   这样从 7 数到 12 时不会把右边的内容（比如「难点词汇 ›」）顶出去 */
+.kiki-num{display:inline-block;font-variant-numeric:tabular-nums;text-align:center;vertical-align:baseline}
 
 /* 5b. 背景星尘视差：极淡光点，随滚动反向慢移 */
 @keyframes kiki-drift{to{transform:translateY(-96px)}}
@@ -318,7 +320,9 @@ details[open]::details-content{height:auto}
     svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
     svg.setAttribute('width', w); svg.setAttribute('height', h);
     var d = stadiumD(w, h);
-    function mk(cls, dash, color, width) {
+    // 一层 = 一条 dash。dash 沿路径移动时，靠 animation-delay 让它落在亮头后面 different 距离：
+    // 拖后 d px ≡ 相位提前 (len - d)，所以 delay = -(6000 * (len - d) / len)。
+    function layer(dash, behind, color, width, blur, cls) {
       var p = document.createElementNS(ns, 'path');
       p.setAttribute('d', d);
       p.setAttribute('fill', 'none');
@@ -326,14 +330,26 @@ details[open]::details-content{height:auto}
       p.setAttribute('stroke-width', width);
       p.setAttribute('stroke-linecap', 'round');
       p.setAttribute('stroke-dasharray', dash + ' 9999');
+      if (blur) p.style.filter = 'blur(' + blur + 'px)';
       p.setAttribute('class', cls);
       svg.appendChild(p);
       return p;
     }
-    mk('bt', 34, 'rgba(127,184,255,.34)', 1);      // 暗尾，跟在亮头后面 34px
-    var head = mk('bh', 9, 'rgba(226,241,255,.98)', 1.2);
+    // 从后往前铺，最后加的亮核在最上层（一层层叠出"流星"：长尾→中尾→亮芯→白热头）
+    layer(110, 100, 'rgba(70,140,255,.06)', 1, 0, 'b6');
+    layer(72, 66, 'rgba(90,166,255,.11)', 1, 0, 'b5');
+    layer(48, 30, 'rgba(110,180,255,.20)', 1.2, 0, 'b4');
+    layer(28, 10, 'rgba(150,205,255,.42)', 1.6, 0, 'b3');
+    layer(18, 2, 'rgba(150,200,255,.55)', 3.2, 2.4, 'b2');         // 外发光
+    var head = layer(16, 0, 'rgba(210,232,255,.95)', 2.2, 0.8, 'b1'); // 亮芯
+    layer(6, 0, 'rgba(250,253,255,1)', 2.8, 1.2, 'b0');            // 白热头
     btn.appendChild(svg);
-    svg.style.setProperty('--len', head.getTotalLength() + 'px');
+    var len = head.getTotalLength();
+    svg.style.setProperty('--len', len + 'px');
+    [['b0', 0], ['b1', 0], ['b2', 2], ['b3', 10], ['b4', 30], ['b5', 66], ['b6', 100]].forEach(function (it) {
+      var el = svg.querySelector('.' + it[0]);
+      if (el) el.style.animationDelay = (-6000 * (len - it[1]) / len) + 'ms';
+    });
   }
 
   // 3b) 跳到某张卡（目录 / 跨页锚点）：等滚动真的停下来再发水波纹。
@@ -418,8 +434,10 @@ details[open]::details-content{height:auto}
       Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
     }
 
-    // 数字递增：卡片/顶栏里的数字从 0 数上去，滚进视野触发一次
+    // 数字递增：报头/候选条/摘要里的数字从 0 数上去，滚进视野触发一次。
+    // 数字单独包一层 .kiki-num（等宽数字 + 预留 2 位宽），位数变化不会把右边的内容顶出去。
     function countUp(el) {
+      if (el.getAttribute('data-kiki-counted')) return;
       var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), n, t = null;
       while ((n = w.nextNode())) { if (/[0-9]/.test(n.nodeValue)) { t = n; break; } }
       if (!t) return;
@@ -427,9 +445,20 @@ details[open]::details-content{height:auto}
       if (!m) return;
       var target = parseInt(m[0], 10);
       if (!target || target > 9999) return;
-      var head = t.nodeValue.slice(0, m.index), tail = t.nodeValue.slice(m.index + m[0].length);
-      // 补零到目标位数：数到 9 时显示 09 而不是 9，避免位数变化把右边的内容顶得跳一下
+      el.setAttribute('data-kiki-counted', '1');
+
+      var before = t.nodeValue.slice(0, m.index), after = t.nodeValue.slice(m.index + m[0].length);
+      t.nodeValue = before;
+      var span = document.createElement('span');
+      span.className = 'kiki-num';
       var pad = String(target).length;
+      span.style.minWidth = Math.max(2, pad) + 'ch';   // 最少按两位留位
+      var par = t.parentNode;
+      par.insertBefore(span, t.nextSibling);
+      par.insertBefore(document.createTextNode(after), span.nextSibling);
+      if (pad > 1) span.textContent = new Array(pad + 1).join('0');
+      else span.textContent = '0';
+
       var t0 = null, dur = 1800;              // 1.8s：太快会"一进页面就数完了"，看不出效果
       function frame(ts) {
         if (t0 === null) t0 = ts;
@@ -437,12 +466,12 @@ details[open]::details-content{height:auto}
         var e = 1 - Math.pow(1 - p, 3);          // ease out cubic
         var v = String(Math.round(target * e));
         while (v.length < pad) v = '0' + v;
-        t.nodeValue = head + v + tail;
+        span.textContent = v;
         if (p < 1) requestAnimationFrame(frame);
       }
       setTimeout(function () { requestAnimationFrame(frame); }, 180);
     }
-    var nums = document.querySelectorAll('.cbtn .l,.cbtn .r,.summary > div,.bar .count');
+    var nums = document.querySelectorAll('.pillrow span.pill,.cbtn .l,.cbtn .r,.summary > div,.bar .count');
     if ('IntersectionObserver' in window) {
       var cio = new IntersectionObserver(function (es) {
         es.forEach(function (en) {
@@ -467,6 +496,8 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
 
 
 
