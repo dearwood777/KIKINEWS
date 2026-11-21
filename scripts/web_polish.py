@@ -9,12 +9,12 @@
    覆盖到位，中间没有任何"露底"的时机 —— 白闪从结构上消灭，不再依赖给伪元素刷底色。
 3. 共享元素：`.pill-link`（难点词汇 ›）与 `.back`（‹ 返回今日速递）共用
    `view-transition-name: kiki-pill`，会跨页飞过去。
-4. 卡片：日报页滚动到卡片时外框爆一圈水波纹 + 轻上浮；词汇页在跨页过渡收尾后，
-   顺着卡片顺序每隔 90ms 爆一圈波纹、卡面被蓝光洗过一层（卡片本体一动不动）。
+4. 卡片：**抖绸带**——整列像一块布被提起来再往下甩，波峰顺着卡片往下走（`.kiki-wave`，
+   按序号每隔 72ms 递增）；卡片落地/滚进画面时外框爆一圈水波纹。
 5. 细节：目标卡片连扩两圈、`<details>` 高度动画、发音键「一圈一圈」的水波纹（真环形扩展）、
-   切页后一道细光带从上往下扫过整屏、点按去方形蓝底、焦点描边。
-6. 一段极小的内联 JS：卡片发光元素生成（过渡结束后才起跑，避免和转场快照打架 = 不抖）、
-   发音键水波纹、连续点击去抖（防止 700ms 内反复触发跨页过渡）。
+   点按去方形蓝底、焦点描边。
+6. 一段极小的内联 JS：绸带波纹的编号与触发（跨页过渡结束后才起跑，所以不会和转场快照打架）、
+   外框水波纹元素生成、发音键水波纹、连续点击去抖（防止 700ms 内反复触发跨页过渡）。
 
 用法：python scripts/web_polish.py docs/latest.html docs/latest-en.html docs/vocab.html
 """
@@ -73,8 +73,18 @@ html{background-color:{{BG}}}
 @keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
 
-/* 5. 卡片入场：只动 opacity / transform，绝不改尺寸与布局，所以不会抖 */
-@keyframes kiki-rise{from{opacity:.3;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
+/* 5. 卡片「抖绸带」入场：整列像一块布被提起再往下甩，波峰顺着卡片往下走。
+   只动 transform，卡片本体不淡入不出场，所以不会和跨页转场快照打架（也就不会抖） */
+@keyframes kiki-ribbon{
+  0%{transform:translateY(0) rotate(0deg)}
+  20%{transform:translateY(-15px) rotate(-.7deg)}
+  46%{transform:translateY(7px) rotate(.35deg)}
+  68%{transform:translateY(-2.5px) rotate(-.12deg)}
+  86%{transform:translateY(1px)}
+  100%{transform:translateY(0) rotate(0deg)}
+}
+.kiki-wave{animation:kiki-ribbon 940ms cubic-bezier(.3,.72,.22,1) both;
+  animation-delay:calc(min(var(--kiki-i,0),12) * 72ms);will-change:transform}
 /* 卡片外框水波纹：真的空心圆环从卡片边缘往外扩一圈再淡掉（和发音键同一套视觉语言） */
 @keyframes kiki-halo-rip{
   0%{opacity:.92;transform:scale(1)}
@@ -83,18 +93,7 @@ html{background-color:{{BG}}}
 }
 /* 卡片「点亮」：一层冷蓝光洗过卡面，不动位置、不改尺寸 */
 @keyframes kiki-wash{0%{opacity:0}32%{opacity:.9}100%{opacity:0}}
-/* 切页后一道细光带从上往下扫过整屏，一次性 */
-@keyframes kiki-scan{
-  0%{transform:translateY(-6px);opacity:0}
-  12%{opacity:.95}
-  75%{opacity:.7}
-  100%{transform:translateY(100vh);opacity:0}
-}
-.kiki-scan{position:fixed;left:-12%;right:-12%;top:0;height:2px;z-index:9998;pointer-events:none;
-  background:linear-gradient(90deg,transparent,rgba(127,184,255,.95),transparent);
-  box-shadow:0 0 24px rgba(127,184,255,.7);
-  animation:kiki-scan 900ms cubic-bezier(.4,0,.2,1) both}
-/* 卡片外框水波纹（由内联 JS 生成，日报页滚动到卡片 / 词汇页过渡收尾后顺次触发） */
+/* 卡片外框水波纹（由内联 JS 生成，日报页滚动到卡片 / 词汇页卡片落地时触发） */
 .kiki-halo{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
   border:2px solid rgba(127,184,255,.9);box-shadow:0 0 18px rgba(127,184,255,.5);
   animation:kiki-halo-rip 880ms cubic-bezier(.2,.7,.3,1) forwards}
@@ -155,25 +154,19 @@ details[open]::details-content{height:auto}
 </style>
 """.strip()
 
-CARDS_SCROLL = """/* 日报卡：轻上浮留着滚动驱动；外框水波纹改由 JS 在卡片入画时发一圈（时间驱动的才看得见） */
+CARDS_SCROLL = """/* 日报卡：入场交给 JS 的「抖绸带」（.kiki-wave 按顺序延迟），这里只留外框水波纹容器 */
 .cards>.card{position:relative}
 .cards>.card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  border:2px solid rgba(127,184,255,.9);box-shadow:0 0 18px rgba(127,184,255,.5);opacity:0}
-@supports (animation-timeline: view()){
-  @media (prefers-reduced-motion: no-preference){
-    .cards>.card{animation:kiki-rise linear both;animation-timeline:view();animation-range:entry 2% entry 45%}
-  }
-}"""
+  border:2px solid rgba(127,184,255,.9);box-shadow:0 0 18px rgba(127,184,255,.5);opacity:0}"""
 
 
 def cards_stagger(n: int = 10) -> str:
-    """词汇页卡片：本体完全静止（原来是从右侧滑进来，跨页快照拍到"滑到一半"的卡，
-    转场结束切回实时页面状态对不上 → 第一张卡抖一下）。
+    """词汇页卡片：本体在跨页转场期间保持完全静止（以前是自己从右侧滑进来，
+    转场快照拍到"滑到一半"的卡，转场结束切回实时页面状态对不上 → 第一张卡抖一下）。
 
-    现在改由内联 JS 在跨页过渡收尾后，顺着卡片顺序每隔 90ms 让外框爆一圈水波纹、
-    卡面被蓝光洗过一层；只动 opacity / transform，卡片本体没有任何可抖的东西。
+    入场改由内联 JS 触发 `.kiki-wave`（抖绸带）+ 落地爆一圈水波纹，全部只动 transform / opacity。
     """
-    return ("/* 词汇卡：本体静止，外框波纹与卡面蓝光由内联 JS 顺次点亮（90ms 递增） */\n"
+    return ("/* 词汇卡：入场由 JS 的抖绸带驱动，这里只保留波纹容器 */\n"
             ".cards>.card{position:relative}")
 
 
@@ -231,29 +224,41 @@ JS = """
   }
 
   function start() {
-    var scan = document.createElement('div');
-    scan.className = 'kiki-scan';
-    document.body.appendChild(scan);
-    setTimeout(function () { scan.remove(); }, 1800);
-
     var cards = document.querySelectorAll('.cards > .card');
     var isVocab = !!document.querySelector('.back');
 
-    if (isVocab) {
-      // 词汇页：一道波纹顺着卡片顺序往下扫，每张间隔 90ms（到第 10 张封顶）
-      Array.prototype.forEach.call(cards, function (c, i) {
-        pop(c, Math.min(i, 10) * 90);
+    // 抖绸带：给每个元素编号 --kiki-i，CSS 按编号递增延迟 → 波峰顺着列表往下走
+    function ribbon(nodes, cap) {
+      Array.prototype.forEach.call(nodes, function (el, i) {
+        el.style.setProperty('--kiki-i', Math.min(i, cap));
+        el.classList.add('kiki-wave');
+        setTimeout(function () { el.classList.remove('kiki-wave'); },
+          1100 + Math.min(i, cap) * 72);
       });
-    } else if ('IntersectionObserver' in window) {
-      // 日报页：卡片滚进画面时发一圈水波纹（时间驱动，和发音键同一套观感）
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) {
-          if (!en.isIntersecting) return;
-          io.unobserve(en.target);
-          pop(en.target, 0);
-        });
-      }, { threshold: 0.35 });
-      Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
+    }
+
+    if (isVocab) {
+      // 词汇页：整列卡片抖一次绸带，每张落地时爆一圈水波纹
+      ribbon(cards, 12);
+      Array.prototype.forEach.call(cards, function (c, i) {
+        pop(c, Math.min(i, 12) * 72 + 430);
+      });
+    } else {
+      // 日报页：摘要、目录卡与正文卡一起抖一次
+      var blocks = document.querySelectorAll('.flow > .summary, .toc, .cards > .card');
+      ribbon(blocks, 8);
+
+      // 往下滚时，卡片进画面再爆一圈水波纹（时间驱动，和发音键同一套观感）
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            io.unobserve(en.target);
+            pop(en.target, 0);
+          });
+        }, { threshold: 0.35 });
+        Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
+      }
     }
   }
   var wait = 640;
