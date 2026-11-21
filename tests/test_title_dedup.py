@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
@@ -156,3 +157,76 @@ def test_chinese_titles_of_the_same_event_are_merged(monkeypatch):
     result = run_topic_dedup(monkeypatch, FakeClient({"duplicates": []}), items)
 
     assert [item.id for item in result] == ["a", "c"]
+
+
+def test_reworded_but_not_literal_headlines_still_merge(monkeypatch):
+    # Real 11-21 pair: overlap 0.67, below the old 0.72 bar, same assassination
+    # plot. The threshold has to catch re-wordings, not only near-copies.
+    items = [
+        make_item(
+            "a", 9.0,
+            "Indian man sentenced to 19 years in prison for conspiring to kill "
+            "Sikh separatist in New York",
+        ),
+        make_item(
+            "b", 8.0,
+            "Indian man sentenced to 19-plus years in plot to assassinate US-based "
+            "Sikh separatist",
+        ),
+        make_item("c", 7.0, "Fiona the hippo dies after swallowing a hat at Cincinnati Zoo"),
+    ]
+    result = run_topic_dedup(monkeypatch, FakeClient({"duplicates": []}), items)
+
+    assert [item.id for item in result] == ["a", "c"]
+
+
+class RejectLargeBlocksClient:
+    """Fails like Groq does on big JSON requests, answers correctly on small ones."""
+
+    def __init__(self, max_items):
+        self.max_items = max_items
+        self.sizes = []
+
+    async def complete(self, **kwargs):
+        size = len(re.findall(r"^\[\d+\]", kwargs["user"], flags=re.MULTILINE))
+        self.sizes.append(size)
+        if size > self.max_items:
+            raise RuntimeError(
+                "Error code: 400 - {'error': {'message': \"Failed to generate JSON\"}}"
+            )
+        return json.dumps({"duplicates": [[0, 1]] if size >= 2 else []})
+
+
+def test_ai_dedup_splits_a_block_the_model_rejects_then_merges(monkeypatch):
+    titles = [
+        "Storm damages pipelines across Alaska oilfields",
+        "Comet sighting draws crowds to a remote Chilean observatory",
+        "New tram line opens in Lisbon after a decade of works",
+        "Bakery strike ends in the suburbs of Paris",
+    ]
+    monkeypatch.setattr(orchestrator_module.HorizonOrchestrator, "AI_DEDUP_BLOCK", 4)
+    client = RejectLargeBlocksClient(max_items=2)
+    items = [make_item(str(i), 9.0 - i, titles[i]) for i in range(4)]
+
+    result = run_topic_dedup(monkeypatch, client, items)
+
+    # 4-item request refused, halves of 2 answered → one merge per half.
+    assert max(client.sizes) == 4
+    assert [item.id for item in result] == ["0", "2"]
+
+
+def test_ai_dedup_groups_keep_their_offset_across_blocks(monkeypatch):
+    titles = [
+        "Storm damages pipelines across Alaska oilfields",
+        "Comet sighting draws crowds to a remote Chilean observatory",
+        "New tram line opens in Lisbon after a decade of works",
+        "Bakery strike ends in the suburbs of Paris",
+    ]
+    monkeypatch.setattr(orchestrator_module.HorizonOrchestrator, "AI_DEDUP_BLOCK", 2)
+    client = RejectLargeBlocksClient(max_items=2)
+    items = [make_item(str(i), 9.0 - i, titles[i]) for i in range(4)]
+
+    result = run_topic_dedup(monkeypatch, client, items)
+
+    # Each 2-item block merges its own pair: 4 items → 2, never 1.
+    assert [item.id for item in result] == ["0", "2"]
