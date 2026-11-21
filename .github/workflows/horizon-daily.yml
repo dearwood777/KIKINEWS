@@ -223,6 +223,10 @@ jobs:
         if: ${{ inputs.probe != 'yes' }}
         run: python scripts/prune_vocab_links.py || echo "anchor prune skipped"
 
+      - name: Polish pages (view transitions / scroll reveal)
+        if: ${{ inputs.probe != 'yes' }}
+        run: python scripts/web_polish.py || echo "polish skipped"
+
       - name: Show what was produced
         if: ${{ inputs.probe != 'yes' }}
         run: |
