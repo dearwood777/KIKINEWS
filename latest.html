@@ -262,6 +262,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -494,9 +495,14 @@ details[open]::details-content{height:auto}
     return 'M' + p[0] + ' L' + p[1] + a + p[2] + ' L' + p[3] + a + p[4]
          + ' L' + p[5] + a + p[6] + ' L' + p[7] + a + p[0];
   }
+  // 线速度：与屏幕宽度无关的"匀速"基准（px/秒）。一圈时长由胶囊周长算出来，
+  // 手机窄、周长短 → 时长短也不会显快；平板宽、周长长 → 时长自动拉长。
+  var BEAM_SPEED = 185;
   function buildBeam() {
     var btn = document.querySelector('.cbtn');
     if (!btn || !document.createElementNS) return;
+    var old = btn.querySelector('svg.kiki-beam');
+    if (old) old.remove();                       // 旋转屏幕/换布局后要按新尺寸重画
     var w = btn.offsetWidth, h = btn.offsetHeight;
     if (!w || !h) return;
     var ns = 'http://www.w3.org/2000/svg';
@@ -505,8 +511,6 @@ details[open]::details-content{height:auto}
     svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
     svg.setAttribute('width', w); svg.setAttribute('height', h);
     var d = stadiumD(w, h);
-    // 一层 = 一条 dash。dash 沿路径移动时，靠 animation-delay 让它落在亮头后面 different 距离：
-    // 拖后 d px ≡ 相位提前 (len - d)，所以 delay = -(6000 * (len - d) / len)。
     function layer(dash, behind, color, width, blur, cls) {
       var p = document.createElementNS(ns, 'path');
       p.setAttribute('d', d);
@@ -520,25 +524,38 @@ details[open]::details-content{height:auto}
       svg.appendChild(p);
       return p;
     }
-    // 从尾往头铺：宽度 1.0→2.2px、透明度 .08→.95 逐步过渡，叠出一条连续收窄的彗形。
-    // 关键是**没有**单独的大头，不然就是"小蝌蚪"；头尾之间只差 0.1~0.2px，过渡连续。
-    layer(138, 104, 'rgba(70,140,255,.08)', 1.0, 0, 'b8');
-    layer(116, 84, 'rgba(80,150,255,.14)', 1.15, 0, 'b7');
-    layer(96, 66, 'rgba(95,165,255,.22)', 1.3, 0, 'b6');
-    layer(78, 50, 'rgba(110,180,255,.31)', 1.45, 0, 'b5');
-    layer(62, 36, 'rgba(125,190,255,.41)', 1.6, 0, 'b4');
-    layer(48, 24, 'rgba(140,200,255,.52)', 1.75, 0, 'b3');
-    layer(36, 14, 'rgba(160,210,255,.64)', 1.9, 0, 'b2');
-    layer(22, 0, 'rgba(150,200,255,.34)', 4.0, 3, 'bg');            // 头部外发光（只在最前面一点点）
-    layer(26, 6, 'rgba(185,220,255,.78)', 2.05, 0, 'b1');
-    var head = layer(16, 0, 'rgba(232,244,255,.95)', 2.2, 0, 'b0'); // 亮芯
+    // 尺寸随胶囊宽度缩放：竖屏（约 380px 宽）按 1 倍，横屏/平板按比例拉长，
+    // 否则固定 138px 的尾巴在大宽屏上会显得像个小点。粗细只按 s^0.55 放大，避免又变笨。
+    var s = Math.min(2.6, Math.max(1, w / 380));
+    var ws = Math.pow(s, 0.55);
+    var LAYERS = [
+      [138, 104, 'rgba(70,140,255,.08)', 0.60, 0, 'b8'],
+      [116,  84, 'rgba(80,150,255,.14)', 0.70, 0, 'b7'],
+      [96,   66, 'rgba(95,165,255,.22)', 0.78, 0, 'b6'],
+      [78,   50, 'rgba(110,180,255,.31)', 0.88, 0, 'b5'],
+      [62,   36, 'rgba(125,190,255,.41)', 0.96, 0, 'b4'],
+      [48,   24, 'rgba(140,200,255,.52)', 1.05, 0, 'b3'],
+      [36,   14, 'rgba(160,210,255,.64)', 1.12, 0, 'b2'],
+      [22,    0, 'rgba(150,200,255,.30)', 2.40, 2.4, 'bg'],   // 头部外发光
+      [26,    6, 'rgba(185,220,255,.78)', 1.20, 0, 'b1'],
+      [16,    0, 'rgba(232,244,255,.95)', 1.30, 0, 'b0']      // 亮芯
+    ];
+    LAYERS.forEach(function (L) {
+      layer(Math.round(L[0] * s), Math.round(L[1] * s), L[2],
+            +(L[3] * ws).toFixed(2), L[4] ? +(L[4] * ws).toFixed(2) : 0, L[5]);
+    });
+    var head = svg.querySelector('.b0');
     btn.appendChild(svg);
     var len = head.getTotalLength();
+    var dur = Math.min(15000, Math.max(3200, Math.round(len / BEAM_SPEED * 1000)));
     svg.style.setProperty('--len', len + 'px');
-    [['b0', 0], ['bg', 0], ['b1', 6], ['b2', 14], ['b3', 24], ['b4', 36],
-     ['b5', 50], ['b6', 66], ['b7', 84], ['b8', 104]].forEach(function (it) {
-      var el = svg.querySelector('.' + it[0]);
-      if (el) el.style.animationDelay = (-6000 * (len - it[1]) / len) + 'ms';
+    var offs = { b0: 0, bg: 0, b1: 6, b2: 14, b3: 24, b4: 36, b5: 50, b6: 66, b7: 84, b8: 104 };
+    Object.keys(offs).forEach(function (cls) {
+      var el = svg.querySelector('.' + cls);
+      if (!el) return;
+      var behind = Math.min(offs[cls] * s, len / 2 - 10);
+      el.style.animationDuration = dur + 'ms';
+      el.style.animationDelay = (-dur * (len - behind) / len) + 'ms';
     });
   }
 
@@ -623,8 +640,19 @@ details[open]::details-content{height:auto}
     });
   }
 
+  var beamRz;
+  function scheduleBeam() { clearTimeout(beamRz); beamRz = setTimeout(buildBeam, 180); }
+
   function start() {
     buildBeam();
+    // 屏幕旋转 / 折叠屏切换 / 窗口变化：胶囊长度变了就得按新轮廓重画，
+    // 否则光还在照着旧的（竖屏那条短）路径跑。
+    var beamBtn = document.querySelector('.cbtn');
+    if (beamBtn && window.ResizeObserver) {
+      new ResizeObserver(scheduleBeam).observe(beamBtn);
+    }
+    window.addEventListener('resize', scheduleBeam);
+    window.addEventListener('orientationchange', function () { setTimeout(buildBeam, 320); });
     hardLand();          // 跨文档带 #锚点进来时，见下方 hardLand 注释
     // 顶部阅读进度光条（滚动时间线驱动，不支持就什么都不显示）
     var bar = document.createElement('div');
