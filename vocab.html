@@ -139,6 +139,30 @@ html{background-color:#0e1320}
   background:linear-gradient(158deg,rgba(127,184,255,.16),rgba(127,184,255,0) 60%);
   animation:kiki-wash 1150ms ease forwards}
 
+/* 5c. 边缘流光（Border Beam）：一道 1px 光沿着胶囊描边循环跑一圈。
+   用 conic-gradient 画光带，再用 padding-box 遮罩 XOR 掉内部，只剩边框那 1px。 */
+@property --kiki-beam{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes kiki-beam-spin{to{--kiki-beam:360deg}}
+.cbtn{position:relative}
+@media (prefers-reduced-motion: no-preference){
+  .cbtn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    padding:1px;
+    background:conic-gradient(from var(--kiki-beam,0deg),
+      rgba(127,184,255,0) 0deg, rgba(127,184,255,0) 245deg,
+      rgba(127,184,255,.5) 300deg, rgba(226,241,255,.95) 348deg, rgba(127,184,255,0) 360deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    mask-composite:exclude;
+    animation:kiki-beam-spin 4.5s linear infinite}
+}
+
+/* 5d. 卡片入场淡入：只做 opacity（不加位移，避免和水波纹定位打架），滚进视野时错峰触发 */
+@keyframes kiki-card-in{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: no-preference){
+  .kiki-in{animation:kiki-card-in 340ms cubic-bezier(.22,.8,.3,1) both}
+}
+
 /* 5b. 背景星尘视差：极淡光点，随滚动反向慢移 */
 @keyframes kiki-drift{to{transform:translateY(-96px)}}
 
@@ -317,17 +341,53 @@ details[open]::details-content{height:auto}
       if (r.top < h - 40 && r.bottom > 0) initial.push(c);
     });
 
-    // 卡片滚进视野时发一圈水波纹
+    // 卡片滚进视野：错峰淡入（每张间隔 70ms）+ 水波纹
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
+        var i = 0;
         entries.forEach(function (en) {
           if (!en.isIntersecting) return;
           io.unobserve(en.target);
           if (initial.indexOf(en.target) >= 0) return;  // 进来时就在画面里，跳过
-          pop(en.target, 0);
+          var el = en.target, d = i++ * 70;
+          setTimeout(function () { el.classList.add('kiki-in'); }, d);
+          pop(el, d);
         });
       }, { threshold: 0.3, rootMargin: '0px 0px -8% 0px' });
       Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
+    }
+
+    // 数字递增：卡片/顶栏里的数字从 0 数上去，滚进视野触发一次
+    function countUp(el) {
+      var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), n, t = null;
+      while ((n = w.nextNode())) { if (/[0-9]/.test(n.nodeValue)) { t = n; break; } }
+      if (!t) return;
+      var m = t.nodeValue.match(/[0-9]+/);
+      if (!m) return;
+      var target = parseInt(m[0], 10);
+      if (!target || target > 9999) return;
+      var head = t.nodeValue.slice(0, m.index), tail = t.nodeValue.slice(m.index + m[0].length);
+      var t0 = null, dur = 1000;
+      function frame(ts) {
+        if (t0 === null) t0 = ts;
+        var p = Math.min(1, (ts - t0) / dur);
+        var e = 1 - Math.pow(1 - p, 3);          // ease out cubic
+        t.nodeValue = head + Math.round(target * e) + tail;
+        if (p < 1) requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+    var nums = document.querySelectorAll('.cbtn .l,.cbtn .r,.summary > div,.bar .count');
+    if ('IntersectionObserver' in window) {
+      var cio = new IntersectionObserver(function (es) {
+        es.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          cio.unobserve(en.target); countUp(en.target);
+        });
+      }, { threshold: 0.4 });
+      Array.prototype.forEach.call(nums, function (n) { cio.observe(n); });
+    } else {
+      Array.prototype.forEach.call(nums, countUp);
     }
 
     // 带锚点进来的（比如从主页点超纲词跳到某张卡）：滚到位后再发
@@ -342,6 +402,8 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
 
 
 
