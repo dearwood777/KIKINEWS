@@ -28,6 +28,7 @@
 - 卡片滚动入场：`animation-timeline: view()` + `entry 2%→40%`，只动 opacity/transform，不监听 scroll。
 - 微交互：胶囊/返回键 hover 上浮 2px + 阴影、tap 缩放 0.97；正文超纲词 `a.vw` 悬停变亮；`focus-visible` 统一 2px accent 描边（键盘可用性）。
 - 无障碍与降级：全部动效包在 `@media (prefers-reduced-motion: no-preference)` 里，开启“减少动态效果”时逐条关闭并 `@view-transition` 改为 `none`；不支持 View Transitions / 滚动驱动动画的浏览器直接瞬切、无入场动画，功能零影响。
+- **v4（同日晚，纯页面改动）**：① 白闪根治——过渡快照层背后是 UA 的白色画布，旧版还给新页加了 `opacity .75` 起手、旧页加了 `brightness()` 压暗，半透明时直接透出白底，来回快速点几次就整页变白；现在只做位移，并把 `html` / `::view-transition` / `group` / `image-pair` / `old` / `new` 六层全部刷成页面底色 `#0e1320`。② 时长 520 / 600ms，缓出曲线 `cubic-bezier(.22,1,.36,1)`（长尾收速）。③ 共享元素跨页形变：`.pill-link`（难点词汇 ›）与 `.back`（‹ 返回今日速递）共用 `view-transition-name: kiki-pill`。④ 词汇页卡片改「错峰点亮」（`animation-delay: min(--kiki-i,10) * 45ms`），日报页仍走滚动驱动。⑤ 发音键点按水波纹。
 
 ## 依赖开源、机制补全、APK 自更新 (2026-11-21)
 
