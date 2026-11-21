@@ -20,9 +20,9 @@
 
 **二、边缘流光（Border Beam，只做「从 71 条中筛出 / 展开全部 71 条」这个胶囊）**
 
-- 第一版用 `conic-gradient` 旋转，**线条速度不均**（直边看着慢、冲过两端圆弧时”唰”一下），已废弃。根因：胶囊是又扁又长的”体育场”形，锥形渐变转同一角度，落点在直边和圆弧上走的距离差很多倍，几何上不可能匀速。
-- 现方案：JS 按胶囊实际宽高生成一条体育场路径（4 段直线 + 4 段 90° 圆弧，半径 = 高/2），光段用 `offset-path` + `offset-distance 0→100%` 沿路径走，`offset-rotate:auto` 让光段贴着切线方向；5200ms 一圈，**匀速**。
-- 光段本身是 1px 高、约 1.6 倍行高的横向渐变条（尾透明、头亮），`box-shadow` 6px 冷光。零依赖，`prefers-reduced-motion` 下不创建。
+- ①`conic-gradient` 旋转：**速度不均**（直边慢、冲过两端圆弧”唰”一下）。根因是胶囊为又扁又长的”体育场”形，锥形渐变转同一角度，落点在直边和圆弧上走的距离差好几倍，几何上不可能匀速。废弃。
+- ②`offset-path` 沿路径（JS 生成体育场路径 + `offset-distance` 0→100%）：原理对，但**实机 WebView 里整条光渲染不出来，直接消失**。废弃。
+- ③定版：沿用已验证能亮的「`padding-box` 双层遮罩只剩 1px 描边」+ 线性渐变光带横向位移。`animation: kiki-beam-sweep 3400ms linear infinite`，`background-position -64% → 164%` 线性变化 = 严格匀速；`background-size:64% 100%` 控制光带长度。纯 CSS、零 JS、`prefers-reduced-motion` 下不出现。
 
 **三、数字递增（Count Up）**
 
