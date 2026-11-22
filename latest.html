@@ -313,6 +313,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -510,15 +511,7 @@ details[open]::details-content{height:auto}
 .kiki-vine .kv-stem{position:absolute;inset:0;width:100%;height:100%;
   transform-origin:72% 100%;animation:kv-wind 5.4s ease-in-out infinite alternate}
 .kiki-vine .kv-item{position:absolute;transform-origin:50% 100%}
-/* 顶部横臂：容器宽度/位置由 JS 按视口算；臂内的波形 SVG 横向拉伸，线宽同样靠 vector-effect 守住 */
-.kiki-vine .kv-arm{position:absolute;left:0;top:0;height:34px;width:0;overflow:visible}
-.kiki-vine .kv-arm-stem{position:absolute;left:0;top:0;width:100%;height:34px;overflow:visible}
-.kiki-vine .kv-arm-stem path{vector-effect:non-scaling-stroke}
-/* 接缝处的"藤节"：横臂与竖茎在这个点交汇，一个小圆点把两段线的端点压在一起，
-   看过去就是一根藤到顶后拐弯横长，而不是两截拼的 */
-.kiki-vine .kv-joint{position:absolute;width:7px;height:7px;border-radius:50%;background:#143a10;display:none;z-index:3}
-.kiki-vine .kv-joint::after{content:"";position:absolute;left:1.5px;top:1.5px;width:4px;height:4px;
-  border-radius:50%;background:#5aa03a}
+/* 顶部横臂已并进主茎同一条 SVG（见 buildVine 的 armPaths），这里只留一个空容器给葫芦/叶子定位 */
 .kiki-vine .kv-swing{display:block;transform-origin:50% 100%;
   animation:kv-sway var(--dur,2.8s) ease-in-out infinite alternate;
   animation-delay:var(--dl,0s)}
