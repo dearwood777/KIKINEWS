@@ -213,7 +213,7 @@ details[open]::details-content{height:auto}
 .kiki-walker svg{display:block;overflow:visible}
 /* 绳子层：垫在小人下面，平时只有空隙处的"悬崖绳"是亮的 */
 .kw-ropes{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
-.kw-ropes .kw-rope-gap{stroke:#8b7f6b;stroke-width:.9;stroke-linecap:round;opacity:.55}
+.kw-ropes .kw-rope-gap{stroke:#9c8a6d;stroke-width:1.1;stroke-linecap:round;opacity:.68}
 .kw-ropes .kw-rope-back{stroke:#8b7f6b;stroke-width:1;stroke-linecap:round;opacity:0;
   transition:opacity .3s linear}
 /* 小人：60×100 的关节骨架，transform 的 origin 放在脚底 */
@@ -478,55 +478,93 @@ JS = """
   var beamRz;
   function scheduleBeam() { clearTimeout(beamRz); beamRz = setTimeout(buildBeam, 180); }
 
-  // 3d) 报头小人（葫芦娃剪纸骨架）
-  //     形象是一套可驱动的关节骨架（头/躯干/双臂/双腿），所以是真在迈步、真在攀爬，
-  //     不是一张贴图在平移。地形仍然是逐列扫出来的字形上沿。
-  //     走 → 遇缝挂绳爬过去 → 到右端顺绳下去 → 扒着下面的长绳荡回左端 → 爬上来。
+  // 3d) 报头小人（葫芦娃 SVG 剪纸骨架 v4）
+  //     关节骨架：头/躯干/双臂/双腿独立活动，真迈步、真抓绳攀爬，不是贴图平移。
+  //     路线：沿字形上沿走 → 空隙点一下跳过去 → 到最右端沿字边爬下去 →
+  //           手换手从字底下横爬回来（空隙处扒住悬在字底的绳）→ 最左端爬回字上沿。
   var walkerRz;
   function scheduleWalker() { clearTimeout(walkerRz); walkerRz = setTimeout(buildWalker, 220); }
 
-  // 骨架：60×100 坐标系，脚底在 y=100
+  // 骨架：60×100 坐标系，脚底在 y≈99，整体朝右
   var PUP_SVG =
     '<svg class="kw-pup" viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">' +
     '<defs><linearGradient id="kwskin" x1="0" y1="0" x2="0" y2="1">' +
-    '<stop offset="0" stop-color="#fbd2ab"/><stop offset="1" stop-color="#f3bd92"/></linearGradient>' +
-    '<linearGradient id="kwshirt" x1="0" y1="0" x2="0" y2="1">' +
-    '<stop offset="0" stop-color="#ef5a4a"/><stop offset="1" stop-color="#cf3b2f"/></linearGradient></defs>' +
-    '<g class="kw-legL"><rect x="19.6" y="66" width="8.8" height="22" rx="4.2" fill="#fbf6ee" stroke="#2a2320" stroke-width="1.3"/>' +
-    '<g class="kw-kneeL"><rect x="19.6" y="84" width="8.8" height="13" rx="4" fill="#fbf6ee" stroke="#2a2320" stroke-width="1.3"/>' +
-    '<ellipse cx="24" cy="97.6" rx="5.6" ry="2.9" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.1"/></g></g>' +
-    '<g class="kw-legR"><rect x="31.6" y="66" width="8.8" height="22" rx="4.2" fill="#f4eee4" stroke="#2a2320" stroke-width="1.3"/>' +
-    '<g class="kw-kneeR"><rect x="31.6" y="84" width="8.8" height="13" rx="4" fill="#f4eee4" stroke="#2a2320" stroke-width="1.3"/>' +
-    '<ellipse cx="36" cy="97.6" rx="5.6" ry="2.9" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.1"/></g></g>' +
-    '<path d="M17 33 Q30 28 43 33 L41 69 Q30 72 19 69 Z" fill="url(#kwshirt)" stroke="#2a2320" stroke-width="1.4"/>' +
-    '<path d="M26 33 Q30 40 34 33 L35 62 Q30 66 25 62 Z" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.1"/>' +
-    '<path d="M18 63 L23 60 L27 65 L31 60 L35 65 L39 60 L42 63 L41 70 Q30 74 19 70 Z" fill="#63ad4a" stroke="#2c431f" stroke-width="1.1"/>' +
-    '<path d="M25.4 35 Q30 39.4 34.6 35 Q30 37 25.4 35 Z" fill="#6fb84f" stroke="#2c431f" stroke-width="1"/>' +
-    '<circle cx="30" cy="21" r="13.2" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.4"/>' +
-    '<path d="M17.2 19 Q17 7.5 30 7.5 Q43 7.5 43 19 Q40 13.5 34 13 Q30 16 26 13 Q20 13.5 17.2 19 Z" fill="#221d18" stroke="#2a2320" stroke-width="1.2"/>' +
-    '<path d="M17.4 18.6 Q16.8 26.4 19.6 28.6 L21.8 22.4 Z" fill="#221d18"/>' +
-    '<path d="M42.6 18.6 Q43.2 26.4 40.4 28.6 L38.2 22.4 Z" fill="#221d18"/>' +
-    '<path d="M24.5 14.8 Q27 12.6 30 12.9 Q33 12.6 35.5 14.8" fill="none" stroke="#221d18" stroke-width="1.6"/>' +
-    '<ellipse cx="24.4" cy="21.4" rx="1.6" ry="2" fill="#1b1714"/><ellipse cx="35.6" cy="21.4" rx="1.6" ry="2" fill="#1b1714"/>' +
-    '<path d="M22.2 18.2 Q24.4 16.8 26.4 18" fill="none" stroke="#241e19" stroke-width="1"/>' +
-    '<path d="M37.8 18.2 Q35.6 16.8 33.6 18" fill="none" stroke="#241e19" stroke-width="1"/>' +
-    '<path d="M25.6 26.4 Q30 29.4 34.4 26.4" fill="none" stroke="#b8544a" stroke-width="1.2"/>' +
-    '<ellipse cx="21.4" cy="24.2" rx="2.2" ry="1.3" fill="#f39b8c" opacity=".5"/>' +
-    '<ellipse cx="38.6" cy="24.2" rx="2.2" ry="1.3" fill="#f39b8c" opacity=".5"/>' +
-    '<path d="M30 7.5 Q30 4 30 2" stroke="#3f6f2f" stroke-width="1.1" fill="none"/>' +
-    '<path d="M30 5.4 Q25 3.2 22.4 6.6 Q26 8 30 6.6 Z" fill="#6fb84f" stroke="#2c431f" stroke-width="1"/>' +
-    '<path d="M30 5.4 Q35 3.2 37.6 6.6 Q34 8 30 6.6 Z" fill="#5fa844" stroke="#2c431f" stroke-width="1"/>' +
-    '<circle cx="30" cy="1.6" r="1.5" fill="#e0453a" stroke="#2a2320" stroke-width=".9"/>' +
-    '<g class="kw-armL"><rect x="15" y="33.6" width="8" height="17" rx="4" fill="url(#kwshirt)" stroke="#2a2320" stroke-width="1.2"/>' +
-    '<g class="kw-elbL"><rect x="13.4" y="49" width="6.6" height="15" rx="3.2" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.2"/>' +
-    '<circle cx="16.2" cy="64.6" r="3.4" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.2"/></g></g>' +
-    '<g class="kw-armR"><rect x="37" y="33.6" width="8" height="17" rx="4" fill="url(#kwshirt)" stroke="#2a2320" stroke-width="1.2"/>' +
-    '<g class="kw-elbR"><rect x="40" y="49" width="6.6" height="15" rx="3.2" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.2"/>' +
-    '<circle cx="43.8" cy="64.6" r="3.4" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.2"/></g></g>' +
+    '<stop offset="0" stop-color="#fcd9b6"/><stop offset="1" stop-color="#f0b688"/></linearGradient>' +
+    '<linearGradient id="kwcoat" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0" stop-color="#f4563f"/><stop offset="1" stop-color="#c22f22"/></linearGradient></defs>' +
+
+    // 白裤 + 光脚
+    '<g class="kw-legL"><path d="M24 57.6 L29.8 57.6 L29.4 75.4 L24.4 75.4 Z" fill="#fdfaf3" stroke="#2a2320" stroke-width="1.2"/>' +
+    '<g class="kw-kneeL"><path d="M24.3 73.4 L29.5 73.4 L28.8 93.6 L25 93.6 Z" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.1"/>' +
+    '<path d="M25 92.6 L28.8 92.6 L31.4 96.6 Q32.2 99 29.6 99 L25 99 Q23.6 95.6 25 92.6 Z" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.1"/></g></g>' +
+    '<g class="kw-legR"><path d="M30.2 57.6 L36 57.6 L35.6 75.4 L30.6 75.4 Z" fill="#f7f1e6" stroke="#2a2320" stroke-width="1.2"/>' +
+    '<g class="kw-kneeR"><path d="M30.5 73.4 L35.7 73.4 L35 93.6 L31.2 93.6 Z" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.1"/>' +
+    '<path d="M31.2 92.6 L35 92.6 L37.6 96.6 Q38.4 99 35.8 99 L31.2 99 Q29.8 95.6 31.2 92.6 Z" fill="url(#kwskin)" stroke="#2a2320" stroke-width="1.1"/></g></g>' +
+
+    // 躯干：裸胸 + 红坎肩
+    '<path d="M24 36.6 Q30 35 36 36.6 L35.4 57.6 Q30 59.6 24.6 57.6 Z" fill="url(#kwskin)"/>' +
+    '<path d="M23.4 36.8 L27.6 35.8 L29.6 43 L27.2 46.2 L26.6 57.2 L24.4 56.8 Z" fill="url(#kwcoat)" stroke="#2a2320" stroke-width="1.1"/>' +
+    '<path d="M36.6 36.8 L32.4 35.8 L30.4 43 L32.8 46.2 L33.4 57.2 L35.6 56.8 Z" fill="url(#kwcoat)" stroke="#2a2320" stroke-width="1.1"/>' +
+    '<path d="M23.4 36.8 Q22.2 39 23 41.4 L25.4 38.4 Z" fill="#c22f22"/>' +
+    '<path d="M36.6 36.8 Q37.8 39 37 41.4 L34.6 38.4 Z" fill="#c22f22"/>' +
+    // 小绿叶项链
+    '<path d="M27.6 37.6 Q30 40.4 32.4 37.6 Q30 38.6 27.6 37.6 Z" fill="#6fb84f" stroke="#2c431f" stroke-width=".9"/>' +
+    '<path d="M29.4 38.4 Q27 40.6 25.4 39.6 Q27.4 38.6 29.4 38.4 Z" fill="#5da944" stroke="#2c431f" stroke-width=".8"/>' +
+    '<path d="M30.6 38.4 Q33 40.6 34.6 39.6 Q32.6 38.6 30.6 38.4 Z" fill="#5da944" stroke="#2c431f" stroke-width=".8"/>' +
+    // 腰带 + 草叶裙
+    '<path d="M24.4 56.6 Q30 58.6 35.6 56.6 L35.5 60 Q30 62 24.5 60 Z" fill="#8a5a33" stroke="#3d2a16" stroke-width="1"/>' +
+    '<path d="M24.6 59.4 Q20.6 62.6 21.8 67.6 Q26.4 65.6 28.4 61.6 Z" fill="#63ad4a" stroke="#2c431f" stroke-width="1"/>' +
+    '<path d="M27.4 61.4 Q26.2 67 28.4 70.6 Q31 66.6 31.6 61.6 Z" fill="#57a341" stroke="#2c431f" stroke-width="1"/>' +
+    '<path d="M31.8 61.6 Q32.8 67 36.4 68.6 Q37.4 63.4 37.2 59.6 Z" fill="#63ad4a" stroke="#2c431f" stroke-width="1"/>' +
+
+    // 头
+    '<ellipse cx="30.6" cy="24.4" rx="10.6" ry="11.2" fill="url(#kwskin)"/>' +
+    // 后发（只盖头顶与两侧，不包下巴）
+    '<path d="M19.8 25.4 Q19 12.6 30.4 11.8 Q42.2 12.6 41.4 25.4 Q40.6 19 37.6 17 Q30 15.4 23.4 17 Q20.6 19 19.8 25.4 Z" fill="#221d18"/>' +
+    // 两鬓
+    '<path d="M19.8 20.6 Q18.6 26 20.6 28.8 Q22.4 25.4 23.2 21.6 Z" fill="#221d18"/>' +
+    '<path d="M41.4 20.6 Q42.6 26 40.6 28.8 Q38.8 25.4 38 21.6 Z" fill="#221d18"/>' +
+    // 刘海（三缕）
+    '<path d="M21.6 19.6 Q24 14.4 30.4 14.2 Q36.8 14.4 39.4 19.6 Q36.4 16.4 33.6 17.2 Q31.2 15.2 28.6 17 Q25 16 21.6 19.6 Z" fill="#221d18"/>' +
+    // 耳
+    '<ellipse cx="20.6" cy="25.6" rx="1.7" ry="2.3" fill="url(#kwskin)" stroke="#2a2320" stroke-width=".8"/>' +
+    // 眼
+    '<ellipse cx="27.4" cy="23.8" rx="2.7" ry="3" fill="#fffdf6" stroke="#2a2320" stroke-width=".8"/>' +
+    '<ellipse cx="34.8" cy="23.6" rx="2.9" ry="3.2" fill="#fffdf6" stroke="#2a2320" stroke-width=".8"/>' +
+    '<ellipse cx="28" cy="24.2" rx="1.7" ry="2.1" fill="#2f7f6a"/>' +
+    '<ellipse cx="35.4" cy="24" rx="1.8" ry="2.2" fill="#2f7f6a"/>' +
+    '<ellipse cx="28.1" cy="24.3" rx=".8" ry="1.3" fill="#141110"/>' +
+    '<ellipse cx="35.5" cy="24.1" rx=".8" ry="1.4" fill="#141110"/>' +
+    '<circle cx="27.2" cy="23" r=".65" fill="#fff"/>' +
+    '<circle cx="34.6" cy="22.8" r=".7" fill="#fff"/>' +
+    // 眉
+    '<path d="M24.4 19.4 Q26.8 17.8 29.4 19.4" fill="none" stroke="#241e19" stroke-width="1" stroke-linecap="round"/>' +
+    '<path d="M37.8 19.2 Q35.2 17.6 32.6 19.2" fill="none" stroke="#241e19" stroke-width="1" stroke-linecap="round"/>' +
+    // 鼻、嘴、腮红
+    '<path d="M36.4 26.4 Q37.4 27.6 36.2 28" fill="none" stroke="#c98a63" stroke-width=".9"/>' +
+    '<path d="M28.6 30.6 Q30.6 32.2 32.6 30.4" fill="none" stroke="#b8544a" stroke-width="1" stroke-linecap="round"/>' +
+    '<ellipse cx="24" cy="27.6" rx="1.9" ry="1.1" fill="#f2968a" opacity=".5"/>' +
+    '<ellipse cx="37" cy="27.6" rx="1.9" ry="1.1" fill="#f2968a" opacity=".5"/>' +
+
+    // 头顶小葫芦 + 红珠 + 两片叶
+    '<path d="M30.4 12 Q30 9 31 6.2" stroke="#3f6f2f" stroke-width="1.1" fill="none"/>' +
+    '<ellipse cx="31.4" cy="4.4" rx="2.9" ry="2.3" fill="#6fb84f" stroke="#2c431f" stroke-width=".9"/>' +
+    '<ellipse cx="31.4" cy="1.8" rx="1.9" ry="1.6" fill="#5da944" stroke="#2c431f" stroke-width=".8"/>' +
+    '<circle cx="31.4" cy=".5" r=".9" fill="#e0453a"/>' +
+    '<path d="M28.6 8.4 Q24 5.6 20 8.2 Q24 11 28.6 9.6 Z" fill="#7ac155" stroke="#2c431f" stroke-width=".9"/>' +
+    '<path d="M34.2 8.2 Q38.8 5.4 42.6 8 Q38.8 10.8 34.2 9.4 Z" fill="#6fb84f" stroke="#2c431f" stroke-width=".9"/>' +
+
+    // 手臂：红短袖 + 细胳膊
+    '<g class="kw-armL"><path d="M19.4 37.4 L23.4 35.6 L23 43.6 L19.8 44.4 Z" fill="url(#kwcoat)" stroke="#2a2320" stroke-width="1"/>' +
+    '<g class="kw-elbL"><path d="M19.9 43.6 L22.7 43 L22.2 56 L20.4 56 Z" fill="url(#kwskin)" stroke="#2a2320" stroke-width=".9"/>' +
+    '<ellipse cx="21.2" cy="57.8" rx="2.2" ry="2.5" fill="url(#kwskin)" stroke="#2a2320" stroke-width=".9"/></g></g>' +
+    '<g class="kw-armR"><path d="M40.6 37.4 L36.6 35.6 L37 43.6 L40.2 44.4 Z" fill="url(#kwcoat)" stroke="#2a2320" stroke-width="1"/>' +
+    '<g class="kw-elbR"><path d="M40.1 43.6 L37.3 43 L37.8 56 L39.6 56 Z" fill="url(#kwskin)" stroke="#2a2320" stroke-width=".9"/>' +
+    '<ellipse cx="38.8" cy="57.8" rx="2.2" ry="2.5" fill="url(#kwskin)" stroke="#2a2320" stroke-width=".9"/></g></g>' +
     '</svg>';
   var PUP_JOINTS = [
-    ['legL', '24px 68px'], ['kneeL', '24px 86px'], ['legR', '36px 68px'], ['kneeR', '36px 86px'],
-    ['armL', '18.5px 35px'], ['elbL', '15.5px 49px'], ['armR', '41.5px 35px'], ['elbR', '44.5px 49px']
+    ['legL', '27px 58px'], ['kneeL', '26.6px 75px'], ['legR', '33px 58px'], ['kneeR', '33.4px 75px'],
+    ['armL', '21.2px 37px'], ['elbL', '21px 44px'], ['armR', '38.8px 37px'], ['elbR', '39px 44px']
   ];
 
   function buildWalker() {
@@ -615,7 +653,7 @@ JS = """
       bot[x] = n2 ? s2 / n2 : bs[x];
     }
 
-    // (3) 尺寸：间隔点墨迹直径 × 2.5（比上一版大 1/4）
+    // (3) 尺寸：间隔点墨迹直径 × 2.5
     var dots = [], dot = null;
     chars.forEach(function (sp) {
       if (sp.textContent !== '·') return;
@@ -648,8 +686,9 @@ JS = """
     });
     if (merged.length < 2) return;
 
-    // (5) 骨架 + 绳子层
-    var ropes = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    // (5) 骨架 + 悬崖绳层
+    var ns = 'http://www.w3.org/2000/svg';
+    var ropes = document.createElementNS(ns, 'svg');
     ropes.setAttribute('class', 'kw-ropes');
     ropes.setAttribute('width', W);
     ropes.setAttribute('height', H);
@@ -682,63 +721,68 @@ JS = """
     function poseAll(mode, ph, p) {
       var s = Math.sin(ph), c = Math.cos(ph);
       if (mode === 'walk') {
-        rot('legL', 26 * s); rot('kneeL', -14 - 18 * Math.max(0, c));
-        rot('legR', -26 * s); rot('kneeR', -14 - 18 * Math.max(0, -c));
-        rot('armL', -18 * s); rot('elbL', 12 + 10 * s);
-        rot('armR', 18 * s); rot('elbR', 12 - 10 * s);
+        // 自然的走：小步幅、后腿屈膝抬起，手臂小幅反相
+        rot('legL', 17 * s); rot('kneeL', -10 - 26 * Math.max(0, c));
+        rot('legR', -17 * s); rot('kneeR', -10 - 26 * Math.max(0, -c));
+        rot('armL', -13 * s - 3); rot('elbL', 14 + 8 * s);
+        rot('armR', 13 * s - 3); rot('elbR', 14 - 8 * s);
       } else if (mode === 'hop') {
-        rot('legL', -38); rot('kneeL', 66);
-        rot('legR', 26); rot('kneeR', 44);
-        rot('armL', 118); rot('elbL', -20);
-        rot('armR', -118); rot('elbR', -20);
-      } else if (mode === 'bridge') {
-        // 绳桥：双臂平举找平衡，脚一步一挪
-        var bp = Math.sin(p * 0.5);
-        rot('armL', -64 - 10 * bp); rot('elbL', 26);
-        rot('armR', 64 + 10 * bp); rot('elbR', 26);
-        rot('legL', 14 * Math.sin(p)); rot('kneeL', -8 - 14 * Math.max(0, Math.cos(p)));
-        rot('legR', -14 * Math.sin(p)); rot('kneeR', -8 - 14 * Math.max(0, -Math.cos(p)));
-      } else if (mode === 'rope') {
-        var sp = Math.sin(p), sn = Math.sin(p + Math.PI);
-        rot('legL', 16 + 12 * sp); rot('kneeL', 42 - 14 * sp);
-        rot('legR', 8 + 12 * sn); rot('kneeR', 46 - 14 * sn);
-        rot('armL', 140 + 24 * sp); rot('elbL', -26 - 12 * sp);
-        rot('armR', -140 + 24 * sn); rot('elbR', -26 - 12 * sn);
-      } else {
-        rot('legL', 8 + 14 * s); rot('kneeL', 28 + 10 * s);
-        rot('legR', -8 + 14 * c); rot('kneeR', 32 + 10 * c);
-        rot('armL', 158 + 8 * s); rot('elbL', -16);
-        rot('armR', -158 - 8 * s); rot('elbR', -16);
+        rot('legL', -22); rot('kneeL', 52);
+        rot('legR', -6); rot('kneeR', 34);
+        rot('armL', -52); rot('elbL', 26);
+        rot('armR', 52); rot('elbR', 26);
+      } else if (mode === 'climb') {
+        // 手换手：一只手抓住、另一只手向上摸，身体随之微微侧摆
+        var a1 = Math.sin(p), a2 = Math.sin(p + Math.PI);
+        rot('armL', 156 + 26 * a1); rot('elbL', 14 + 22 * Math.max(0, -a1));
+        rot('armR', -156 - 26 * a2); rot('elbR', -14 - 22 * Math.max(0, -a2));
+        rot('legL', 12 + 16 * Math.sin(p * 0.5)); rot('kneeL', 24 + 16 * Math.sin(p * 0.5 + 1));
+        rot('legR', -6 + 16 * Math.sin(p * 0.5 + 2)); rot('kneeR', 28 + 16 * Math.sin(p * 0.5));
+        rot('torso', 3 * Math.sin(p));
+      } else {   // hang：单手扒住，另一只手垂着
+        var h1p = Math.sin(p);
+        rot('armL', 162 + 10 * h1p); rot('elbL', 12);
+        rot('armR', -140 - 14 * h1p); rot('elbR', -14);
+        rot('legL', 10 + 12 * Math.sin(p * 0.6)); rot('kneeL', 20 + 12 * Math.sin(p * 0.6 + 1));
+        rot('legR', -8 + 12 * Math.sin(p * 0.6 + 2)); rot('kneeR', 22 + 12 * Math.sin(p * 0.6));
+        rot('torso', -3 + 3 * h1p);
       }
     }
 
-    // 绳索路径
-    var ns = 'http://www.w3.org/2000/svg';
-    var gapRopes = [], backRope = null;
-    merged.forEach(function (a, i4) {
-      var b2 = merged[i4 + 1];
-      if (!b2) return;
-      var ax = a.x1 + 1, ay = ts[Math.round(a.x1)], bx = b2.x0 - 1, by = ts[Math.round(b2.x0)];
-      var sag = SH * Math.max(0.18, Math.min(0.6, (bx - ax) / F * 0.4));
+    // 悬崖绳：每道缝一根，两端挂在两个字的下沿，中间往下垂
+    var hy = [], ropes2 = [], i5;
+    for (i5 = 0; i5 < merged.length - 1; i5++) {
+      var a = merged[i5], b2 = merged[i5 + 1];
+      // 绳头要落在有墨迹的列上（缝隙两侧各留半像素，往里找几列）
+      var ax = a.x1 + 0.4, bx = b2.x0 - 0.4, j5;
+      var ay = -1, by = -1;
+      for (j5 = 0; j5 < 5; j5++) {
+        var qa = Math.round(ax - j5);
+        if (qa >= 0 && bot[qa] >= 0) { ay = bot[qa]; ax = qa + 0.4; break; }
+      }
+      for (j5 = 0; j5 < 5; j5++) {
+        var qb = Math.round(bx + j5);
+        if (qb < W && bot[qb] >= 0) { by = bot[qb]; bx = qb - 0.4; break; }
+      }
+      if (!(ay >= 0) || !(by >= 0)) continue;
+      var gapw = Math.max(4, bx - ax);
+      var sag = Math.min(SH * 0.85, SH * 0.28 + gapw * 0.5);
+      var rp = { ax: ax, ay: ay, bx: bx, by: by, my: Math.max(ay, by) + sag };
+      ropes2.push(rp);
       var pth = document.createElementNS(ns, 'path');
       pth.setAttribute('class', 'kw-rope-gap');
       pth.setAttribute('d', 'M' + ax.toFixed(1) + ' ' + ay.toFixed(1) +
-        ' Q' + ((ax + bx) / 2).toFixed(1) + ' ' + (Math.max(ay, by) + sag).toFixed(1) +
+        ' Q' + ' ' + ((ax + bx) / 2).toFixed(1) + ' ' + rp.my.toFixed(1) +
         ' ' + bx.toFixed(1) + ' ' + by.toFixed(1));
       ropes.appendChild(pth);
-      gapRopes.push({ x0: ax, y0: ay, x1: bx, y1: by, sag: sag });
-    });
-    backRope = document.createElementNS(ns, 'path');
-    backRope.setAttribute('class', 'kw-rope-back');
-    backRope.style.opacity = '0';
-    ropes.appendChild(backRope);
+    }
 
     // (6) 位移
-    var SPEED = F * 1.30, HOPX = F * 1.55, ROPE = F * 1.55, ROPE_BACK = F * 3.60;
+    var SPEED = F * 1.15, HOPX = F * 1.45, CRAWL = F * 1.80, LOWER = F * 1.10;
     var st = { mode: 'walk', i: 0, x: merged[0].x0 + 1, y: ts[merged[0].x0 + 1] || 0,
                ph: 0, dist: 0, t: 0, dir: 1, rot: 0,
                hp: 0, hd: 0, hx0: 0, hx1: 0, hy0: 0, hy1: 0, hh: 0,
-               kind: '', rp: 0, rd: 0, rcx: 0, rcy: 0, rx0: 0, ry0: 0, rx1: 0, ry1: 0, after: '' };
+               vp: 0, vd: 0, vy0: 0, vy1: 0, vx: 0 };
     var alive = true, lastT = 0, land = -9;
 
     function groundAt(px) {
@@ -756,6 +800,17 @@ JS = """
       if (b1 < 0) b1 = b0;
       return b0 * (1 - (px - i1)) + b1 * (px - i1);
     }
+    // 回程时手要抓的那条线：缝里走绳（贝塞尔），字底走字的下沿
+    function lineY(px) {
+      for (var i6 = 0; i6 < ropes2.length; i6++) {
+        var r2 = ropes2[i6];
+        if (px < r2.ax || px > r2.bx) continue;
+        var u = (px - r2.ax) / (r2.bx - r2.ax), v = 1 - u;
+        return v * v * r2.ay + 2 * v * u * r2.my + u * u * r2.by;
+      }
+      var bb = bottomAt(px);
+      return bb >= 0 ? bb : 0;
+    }
     function shakeDot() {
       for (var i2 = 0; i2 < dots.length; i2++) {
         if (st.x < dots[i2].x0 - SH * 0.6 || st.x > dots[i2].x1 + SH * 0.6) continue;
@@ -766,30 +821,19 @@ JS = """
         sp2.classList.add('kiki-dot-hit');
       }
     }
-    // 绳索动作：kind = gap(绳桥,脚踩绳) / down(顺绳下) / back(挂绳荡) / up(爬回)
-    function startRope(kind, x0, y0, cx, cy, x1, y1, after) {
-      st.mode = 'rope'; st.kind = kind; st.after = after;
-      st.rp = 0;
-      st.rx0 = x0; st.ry0 = y0; st.rx1 = x1; st.ry1 = y1;
-      st.rcx = cx; st.rcy = cy;
-      st.dir = x1 > x0 + 0.5 ? 1 : (x1 < x0 - 0.5 ? -1 : st.dir);
-      var len = Math.abs(x1 - x0) + Math.abs(y1 - y0) * 0.7;
-      var spd = kind === 'back' ? ROPE_BACK : ROPE;
-      st.rd = Math.min(8, Math.max(0.3, len / spd));
-    }
-    function bez(t) {
-      var u = 1 - t;
-      return {
-        x: u * u * st.rx0 + 2 * u * t * st.rcx + t * t * st.rx1,
-        y: u * u * st.ry0 + 2 * u * t * st.rcy + t * t * st.ry1
-      };
-    }
     function hopTo(x0, y0, x1, y1, lift) {
       st.mode = 'hop'; st.hp = 0;
-      st.hd = Math.min(0.7, Math.max(0.28, Math.abs(x1 - x0) / HOPX));
+      st.hd = Math.min(0.62, Math.max(0.24, Math.abs(x1 - x0) / HOPX));
       st.hx0 = x0; st.hx1 = x1; st.hy0 = y0; st.hy1 = y1;
       st.hh = lift;
       st.dir = x1 >= x0 ? 1 : -1;
+    }
+    // 垂直升降（贴字边爬）：from y0 to y1 at fixed x
+    function vertTo(x0, y0, y1, after) {
+      st.mode = 'vert'; st.vp = 0; st.vx = x0;
+      st.vy0 = y0; st.vy1 = y1;
+      st.vd = Math.min(1.2, Math.max(0.26, Math.abs(y1 - y0) / LOWER));
+      st.vafter = after;
     }
 
     function step(dt) {
@@ -798,7 +842,7 @@ JS = """
         var r = merged[st.i];
         var dx = SPEED * dt;
         st.x += dx; st.dist += dx;
-        st.ph = st.dist / (SH * 0.5) * Math.PI;      // 步频由走过的距离决定，不滑步
+        st.ph = st.dist / (SH * 0.62) * Math.PI;
         poseAll('walk', st.ph, 0);
         if (st.x >= r.x1) { st.x = r.x1; arrive(); }
         else {
@@ -811,72 +855,64 @@ JS = """
         poseAll('hop', 0, 0);
         st.x = st.hx0 + (st.hx1 - st.hx0) * s;
         st.y = st.hy0 + (st.hy1 - st.hy0) * s - st.hh * 4 * s * (1 - s);
-        st.rot = st.dir * Math.sin(Math.PI * s) * 8;
+        st.rot = st.dir * Math.sin(Math.PI * s) * 7;
         if (s >= 1) {
           st.y = st.hy1; st.rot = 0;
           st.mode = 'walk'; st.ph = 0; st.dist = 0;
           st.i = Math.min(merged.length - 1, st.i + 1);
           land = st.t; shakeDot();
+          // 落在间隔点上（很短的一段）：不做走，直接再跳一下
+          var rr = merged[st.i];
+          if (st.i < merged.length - 1 && rr && rr.x1 - rr.x0 < SH * 0.85) arrive();
         }
-      } else if (st.mode === 'rope') {
-        st.rp += dt;
-        var q = Math.min(1, st.rp / st.rd);
-        var pt = bez(q);
-        st.x = pt.x;
-        if (st.kind === 'gap') {
-          st.y = pt.y;                                  // 脚踩在绳上过崖
-          st.ph = q * st.rd * 4.4;                      // 步点跟着走过的绳长，不滑步
-          poseAll('bridge', st.ph, 0);
-        } else {
-          st.y = pt.y + SH * 0.95;                      // 手扒绳，身子吊在下面
-          poseAll('hang', 0, q * Math.PI * 7);
-        }
-        st.rot = st.dir * Math.sin(Math.PI * q) * (st.kind === 'back' ? 10 : 6);
+      } else if (st.mode === 'vert') {
+        st.vp += dt;
+        var q = Math.min(1, st.vp / st.vd);
+        st.x = st.vx;
+        st.y = st.vy0 + (st.vy1 - st.vy0) * q;
+        st.ph = q * st.vd * 7;
+        poseAll('climb', st.ph, 1);
+        st.rot = 0;
         if (q >= 1) {
-          st.rot = 0;
-          if (st.kind === 'down') {
-            // 挂上回程长绳
-            var lb = bottomAt(merged[0].x0 + 1) + SH * 1.35;
-            var rb = bottomAt(merged[merged.length - 1].x1) + SH * 1.35;
-            backRope.setAttribute('d', 'M' + merged[merged.length - 1].x1.toFixed(1) + ' ' + (rb - SH * 0.95).toFixed(1) +
-              ' Q' + ((merged[merged.length - 1].x1 + merged[0].x0) / 2).toFixed(1) + ' ' +
-              (Math.max(rb, lb) - SH * 0.95 + SH * 0.5).toFixed(1) + ' ' +
-              (merged[0].x0 + 1).toFixed(1) + ' ' + (lb - SH * 0.95).toFixed(1));
-            backRope.style.opacity = '1';
-            startRope('back', st.x, st.y - SH * 0.95, (merged[merged.length - 1].x1 + merged[0].x0) / 2,
-                      Math.max(rb, lb) - SH * 0.95 + SH * 0.5, merged[0].x0 + 1, lb - SH * 0.95, 'up');
-          } else if (st.kind === 'back') {
-            backRope.style.opacity = '0';
-            var lx = merged[0].x0 + 1;
-            startRope('up', lx, st.y - SH * 0.95, lx, (st.y - SH * 0.95 + (ts[Math.round(lx)] || 0) - SH * 0.3) / 2,
-                      lx, (ts[Math.round(lx)] || 0) - SH * 0.3, 'first');
+          if (st.vafter === 'crawl') {
+            st.mode = 'crawl'; st.dir = -1; st.dist = 0;
           } else {
-            st.mode = 'walk'; st.ph = 0; st.dist = 0;
-            st.i = st.after === 'first' ? 0 : Math.min(merged.length - 1, st.i + 1);
-            st.y = ts[Math.round(st.x)] || st.y;
-            st.dir = 1;
+            st.mode = 'walk'; st.ph = 0; st.dist = 0; st.i = 0;
+            st.dir = 1; st.y = ts[Math.round(st.x)] || st.y;
             land = st.t; shakeDot();
           }
+        }
+      } else if (st.mode === 'crawl') {
+        // 手换手往左爬：缝里抓着绳，字底抓着字沿
+        var mv = CRAWL * dt;
+        st.x -= mv; st.dist += mv;
+        st.ph = st.dist / (SH * 0.55) * Math.PI;
+        var ly = lineY(st.x);
+        st.y = ly + SH * 0.96;
+        st.dir = -1;
+        poseAll('climb', st.ph, 1);
+        st.rot = -3 * Math.sin(st.ph);
+        if (st.x <= merged[0].x0 + 1) {
+          st.x = merged[0].x0 + 1;
+          vertTo(st.x, st.y, (ts[Math.round(st.x)] || st.y), 'walk');
         }
       }
     }
 
     function arrive() {
       var r = merged[st.i], next = merged[st.i + 1];
-      if (!next) {                                   // 右端：顺绳下来
-        var ry = bottomAt(r.x1) + SH;
-        startRope('down', st.x, st.y, st.x, (st.y + ry) / 2, st.x, ry, 'down');
+      if (!next) {                                   // 右端：贴字边爬下去
+        vertTo(st.x, st.y, bottomAt(r.x1) + SH * 0.96, 'crawl');
         return;
       }
       var curY = ts[Math.round(r.x1)], nextY = ts[Math.round(next.x0)];
       var gap = Math.max(2, next.x0 - r.x1);
-      if (gap <= 6 && Math.abs(nextY - curY) <= 4) {
-        hopTo(st.x, st.y, next.x0 + 1, nextY, Math.max(SH * 0.18, gap * 0.5));
+      if (gap <= 7 && Math.abs(nextY - curY) <= 4) {
+        hopTo(st.x, st.y, next.x0 + 1, nextY, Math.max(SH * 0.16, gap * 0.45));
       } else {
-        // 悬崖绳：把两段之间连起来（下垂一点），手脚并用爬过去
-        var sag = SH * Math.max(0.2, Math.min(0.7, gap / F * 0.45));
-        startRope('gap', st.x, curY, (st.x + next.x0 + 1) / 2, Math.max(curY, nextY) + sag,
-                  next.x0 + 1, nextY, 'walk');
+        // 字间空隙：跳过去（不架桥）
+        var lift = Math.max(SH * 0.34, gap * 0.5);
+        hopTo(st.x, curY, next.x0 + 1, nextY, lift);
       }
     }
 
@@ -899,10 +935,12 @@ JS = """
     }
     requestAnimationFrame(frame);
 
+
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (es) { alive = es[0].isIntersecting; }, { threshold: 0.15 }).observe(h1);
     }
   }
+
   function start() {
     buildBeam();
     // 屏幕旋转 / 折叠屏切换 / 窗口变化：胶囊长度变了就得按新轮廓重画，
