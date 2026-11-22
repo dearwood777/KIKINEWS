@@ -238,6 +238,7 @@ footer .dot{opacity:.45;margin:0 6px}
 }
 .top.show{display:flex}
 </style>
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -283,31 +284,45 @@ html{background-color:#0e1320}
 @keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
 
-/* 5. 卡片外框水波纹：用 box-shadow 的 spread 向外推两圈。
-   为什么不用子元素做环：词汇页的 .card 有 overflow:hidden（用来裁左侧色条），
-   子元素扩出去的部分会被裁掉，看上去就只剩"边框闪一下"。外阴影不受自身 overflow 裁剪。 */
-@keyframes kiki-card-rings{
-  0%{box-shadow:0 0 0 0 rgba(127,184,255,.9),0 0 0 0 rgba(127,184,255,0)}
-  34%{box-shadow:0 0 0 9px rgba(127,184,255,.42),0 0 0 0 rgba(127,184,255,.75)}
-  68%{box-shadow:0 0 0 17px rgba(127,184,255,.14),0 0 0 9px rgba(127,184,255,.3)}
-  100%{box-shadow:0 0 0 24px rgba(127,184,255,0),0 0 0 19px rgba(127,184,255,.05)}
+/* 5. 卡片水波纹：和发音键**完全同一套**——几圈细线同时往外荡，最外圈先到边、里圈依次接上，
+   最后一起淡掉。卡片自己的子元素会被 overflow:hidden 裁掉，所以环挂在卡片外面（.cards 里），
+   按卡片的实际位置摆好，随页面一起滚动。线宽恒定 1.5px，外扩总量 9px（小于 10px 卡片间距）。 */
+@keyframes kiki-cring-rip{
+  0%{opacity:.82;transform:scale(1)}
+  55%{opacity:.42}
+  100%{opacity:0;transform:scale(var(--kx,1.06),var(--ky,1.06))}
 }
-/* 卡面被冷蓝光洗过一层（JS 生成，插在卡片最前面，压在文字底下） */
-@media (prefers-reduced-motion: no-preference){
-  .cards>.card.kiki-rings{animation:kiki-card-rings 1050ms cubic-bezier(.25,.1,.3,1) both}
-}
+.kiki-cring{position:absolute;pointer-events:none;opacity:0;
+  border:1px solid rgba(127,184,255,.7);
+  animation:kiki-cring-rip 2000ms cubic-bezier(.3,.4,.4,1) forwards;will-change:transform,opacity}
+.cards{position:relative}
 @keyframes kiki-wash{0%{opacity:0}30%{opacity:.75}100%{opacity:0}}
 .kiki-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
   background:linear-gradient(158deg,rgba(127,184,255,.16),rgba(127,184,255,0) 60%);
   animation:kiki-wash 1150ms ease forwards}
 
-/* 5b. 卡片入画时 3D 归正：像纸片被风掀起，随滚动被按平（纯滚动驱动，零 JS 逐帧） */
-@keyframes kiki-tilt{
-  from{opacity:.92;transform:perspective(1000px) rotateX(5deg) translateY(12px) scale(.985)}
-  to{opacity:1;transform:none}
-}
+/* 5c. 边缘流光（Border Beam）：**一条**光沿胶囊描边绕行一圈。
+   演进过三版，前两版都废了，别回头：
+   ① conic-gradient 旋转 —— 胶囊是又扁又长的"体育场"形，锥形渐变转同一角度，落点在直边和
+      两端圆弧上走的距离差好几倍，几何上不可能匀速（"慢慢走、唰一下冲过弧"）。
+   ② offset-path 沿路径 —— 实机 WebView 里整条光渲染不出来，直接消失。
+   ③ 线性渐变横扫 —— 匀速了，但上下两条边同时亮，是"两束光"而不是"一道光溜边"。
+   定版：SVG 描边 + stroke-dashoffset。路径按胶囊实际宽高生成，一段短亮线沿轮廓匀速走完，
+   拖一条暗尾；几何上天然匀速，只可能出现一条光。 */
+.cbtn{position:relative}
+.kiki-beam{position:absolute;top:-1px;left:-1px;pointer-events:none;overflow:visible}
+/* 路径本身不动，靠每层自己的 animation-delay 决定它在亮头后面多远（延迟由 JS 按路径长度算） */
+.kiki-beam path{animation:kiki-beam-run 6000ms linear infinite both}
+@keyframes kiki-beam-run{from{stroke-dashoffset:0}to{stroke-dashoffset:calc(-1 * var(--len))}}
 
-/* 5c. 背景星尘视差：两层极淡光点，随滚动反向慢移 */
+/* 5d. 卡片入场淡入已下掉：`animation ... both` 会让卡片先被按到 opacity 0 再淡上来，
+   快速滑到中途触发时反而是"整张卡消失一下又回来"，看着比不动更闪。 */
+
+/* 5e. 数字递增用的数字容器：等宽数字 + 预留 2 位宽度，
+   这样从 7 数到 12 时不会把右边的内容（比如「难点词汇 ›」）顶出去 */
+.kiki-num{display:inline-block;font-variant-numeric:tabular-nums;text-align:center;vertical-align:baseline}
+
+/* 5b. 背景星尘视差：极淡光点，随滚动反向慢移 */
 @keyframes kiki-drift{to{transform:translateY(-96px)}}
 
 /* 5d. 顶部阅读进度光条 */
@@ -319,18 +334,8 @@ html{background-color:#0e1320}
 /* 日报卡：入场由 CSS 的 3D 归正 + JS 的水波纹脉冲负责，这里只需要定位上下文 */
 .cards>.card{position:relative}
 
-/* 6. 目录跳转后的目标卡：外框脉冲 + 底色扫过，2.4s 收尾 */
-@media (prefers-reduced-motion: no-preference){
-  .card:target{animation:kiki-target 2400ms cubic-bezier(.2,.8,.2,1) both}
-}
-@keyframes kiki-target{
-  0%{box-shadow:0 0 0 3px var(--accent) inset,0 0 0 2px rgba(120,170,255,.9),0 0 34px rgba(120,170,255,.5);
-     background-color:rgba(120,170,255,.10)}
-  55%{box-shadow:0 0 0 2px rgba(120,170,255,.35) inset,0 0 0 10px rgba(120,170,255,.3),0 0 18px rgba(120,170,255,.18);
-     background-color:rgba(120,170,255,.04)}
-  100%{box-shadow:0 0 0 2px transparent inset,0 0 0 22px rgba(120,170,255,0),0 0 0 rgba(120,170,255,0);
-      background-color:transparent}
-}
+/* 6. 跳转到某张卡：等滚动真的停下来之后再发水波纹（之前一改 hash 就开始播，
+   等滚到位时动画已经只剩最后一帧了，等于白播） */
 
 /* 6b. 滚动驱动 / 时间驱动的高级特效（Chrome 115+ 支持滚动时间线，不支持就完全不出现） */
 @supports (animation-timeline: scroll()){
@@ -348,15 +353,7 @@ html{background-color:#0e1320}
     .kiki-progress{opacity:1;animation:kiki-progress linear both;animation-timeline:scroll(root)}
   }
 }
-@supports (animation-timeline: view()){
-  @media (prefers-reduced-motion: no-preference){
-    /* 卡片进画面时 3D 归正；同时点水波纹时再加一条时间驱动的 box-shadow 动画 */
-    .cards>.card{animation:kiki-tilt linear both;animation-timeline:view();
-      animation-range:entry 0% cover 26%}
-    .cards>.card.kiki-rings{animation:kiki-tilt linear both,
-      kiki-card-rings 1050ms cubic-bezier(.25,.1,.3,1) both;animation-timeline:view(),auto}
-  }
-}
+/* 滚动驱动的 3D 归正已下掉：它的进度跟着手指走，快速滑动时会在中途"停住再弹回"，很尬。 */
 
 /* 7. 展开/收起平滑：Chrome 131+ 的 ::details-content 高度动画，老浏览器直接瞬开 */
 :root{interpolate-size:allow-keywords}
@@ -380,14 +377,15 @@ details[open]::details-content{height:auto}
 /* 焦点描边只加 outline，不改元素自己的圆角（否则胶囊会瞬间变方） */
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
-/* 9. 发音键水波纹：真的空心圆环，一层层往外扩（由内联 JS 生成 ring 元素） */
+/* 9. 发音键水波纹：一条**极细**的空心圆环一圈圈往外扩（由内联 JS 生成 ring 元素）
+   线宽 1.5px 且不随缩放变粗多少，保持精致感 */
 .kiki-ring{position:absolute;inset:0;border-radius:999px;pointer-events:none;
-  border:2px solid rgba(127,184,255,.8);opacity:0;
-  animation:kiki-rip 760ms cubic-bezier(.2,.7,.3,1) forwards}
+  border:1.5px solid rgba(127,184,255,.75);opacity:0;
+  animation:kiki-rip 860ms cubic-bezier(.2,.6,.3,1) forwards}
 @keyframes kiki-rip{
-  0%{opacity:.9;transform:scale(.6)}
-  60%{opacity:.45}
-  100%{opacity:0;transform:scale(2)}
+  0%{opacity:.85;transform:scale(.72)}
+  55%{opacity:.38}
+  100%{opacity:0;transform:scale(2.02)}
 }
 
 /* 10. 同页锚点跳转平滑 */
@@ -425,23 +423,223 @@ details[open]::details-content{height:auto}
 
   if (reduce) return;
 
-  // 3) 跨页过渡（620ms）收尾后才开始入场特效。
-  //    以前特效跟转场同时起跑，转场快照拍到的是"动到一半"的画面，切回实时页面就会抖一下。
-  //    现在卡片本体一动不动，只让发光元素在过渡结束后依次出现。
+  // 3) 卡片水波纹：和发音键**完全同一套**——几圈细线同时往外荡，最外圈先到边，
+  //    里圈依次接上，最后一起淡掉。卡片自己的子元素会被 overflow:hidden 裁掉，
+  //    所以环挂在卡片外面（挂在 .cards 里），按卡片位置摆好，跟着页面一起滚。
   function pop(card, delay) {
     setTimeout(function () {
       var glow = document.createElement('span');
       glow.className = 'kiki-glow';
       card.insertBefore(glow, card.firstChild);
-      setTimeout(function () { glow.remove(); }, 1300);
-      // 水波纹走 box-shadow 的 spread（外阴影不受卡片自己的 overflow:hidden 裁剪）
-      card.classList.add('kiki-rings');
-      setTimeout(function () { card.classList.remove('kiki-rings'); }, 1120);
+      setTimeout(function () { glow.remove(); }, 1400);
+
+      var host = card.parentNode;
+      if (!host) return;
+      if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+
+      var cr = card.getBoundingClientRect(), pr = host.getBoundingClientRect();
+      if (!cr.width) return;
+      var kx = (cr.width + 18) / cr.width;     // 总共外扩 18px（每边 9px，小于 10px 卡片间距）
+      var ky = (cr.height + 18) / cr.height;
+      var radius = getComputedStyle(card).borderTopLeftRadius;
+
+      // 三圈细线：起跑间隔 320ms（肉眼能看出先后），收束时长递减 → 最后几乎同时淡掉
+      [[0, 2050], [320, 1850], [640, 1680]].forEach(function (p) {
+        var ring = document.createElement('span');
+        ring.className = 'kiki-cring';
+        ring.style.left = (cr.left - pr.left) + 'px';
+        ring.style.top = (cr.top - pr.top) + 'px';
+        ring.style.width = cr.width + 'px';
+        ring.style.height = cr.height + 'px';
+        ring.style.borderRadius = radius;
+        ring.style.setProperty('--kx', kx);
+        ring.style.setProperty('--ky', ky);
+        ring.style.animationDelay = p[0] + 'ms';
+        ring.style.animationDuration = p[1] + 'ms';
+        host.appendChild(ring);
+        setTimeout(function () { ring.remove(); }, p[0] + p[1] + 60);
+      });
     }, delay || 0);
   }
 
+  // 3c) 边缘流光：一条光沿胶囊描边绕行（SVG 路径 + stroke-dashoffset，匀速）
+  function stadiumD(w, h) {
+    var r = Math.min(h / 2, w / 2) - 0.5, t = 0.5;
+    var p = [[t + r, t], [w - t - r, t], [w - t, t + r], [w - t, h - t - r],
+             [w - t - r, h - t], [t + r, h - t], [t, h - t - r], [t, t + r]];
+    var a = ' A' + r + ' ' + r + ' 0 0 1 ';
+    return 'M' + p[0] + ' L' + p[1] + a + p[2] + ' L' + p[3] + a + p[4]
+         + ' L' + p[5] + a + p[6] + ' L' + p[7] + a + p[0];
+  }
+  // 线速度：与屏幕宽度无关的"匀速"基准（px/秒）。一圈时长由胶囊周长算出来。
+  // 但纯匀速有个副作用：手机竖屏周长只有 744px，一圈 4s 就跑完，虽然线速度一样，
+  // 观感上"绕得太勤"显得快。所以再给一圈时长加下限 MIN_DUR，把短胶囊压慢一点；
+  // 大小屏的圈时差距也从 2.4 倍收到 1.8 倍以内。
+  var BEAM_SPEED = 160;
+  var MIN_DUR = 6200;
+  function buildBeam() {
+    var btn = document.querySelector('.cbtn');
+    if (!btn || !document.createElementNS) return;
+    var old = btn.querySelector('svg.kiki-beam');
+    if (old) old.remove();                       // 旋转屏幕/换布局后要按新尺寸重画
+    var w = btn.offsetWidth, h = btn.offsetHeight;
+    if (!w || !h) return;
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'kiki-beam');
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    svg.setAttribute('width', w); svg.setAttribute('height', h);
+    var d = stadiumD(w, h);
+    function layer(dash, behind, color, width, blur, cls) {
+      var p = document.createElementNS(ns, 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', color);
+      p.setAttribute('stroke-width', width);
+      p.setAttribute('stroke-linecap', 'round');
+      p.setAttribute('stroke-dasharray', dash + ' 9999'); // 占位，len 算出来后再按"整圈"改
+      p.__dash = dash;
+      if (blur) p.style.filter = 'blur(' + blur + 'px)';
+      p.setAttribute('class', cls);
+      svg.appendChild(p);
+      return p;
+    }
+    // 尺寸随胶囊宽度缩放：竖屏（约 380px 宽）按 1 倍，横屏/平板按比例拉长，
+    // 否则固定 138px 的尾巴在大宽屏上会显得像个小点。粗细只按 s^0.55 放大，避免又变笨。
+    var s = Math.min(2.6, Math.max(1, w / 380));
+    var ws = Math.pow(s, 0.55);
+    var LAYERS = [
+      [138, 104, 'rgba(70,140,255,.08)', 0.60, 0, 'b8'],
+      [116,  84, 'rgba(80,150,255,.14)', 0.70, 0, 'b7'],
+      [96,   66, 'rgba(95,165,255,.22)', 0.78, 0, 'b6'],
+      [78,   50, 'rgba(110,180,255,.31)', 0.88, 0, 'b5'],
+      [62,   36, 'rgba(125,190,255,.41)', 0.96, 0, 'b4'],
+      [48,   24, 'rgba(140,200,255,.52)', 1.05, 0, 'b3'],
+      [36,   14, 'rgba(160,210,255,.64)', 1.12, 0, 'b2'],
+      [22,    0, 'rgba(150,200,255,.30)', 2.40, 2.4, 'bg'],   // 头部外发光
+      [26,    6, 'rgba(185,220,255,.78)', 1.20, 0, 'b1'],
+      [16,    0, 'rgba(232,244,255,.95)', 1.30, 0, 'b0']      // 亮芯
+    ];
+    LAYERS.forEach(function (L) {
+      layer(Math.round(L[0] * s), Math.round(L[1] * s), L[2],
+            +(L[3] * ws).toFixed(2), L[4] ? +(L[4] * ws).toFixed(2) : 0, L[5]);
+    });
+    var head = svg.querySelector('.b0');
+    btn.appendChild(svg);
+    var len = head.getTotalLength();
+    var dur = Math.min(18000, Math.max(MIN_DUR, Math.round(len / BEAM_SPEED * 1000)));
+    svg.style.setProperty('--len', len + 'px');
+    var offs = { b0: 0, bg: 0, b1: 6, b2: 14, b3: 24, b4: 36, b5: 50, b6: 66, b7: 84, b8: 104 };
+    Object.keys(offs).forEach(function (cls) {
+      var el = svg.querySelector('.' + cls);
+      if (!el) return;
+      var behind = Math.min(offs[cls] * s, len / 2 - 10);
+      el.style.animationDuration = dur + 'ms';
+      el.style.animationDelay = (-dur * (len - behind) / len) + 'ms';
+      // 关键：虚线周期必须正好等于整圈周长（dash + gap = len）。
+      // 用 9999 这种超大 gap 时，光跑到起点(左上圆角)那一刻会被路径末端截断，
+      // 出现"断一下再冒出来"；周期=len 时末端被截掉的那段会同时从起点补回来，接缝是连着的。
+      var gap = Math.max(0.5, len - el.__dash);
+      el.setAttribute('stroke-dasharray', el.__dash.toFixed(2) + ' ' + gap.toFixed(2));
+    });
+  }
+
+  // 3b) 跳到某张卡（目录 / 跨页锚点）：等滚动真的停下来再发水波纹。
+  //     以前是 :target 一改 hash 就开播，等滚到位动画只剩最后一帧，等于白播。
+  var popped = {};
+  function popHash() {
+    var id = location.hash.slice(1);
+    try { id = decodeURIComponent(id); } catch (e) { /* 保持原样 */ }
+    if (!id || popped[id]) return;
+    var el = document.getElementById(id);
+    if (!el || !el.classList || !el.classList.contains('card')) return;
+    popped[id] = 1;
+    setTimeout(function () { delete popped[id]; }, 1600);
+    pop(el, 0);
+  }
+
+  function afterScroll(fn) {
+    var done = false;
+    var go = function () { if (done) return; done = true; fn(); };
+    if ('onscrollend' in window) window.addEventListener('scrollend', go, { once: true });
+    setTimeout(go, 720);
+  }
+  window.addEventListener('hashchange', function () { afterScroll(popHash); });
+
+  // 3a) 跨文档带锚点落地（主页点正文里的超纲词跳到词汇卡）：浏览器自己的锚点滚动会被吃掉。
+  //     实测：直接打开 vocab.html#w-x 能滚到位；但从另一页点链接进来，落到 scrollY=0 ——
+  //     新页面 URL 带着 #，位置却停在顶部。原因是锚点滚动与「平滑滚动 + 视图过渡」撞车：
+  //     平滑滚动的动画刚起跑就被快照/过渡打断，回到 0。
+  //     对策：落地时临时把 scroll-behavior 改成 auto 做一次硬跳（瞬间到位，不走平滑），
+  //     跳完立刻还原，页内的目录点击仍然是平滑滚动。
+  function hardLand() {
+    if (!location.hash) return;
+    var id = location.hash.slice(1);
+    try { id = decodeURIComponent(id); } catch (e) { /* 原样 */ }
+    var el = document.getElementById(id);
+    if (!el) return;
+    var root = document.documentElement, prev = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+    el.scrollIntoView({ block: 'start' });
+    root.style.scrollBehavior = prev;
+  }
+  // 图片/字体稍后加载会把落点顶偏，900ms 后再校一次（仍然是硬跳，看不出第二次跳）
+  if (location.hash) {
+    setTimeout(function () {
+      var el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (!el) return;
+      var top = el.getBoundingClientRect().top;
+      var want = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+      if (Math.abs(top - want) > 8) hardLand();
+    }, 900);
+  }
+  window.addEventListener('load', hardLand);
+
+  // 数字递增第 1 步：把数字折进 .kiki-num。必须尽早做（DOMContentLoaded，还没绘制），
+  // 否则页面已经画出来再插 span，宽度会"宽一下"——从词汇页返回时尤其明显。
+  // 宽度只按目标位数留位：原本 1 位的「双语 7 条」不会多占一格，右边内容不会被顶开。
+  function wrapNums() {
+    var nums = document.querySelectorAll('.pillrow span.pill,.cbtn .l,.cbtn .r,.summary > div,.bar .count');
+    Array.prototype.forEach.call(nums, function (el) {
+      if (el.getAttribute('data-kiki-wrapped')) return;
+      var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), n, t = null;
+      while ((n = w.nextNode())) { if (/[0-9]/.test(n.nodeValue)) { t = n; break; } }
+      if (!t) return;
+      var m = t.nodeValue.match(/[0-9]+/);
+      if (!m) return;
+      var target = parseInt(m[0], 10);
+      if (!target || target > 9999) return;
+      el.setAttribute('data-kiki-wrapped', '1');
+
+      var pad = String(target).length;
+      var before = t.nodeValue.slice(0, m.index), after = t.nodeValue.slice(m.index + m[0].length);
+      t.nodeValue = before;
+      var span = document.createElement('span');
+      span.className = 'kiki-num';
+      span.style.minWidth = pad + 'ch';
+      span.textContent = new Array(pad + 1).join('0');
+      var par = t.parentNode;
+      par.insertBefore(span, t.nextSibling);
+      par.insertBefore(document.createTextNode(after), span.nextSibling);
+      el.__kikiNum = { span: span, target: target, pad: pad };
+    });
+  }
+
+  var beamRz;
+  function scheduleBeam() { clearTimeout(beamRz); beamRz = setTimeout(buildBeam, 180); }
+
   function start() {
-    // 顶部阅读进度光条（滚动时间线驱动，不支持就查不到这个元素、也不显示）
+    buildBeam();
+    // 屏幕旋转 / 折叠屏切换 / 窗口变化：胶囊长度变了就得按新轮廓重画，
+    // 否则光还在照着旧的（竖屏那条短）路径跑。
+    var beamBtn = document.querySelector('.cbtn');
+    if (beamBtn && window.ResizeObserver) {
+      new ResizeObserver(scheduleBeam).observe(beamBtn);
+    }
+    window.addEventListener('resize', scheduleBeam);
+    window.addEventListener('orientationchange', function () { setTimeout(buildBeam, 320); });
+    hardLand();          // 跨文档带 #锚点进来时，见下方 hardLand 注释
+    // 顶部阅读进度光条（滚动时间线驱动，不支持就什么都不显示）
     var bar = document.createElement('div');
     bar.className = 'kiki-progress';
     document.body.appendChild(bar);
@@ -456,22 +654,67 @@ details[open]::details-content{height:auto}
       if (r.top < h - 40 && r.bottom > 0) initial.push(c);
     });
 
-    // 卡片滚进视野时发一圈水波纹（两个页面同一套观感，不再做整列位移的"绸带"）
-    if (!('IntersectionObserver' in window)) return;
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        io.unobserve(en.target);
-        if (initial.indexOf(en.target) >= 0) return;  // 进来时就在画面里，跳过
-        pop(en.target, 0);
-      });
-    }, { threshold: 0.3, rootMargin: '0px 0px -8% 0px' });
-    Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
+    // 卡片滚进视野：发水波纹（淡入已去掉，见 CSS 5d 注释）
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          io.unobserve(en.target);
+          if (initial.indexOf(en.target) >= 0) return;  // 进来时就在画面里，跳过
+          pop(en.target, 0);
+        });
+      }, { threshold: 0.3, rootMargin: '0px 0px -8% 0px' });
+      Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
+    }
+
+    // 数字递增：报头/候选条/摘要里的数字从 0 数上去，滚进视野触发一次。
+    // wrapNums() 已在 DOMContentLoaded 提前折好，这里只负责触发。
+    function countUp(el) {
+      var d = el.__kikiNum;
+      if (!d || el.getAttribute('data-kiki-counted')) return;
+      el.setAttribute('data-kiki-counted', '1');
+      var span = d.span, target = d.target, pad = d.pad;
+      var t0 = null, dur = 1800;              // 1.8s：太快会"一进页面就数完了"，看不出效果
+      function frame(ts) {
+        if (t0 === null) t0 = ts;
+        var p = Math.min(1, (ts - t0) / dur);
+        var e = 1 - Math.pow(1 - p, 3);          // ease out cubic
+        var v = String(Math.round(target * e));
+        while (v.length < pad) v = '0' + v;
+        span.textContent = v;
+        if (p < 1) requestAnimationFrame(frame);
+      }
+      setTimeout(function () { requestAnimationFrame(frame); }, 180);
+      // 兜底：标签页被切走时 rAF 会暂停，恢复不了就会一直停在 0，这里保证最终值一定落地
+      setTimeout(function () {
+        var fin = String(target);
+        while (fin.length < pad) fin = '0' + fin;
+        span.textContent = fin;
+      }, 180 + dur + 400);
+    }
+    var nums = document.querySelectorAll('.pillrow span.pill,.cbtn .l,.cbtn .r,.summary > div,.bar .count');
+    if ('IntersectionObserver' in window) {
+      var cio = new IntersectionObserver(function (es) {
+        es.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          cio.unobserve(en.target); countUp(en.target);
+        });
+      }, { threshold: 0.4 });
+      Array.prototype.forEach.call(nums, function (n) { cio.observe(n); });
+    } else {
+      Array.prototype.forEach.call(nums, countUp);
+    }
+
+    // 带锚点进来的（比如从主页点超纲词跳到某张卡）：滚到位后再发
+    if (location.hash) setTimeout(popHash, 120);
   }
   var wait = 640;
+  // 数字容器要尽早折进去：DOMContentLoaded 立刻 wrap（此时还没绘制，宽度一定），
+  // 免得像之前那样等 640ms 才插 span，页面已经画出来又"宽一下"，每回一次页面都跳。
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(start, wait); });
+    document.addEventListener('DOMContentLoaded', function () { wrapNums(); setTimeout(start, wait); });
   } else {
+    wrapNums();
     setTimeout(start, wait);
   }
 })();
