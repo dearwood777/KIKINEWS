@@ -42,18 +42,20 @@
             android:text="重试" />
     </LinearLayout>
 
+    <!-- 视觉缩小、热区不动：View 固定 62×26dp（改造前的实测尺寸，触摸范围与原版完全一致），
+         缩的是里面的 bg_pill（<inset> 画到 40×16dp）和字号（13→11sp）。
+         所以"按得到的地方"没变小，只是看起来变成了一个小胶囊 —— 网页那边 VSAFE=44 依旧安全。 -->
     <TextView
         android:id="@+id/settingsButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="62dp"
+        android:layout_height="26dp"
         android:layout_gravity="top|end"
         android:layout_margin="10dp"
         android:background="@drawable/bg_pill"
-        android:paddingLeft="14dp"
-        android:paddingRight="14dp"
-        android:paddingTop="7dp"
-        android:paddingBottom="7dp"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:padding="0dp"
         android:text="设置"
         android:textColor="#FFFFFF"
-        android:textSize="13sp" />
+        android:textSize="11sp" />
 </FrameLayout>
