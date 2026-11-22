@@ -1,9 +1,10 @@
 name: Deploy Docs
 
+# 只在手动触发时发布：这个 workflow 发布的是 main 上的 docs/，而每日 digest 是直接写 gh-pages 的，
+# main 的 docs 长期是过期快照。让它在 push 时自动跑，就会把当天的新页面覆盖成旧内容
+# （2026-11-22 事故：一次 docs/fonts 提交把 11-22 期覆盖成 11-18）。
+# 需要发布 main/docs 时，手动 Run workflow 即可。
 on:
-  push:
-    branches: [main]
-    paths: ['docs/**', 'skills/horizon/**', 'LICENSE', '.github/workflows/deploy-docs.yml']
   workflow_dispatch:
 
 jobs:
