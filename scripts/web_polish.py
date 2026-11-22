@@ -728,7 +728,6 @@ JS = """
     })();
 
     var WFw = [1.12, 1.0, 0.9, 1.06, 1.12, 1.0, 0.9];   // 每帧占时（接触/下沉/过渡/抬起...）
-    var wfT = 0;
     function sprShow(on) {
       if (!WF.box) return;
       if (WF.bad) on = false;
@@ -745,11 +744,15 @@ JS = """
         var el = PWp[n]; if (el) el.style.display = on ? '' : 'none';
       });
     }
+    var wfT0 = 0;
     function frameIdx() {
       var tot = 0, i;
       for (i = 0; i < WFw.length; i++) tot += WFw[i];
+      var now = (window.performance && performance.now) ? performance.now() : Date.now();
+      if (!wfT0) wfT0 = now;
+      var el = (now - wfT0) / 1000;
       var cyc = 2 * (PH * 0.54) / SPEED;    // 一个完整步态(左右各一步)的时长，跟位移对齐→不滑步
-      var t = (wfT % cyc) / cyc * tot, acc = 0;
+      var t = (el % cyc) / cyc * tot, acc = 0;
       for (i = 0; i < WFw.length; i++) { acc += WFw[i]; if (t < acc) return i; }
       return WFw.length - 1;
     }
@@ -941,7 +944,6 @@ JS = """
         var dx = SPEED * dt;
         st.x += dx; st.dist += dx;
         st.ph = st.dist / (SH * 0.78) * Math.PI;
-        wfT += dt;
         poseWalk(st.ph);
         st.rot = 0;
         if (st.x >= r.x1) { st.x = r.x1; arrive(); }
