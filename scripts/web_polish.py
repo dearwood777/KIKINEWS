@@ -399,6 +399,57 @@ JS = """
       stem.appendChild(el);
       return el;
     }
+    // 渐细：把一条点序列按长度切成 n 段，每段线宽从 w0 线性收到 w1，端点是圆头、互相重叠 ——
+    // 合起来就是一根"由粗到细"的藤。段长只有 1~3px、相邻宽度差 0.2px，看不出分段。
+    function taper(grp, pts, w0, w1, l0, l1) {
+      var n = grp.length, iEnd = pts.length - 1, gi;
+      for (gi = 0; gi < n; gi++) {
+        var i0 = Math.round(gi * iEnd / n), i1 = Math.round((gi + 1) * iEnd / n);
+        if (i1 <= i0) i1 = i0 + 1;
+        var dd = 'M' + pts[i0].x.toFixed(2) + ' ' + pts[i0].y.toFixed(2), pi;
+        for (pi = i0 + 1; pi <= i1 && pi <= iEnd; pi++) {
+          dd += ' L' + pts[pi].x.toFixed(2) + ' ' + pts[pi].y.toFixed(2);
+        }
+        var u = n > 1 ? gi / (n - 1) : 1;
+        grp[gi].d.style.display = 'block';
+        grp[gi].d.setAttribute('d', dd);
+        grp[gi].d.setAttribute('stroke-width', (w0 + (w1 - w0) * u).toFixed(2));
+        var lv = l0 + (l1 - l0) * u;
+        grp[gi].l.setAttribute('d', dd);
+        grp[gi].l.setAttribute('stroke-width', Math.max(0.2, lv).toFixed(2));
+        grp[gi].l.style.display = lv > 0.3 ? 'block' : 'none';
+      }
+    }
+    function hideTaper(grp) {
+      for (var gi = 0; gi < grp.length; gi++) {
+        grp[gi].d.style.display = 'none';
+        grp[gi].l.style.display = 'none';
+      }
+    }
+    function cubicPts(p0, p1, p2, p3, n) {
+      var out = [], s;
+      for (s = 0; s <= n; s++) {
+        var t = s / n, mt = 1 - t;
+        var a = mt * mt * mt, b = 3 * mt * mt * t, c = 3 * mt * t * t, e = t * t * t;
+        out.push({ x: a * p0.x + b * p1.x + c * p2.x + e * p3.x,
+                   y: a * p0.y + b * p1.y + c * p2.y + e * p3.y });
+      }
+      return out;
+    }
+    // 三维弹簧：真正的瓜藤卷须是绕着一根轴**在空间里**转出来的，投影到屏幕上是一串"轴向被压扁的环"，
+    // 半径一路收到 0。平面阿基米德螺线是"一圈比一圈大的蜗牛壳"，看着就是藤头上长了个果子 —— 不能用。
+    function springPts(ax0, ay0, dx, dy, L, turns, r0, r1, squash, nSeg) {
+      var m = Math.sqrt(dx * dx + dy * dy) || 1;
+      dx /= m; dy /= m;
+      var nx = -dy, ny = dx, out = [], a0 = Math.PI / 2, s;
+      for (s = 0; s <= nSeg; s++) {
+        var t = s / nSeg, ang = a0 + t * turns * Math.PI * 2, rr = r0 + (r1 - r0) * t;
+        var along = L * t + rr * squash * Math.sin(ang), nrm = rr * Math.cos(ang);
+        out.push({ x: ax0 + dx * along + nx * nrm, y: ay0 + dy * along + ny * nrm });
+      }
+      out[0] = { x: ax0, y: ay0 };
+      return out;
+    }
     // 主干：底部粗一点、往上收，顶端往左勾。勾的末端 (17,6) 的切线是**水平**的，
     // 而且顶端比上一版高了 2 个单位（8 → 6）—— 横臂整体往卡片顶上提，不压"北京时间"那行。
     // 横臂稍后会被拼到这条 d 的末尾（placeVine 里的 dA），所以它俩是**同一条描边**。
@@ -417,9 +468,18 @@ JS = """
     var branch = addPath('', 2.6, '#143a10');
     var branchLit = addPath('', 1.4, '#5aa03a');
     var branchCurl = addPath('', 1.4, '#5aa03a');
-    // 第 6、7 片叶子之间再抽一根侧枝：往右斜上走，到容器右缘收成一卷螺旋小藤（弹簧须）
-    var tendril = addPath('', 1.8, '#143a10');
-    var tendrilLit = addPath('', 1.0, '#5aa03a');
+    // 侧枝 / 梢头：**一条 stroke 画不出渐细**（SVG 的 stroke-width 是常量），所以按长度切成
+    // 若干小段、每段线宽递减、端点圆头互相重叠 —— 合起来就是"由粗到细"的一根，段长只有 1~3px、
+    // 线宽差 0.2px，肉眼看不出分段。
+    function mkTaper(n) {
+      var arr = [], i0;
+      for (i0 = 0; i0 < n; i0++) {
+        arr.push({ d: addPath('', 2.0, '#143a10'), l: addPath('', 1.0, '#5aa03a') });
+      }
+      return arr;
+    }
+    var sproutSide = mkTaper(10);   // 第 6/7 片叶之间抽出的侧枝 + 末端弹簧卷须
+    var sproutTip = mkTaper(5);     // 竖屏顶端沿"设置"按钮走完后的细梢
     box.appendChild(stem);          // 忘了这一行 = 叶子像一堆浮在半空的蘑菇（已经踩过一次）
     document.body.appendChild(box);
 
@@ -621,10 +681,21 @@ JS = """
     function placeVine() {
       var w = box.__w, h = box.__h;
       if (!w || !h) return;
+      hideTaper(sproutTip);        // 竖屏才画梢头，横屏先关掉
+      // 竖屏：主茎那条 STEM 顶端"往左折"的一小段是留给横屏横臂用的，竖屏留在场上就会和
+      // 向右横走的一段反向交叉 —— 用户看到的就是"两条藤"。所以竖屏只画到 yv≈10% 处，
+      // 再从那里一路往上推到按钮底；顶部两片叶（b>=78）随之挂到这条竖线上，不会悬空。
+      var iCut = PTS.length - 1, cutX = 0, cutY = 0;
+      if (armLen <= 12) {
+        for (var ci = 0; ci < PTS.length; ci++) if (PTS[ci].y <= 10) { iCut = ci; break; }
+        cutX = PTS[iCut].x / 100 * w;
+        cutY = PTS[iCut].y / 100 * h;
+      }
       for (var i9 = 0; i9 < items.length; i9++) {
         var o = items[i9];
         var yv = 100 - o.b;                 // viewBox 的 y
         var xpx = stemX(yv) / 100 * w;      // 茎在那里的 x（像素）
+        if (armLen <= 12 && o.b >= 78) xpx = cutX + (o.b >= 90 ? 3.6 : 1.2);   // 挂到竖线上
         var yTop = (1 - o.b / 100) * h;     // 锚点距容器顶（像素）
         o.el.style.left = (xpx - o.w * 0.5).toFixed(2) + 'px';
         o.el.style.top = (yTop - o.w * o.anchor).toFixed(2) + 'px';
@@ -634,7 +705,8 @@ JS = """
       stem.setAttribute('viewBox', '0 0 ' + w.toFixed(1) + ' ' + h.toFixed(1));
       var baseY = h * (ARM_BASE / 100);      // 茎顶（= 横臂基线）在容器里的像素 y
       var dA = 'M' + (PTS[0].x / 100 * w).toFixed(1) + ' ' + (PTS[0].y / 100 * h).toFixed(1);
-      for (var p9 = 1; p9 < PTS.length; p9++) {
+      var pEnd = (armLen <= 12) ? iCut : PTS.length - 1;
+      for (var p9 = 1; p9 <= pEnd; p9++) {
         dA += ' L' + (PTS[p9].x / 100 * w).toFixed(1) + ' ' + (PTS[p9].y / 100 * h).toFixed(1);
       }
       // 横臂：把取样点直接接在主茎那条 d 的末尾 —— 一条 path、一次描边，接缝不可能出现
@@ -663,21 +735,32 @@ JS = """
           q9.el.style.transform = 'rotate(' + q9.rot + 'deg)';
         }
       } else {
-        // 竖屏：藤不再掐尖，而是长到顶端后**沿着原生"设置"按钮的下沿再往右走一小段**，
-        // 末端往下收个小钩 —— 看起来是藤"爬到了按钮边上、搭着它走了一遭"。
-        // 这条线固定在容器顶 2.5px 处（容器顶本身就在按钮底下 6px），所以任何卡片高度都贴着按钮。
-        var sx0 = w * 0.17, syT = 2.5;
-        // 从茎顶缓弧上去（控制点拉高，圆滑的 90° 弯，不是直角）
-        dA += ' C' + (sx0 + 1.2).toFixed(1) + ' ' + (baseY - 12).toFixed(1) +
-              ' ' + (sx0 + 4.5).toFixed(1) + ' ' + (syT + 4).toFixed(1) +
-              ' ' + (sx0 + 10).toFixed(1) + ' ' + syT.toFixed(1);
-        // 沿按钮底往右走：留一点点起伏，不像一根拉直的杆
-        for (var qx = sx0 + 15; qx <= w - 7; qx += 4) {
-          dA += ' L' + qx.toFixed(1) + ' ' + (syT + 0.7 * Math.sin(qx / 7)).toFixed(1);
+        // 竖屏：从截断点 (cutX, cutY) 一路往上推到按钮底下 —— 这条线是主茎的**自然延长**，
+        // 不再和"往左折"那一小段反向交叉；到顶后贴着按钮下沿往右走，右端翻上去、收成细梢。
+        var syT = 4;
+        var xE = box.__btnR ? Math.max(cutX + 20, Math.min(w - 2, box.__btnR + 2)) : (w - 4);
+        // 上升段带一点左右轻摆，末端切线趋近水平 —— 拐向横走时是圆角，不是 90° 硬角
+        dA += ' C' + (cutX + 2.6).toFixed(1) + ' ' + (cutY - (cutY - syT) * 0.40).toFixed(1) +
+              ' ' + (cutX + 6.5).toFixed(1) + ' ' + (syT + 2.0).toFixed(1) +
+              ' ' + (cutX + 10.0).toFixed(1) + ' ' + (syT + 0.6).toFixed(1);
+        // 沿按钮底往右走：留 0.5px 的极轻起伏，不像一根拉直的杆
+        for (var qx = cutX + 10; qx <= xE - 8; qx += 3) {
+          dA += ' L' + qx.toFixed(1) + ' ' + (syT + 0.5 * Math.sin(qx / 6)).toFixed(1);
         }
-        dA += ' C' + (w - 2).toFixed(1) + ' ' + syT.toFixed(1) +
-              ' ' + (w - 1).toFixed(1) + ' ' + (syT + 2).toFixed(1) +
-              ' ' + (w - 4).toFixed(1) + ' ' + (syT + 3.4).toFixed(1);
+        // 右端上翘：从按钮底下翻上去一点
+        dA += ' C' + (xE - 3).toFixed(1) + ' ' + (syT - 0.4).toFixed(1) +
+              ' ' + (xE - 0.8).toFixed(1) + ' ' + (syT - 2.2).toFixed(1) +
+              ' ' + xE.toFixed(1) + ' ' + (syT - 3.0).toFixed(1);
+        // 细梢再往左上回一点点，同时越来越细（收在 0.45px）
+        var tPts = [], si2;
+        for (si2 = 0; si2 <= 8; si2++) {
+          var u2 = si2 / 8;
+          tPts.push({
+            x: xE - u2 * 4.6,
+            y: Math.max(0.6, syT - 3.0 + u2 * 2.0 - Math.sin(u2 * Math.PI) * 0.9)
+          });
+        }
+        taper(sproutTip, tPts, 2.9, 0.45, 1.5, 0.2);
       }
       stemDark.setAttribute('d', dA);
       stemLit.setAttribute('d', dA);
@@ -698,29 +781,23 @@ JS = """
           ' ' + (bx + 11.6).toFixed(1) + ' ' + (by - 11.6).toFixed(1) +
           ' ' + (bx + 9.4).toFixed(1) + ' ' + (by - 9.6).toFixed(1));
       }
-      // 侧枝 + 螺旋：从第 6/7 片叶之间（b≈76.5%）的主茎上分出，往右斜上，到右边空处卷成螺旋
-      var yvT = 100 - 76.5;                       // viewBox 的 y
+      // 侧枝：从下往上第 6 片叶（b=30）与第 7 片叶（b=20）之间，取中点 → 主茎上 y=23.5% 处
+      var yvT = 100 - 76.5;
       var txT = stemX(yvT) / 100 * w;             // 起点就压在主茎上 —— 不会出现断口
       var tyT = yvT / 100 * h;
-      var room = Math.max(12, w - 5 - txT);       // 到容器右缘还剩多少横向空间
-      var e2x = txT + Math.min(room, 20) * 0.85, e2y = tyT - Math.min(40, h * 0.12);
-      var litD = 'M' + txT.toFixed(1) + ' ' + tyT.toFixed(1) +
-        ' C' + (txT + room * 0.12).toFixed(1) + ' ' + (tyT - 3.2).toFixed(1) +
-        ' ' + (e2x - room * 0.3).toFixed(1) + ' ' + (e2y + 6).toFixed(1) +
-        ' ' + (e2x - 2.2).toFixed(1) + ' ' + (e2y + 1.2).toFixed(1) +
-        ' C' + (e2x - 0.4).toFixed(1) + ' ' + (e2y - 1.4).toFixed(1) +
-        ' ' + e2x.toFixed(1) + ' ' + (e2y - 2.2).toFixed(1) +
-        ' ' + e2x.toFixed(1) + ' ' + e2y.toFixed(1);
-      // 阿基米德螺线：以 (e2x, e2y-3) 为心，半径从 4.6 收到 1.2，转 2.1 圈，入口角度接侧枝来向
-      var cxs = e2x, cys = e2y - 5.5, r0 = 5.5, r1 = 1.6, turns = 2.4;
-      var a0 = Math.atan2(e2y - cys, e2x - cxs);
-      var dSp = '';
-      for (var si = 1; si <= 40; si++) {
-        var tt = si / 40, ang = a0 + tt * turns * Math.PI * 2, rr = r0 + (r1 - r0) * tt;
-        dSp += ' L' + (cxs + Math.cos(ang) * rr).toFixed(1) + ' ' + (cys + Math.sin(ang) * rr).toFixed(1);
-      }
-      tendril.setAttribute('d', litD + dSp);
-      tendrilLit.setAttribute('d', litD + dSp);
+      var dxr = Math.min(w - 3 - txT, Math.max(14, w * 0.34));
+      var uy = Math.min(30, Math.max(17, h * 0.09));
+      // 先几乎平着抽出来、后段再扬起 → 有弧度的右斜上，不是一条直冲的斜线
+      var pA = { x: txT, y: tyT };
+      var pB = { x: txT + dxr * 0.40, y: tyT - 1.4 };
+      var pC = { x: txT + dxr * 0.85, y: tyT - uy * 0.56 };
+      var pD = { x: txT + dxr, y: tyT - uy };
+      var sidePts = cubicPts(pA, pB, pC, pD, 14);
+      // 末端接着**弹簧卷须**：轴向 13px、转 2.6 圈 —— 环与环一前一后交叠着推出去，
+      // 半径 5.0 → 1.0 收尖；屏幕上是"一串被压扁的椭圆环"，像真藤的卷须，不是蜗牛壳也不是小果子
+      var spPts = springPts(pD.x, pD.y, pD.x - pC.x, pD.y - pC.y, 14, 2.2, 6.0, 1.0, 0.42, 40);
+      // 整根一起喂给 taper：2.9px 起、0.5px 收 —— 由粗到细，末端是尖的
+      taper(sproutSide, sidePts.concat(spPts.slice(1)), 2.9, 0.5, 1.5, 0.22);
     }
 
     // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
@@ -736,20 +813,21 @@ JS = """
         buildGrass(hero);
       }
       var w = Math.min(74, Math.max(44, Math.round(vw * 0.14)));
-      // 顶部安全区：APK 原生层的"设置"浮钮压在报头卡右上角（本机实测 62×26 CSS，距屏顶 12、距屏右 12）。
-      // 网页读不到原生层，只能按实测留白：整条藤从卡片顶往下 VSAFE 处才开始长，
-      // 顶端勾收在按钮正下方 —— 按钮区域彻底干净，藤看起来是"掐尖收尾"而不是被切掉。
-      // 原生层如果告诉我们"设置"按钮的真实矩形（window.KikiShell.settingsRect，已换算成 WebView 的 CSS px），
-      // 就直接按它的底边留白；拿不到就退回本机实测的 44px。
-      var VSAFE = 44;
+      // 顶部安全区：原生层"设置"胶囊压在报头卡右上角。v29 起藤的顶段要**贴着它的下沿**走，
+      // 所以这里必须知道按钮的真实底边：优先用原生层给的 settingsRect，
+      // 拿不到就退回本机实测值（62×26 CSS、距屏顶 12、距屏右 12 → 底边 38）。
       var ns = window.KikiShell && window.KikiShell.settingsRect;
-      if (ns && ns.b > 0) VSAFE = Math.max(0, ns.b + 6);
+      var btnB = (ns && ns.b > 0) ? ns.b : 38;
+      var btnR2 = (ns && ns.r > 0) ? ns.r : (vw - 12);
+      var VSAFE = Math.max(0, btnB - 2);       // 容器顶落在按钮底下 2px：横走段 y=4 → 屏幕正好贴齐
       var topY = r.top + VSAFE;
       if (topY > r.bottom - 46) topY = r.top;          // 卡片太矮就别留白了
       box.__w = w; box.__h = Math.max(0, r.bottom - topY);
       box.style.width = w + 'px';
       box.style.height = box.__h + 'px';
-      box.style.left = (Math.min(r.right, vw) - w - 6) + 'px';   // 往右贴：留 6px，不再留 14px
+      var leftPx = Math.min(r.right, vw) - w - 6;      // 往右贴：留 6px
+      box.style.left = leftPx + 'px';
+      box.__btnR = btnR2 - leftPx;                     // "设置"右缘在容器里的 x（顶段靠它收尾）
       box.style.top = topY + 'px';
       box.style.display = (r.bottom < 6 || r.top > vh - 6) ? 'none' : 'block';
       // 横臂长度：竖屏只够一段短的（日期行右边到卡片右缘），横屏往左一大片都是空的
