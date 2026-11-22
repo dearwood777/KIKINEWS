@@ -307,6 +307,8 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -603,11 +605,11 @@ details[open]::details-content{height:auto}
     function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
     // 铺满：一根挨一根。密度按屏宽（每 6~8px 一簇），竖屏约 55 簇、横屏约 110 簇
     var vw = window.innerWidth || 400;
-    var n = Math.max(18, Math.min(80, Math.round((vw - 12) / 12)));
+    var n = Math.max(18, Math.min(110, Math.round((vw - 12) / 10)));
     for (var i = 0; i < n; i++) {
       var d = document.createElement('div');
       d.className = 'kg';
-      var w = 12 + rnd() * 4;              // 12~16px，比间距略宽 → 相邻草簇的草皮叠在一起，连成一条草带
+      var w = 14 + rnd() * 4;              // 14~18px，比 10px 的间距宽 → 相邻草皮一定叠住，横屏也不会断成一段一段
       d.style.width = w.toFixed(1) + 'px';
       d.style.height = (4.5 + rnd() * 2.5).toFixed(1) + 'px';   // 4.5~7px，约为上一版（11~18）的 1/3
       var pct = (i + 0.5) / n * 100 + (rnd() - 0.5) * (24 / n);
@@ -620,6 +622,7 @@ details[open]::details-content{height:auto}
       d.innerHTML = GRASS_SVG;
       g.appendChild(d);
     }
+    g.__vw = vw;                       // 记下生成时的视口宽：旋转屏幕后按新宽度重铺，否则草簇会被拉散
     hero.appendChild(g);
   }
 
@@ -654,10 +657,10 @@ details[open]::details-content{height:auto}
       stem.appendChild(el);
       return el;
     }
-    // 主干：底部粗一点、往上收，顶端往左勾。勾的末端落在 (17,8) —— 和横臂右端同高，
-    // 横臂一旦出现就从这里直接接出去，看起来是"一根藤长到顶再横过去"，不是两截
+    // 主干：底部粗一点、往上收，顶端往左勾。勾的末端 (17,8) 的切线是**水平**的
+    // （控制点改成 33,7 / 26,8），所以横臂从这里接着往左长时不会有折角
     var STEM = 'M80 101 C78 90 74 82 71 74 C68 66 66 60 68 53 C70 46 66 41 62 35' +
-               ' C58 29 52 22 51 16 C50 12 46 8 40 7 C33 6 25 6 17 8';
+               ' C58 29 52 22 51 16 C50 12 46 8 40 7 C33 7 26 8 17 8';
     addPath(STEM, 3.0, '#143a10');                 // 藤身（深）
     addPath(STEM, 1.6, '#5aa03a');                 // 高光芯线，深色卡面上才立得住
     // 两卷卷须：葫芦藤最好认的特征
@@ -711,12 +714,13 @@ details[open]::details-content{height:auto}
                    fill: 'none', stroke: '#2e6b1f', 'stroke-width': 1.9, 'stroke-linecap': 'round' });
       return svg;
     }
-    // 葫芦的"一体轮廓"：上瓣小球（细）→ 腰内凹 → 下瓣大球（粗），两瓣在腰处连着长在一起。
-    // 上瓣最宽 28、腰收 12、下瓣最宽 52 —— 上瓣约为下瓣一半，才是葫芦不是漏斗。
-    var GOURD_OUT = 'M50 11 C60 11 65 18 65 27 C65 33 63 38 59 40 C58 41 58 42 60 43'
+    // 葫芦的"一体轮廓"：最上面那个**小嘴**（收窄的短颈）→ 上瓣小球（细）→ 腰内凹 → 下瓣大球（粗），
+    // 四段是一条闭合路径连着长出来的，不是几个圆拼。上瓣最宽 30、腰 12~20、下瓣最宽 54。
+    var GOURD_OUT = 'M50 0 C55 0 57 3 56 6 C55 9 58 12 59 13'
+      + ' C64 17 65 22 65 27 C65 33 63 38 59 40 C58 41 58 42 60 43'
       + ' C72 45 77 56 77 68 C77 82 65 94 50 94 C35 94 23 82 23 68'
       + ' C23 56 28 45 40 43 C42 42 42 41 41 40 C37 38 35 33 35 27'
-      + ' C35 18 40 11 50 11 Z';
+      + ' C35 22 36 17 41 13 C42 12 45 9 44 6 C43 3 45 0 50 0 Z';
     // 小葫芦：一条闭合轮廓画出"上小下大、腰部收缩、两瓣互相重叠"的真葫芦形，
     // 而不是两个独立椭圆拼起来（那样中间会有一道横线，看着像两只气球）。
     // 蒂从葫芦顶一路向上探出画布，长度正好补齐 dy —— 所以每个葫芦都真的挂在藤上。
@@ -733,9 +737,9 @@ details[open]::details-content{height:auto}
         svg.appendChild(e);
         return e;
       }
-      // 蒂：顶端探到画布外（负 y），长度 = 葫芦顶到臂线的真实像素距离，overflow:visible 负责显示
+      // 蒂：从葫芦嘴的顶点往上，一路探到画布外，长度正好补齐下垂深度 —— 小嘴是露出来的
       var tipY = -((dy || 0) * 100 / Math.max(1, wpx));
-      el('path', { d: 'M50 16 L50 ' + tipY.toFixed(2), stroke: '#40822c', 'stroke-width': 3.4, fill: 'none', 'stroke-linecap': 'round' });
+      el('path', { d: 'M50 0 L50 ' + tipY.toFixed(2), stroke: '#40822c', 'stroke-width': 2.6, fill: 'none', 'stroke-linecap': 'round' });
       el('path', { d: GOURD_OUT, fill: col, stroke: '#143a10', 'stroke-width': 3, 'stroke-linejoin': 'round' });
       el('path', { d: 'M33 66 C37 58 43 55 49 55', stroke: hi, 'stroke-width': 1.8, fill: 'none', 'stroke-linecap': 'round' });
       return svg;
@@ -787,32 +791,22 @@ details[open]::details-content{height:auto}
     var armLen = 0;
     var arm = document.createElement('div');
     arm.className = 'kv-arm';
-    var joint = document.createElement('div');
-    joint.className = 'kv-joint';
-    box.appendChild(joint);       // 接缝藤节，随 arm 一起显示/隐藏
-    var armSVG = document.createElementNS(NS, 'svg');
-    armSVG.setAttribute('class', 'kv-arm-stem');
-    armSVG.setAttribute('viewBox', '0 0 1000 34');
-    armSVG.setAttribute('preserveAspectRatio', 'none');
-    // 横臂的纵向波形（单位 = 横臂容器像素，0 在顶）：所有挂点都从这条线上算
-    // 横臂的纵向波形（单位 = 横臂容器像素）。右端 y=8 正好是茎顶勾末端的高度，
-    // 臂线穿过那个端点后再往右多留 6px —— 两段线是"穿过"关系，不会出现台阶。
+    // 横臂**并进主茎的同一条 SVG**：从下往上长到顶、再往左横过去是一条连续路径，
+    // 没有两段线拼接，也就不存在接缝。坐标复用主茎的 0~100 viewBox（纵向被拉伸，
+    // 所以波幅按 h 换算，屏幕上仍是 ±4.6px）。
     function armY(xu) { return 8 + 4.6 * Math.sin((xu - 1000) / 300 * Math.PI * 2); }
-    (function () {
-      var d9 = 'M1000 ' + armY(1000).toFixed(1);
-      for (var i9 = 980; i9 >= 0; i9 -= 20) d9 += ' L' + i9 + ' ' + armY(i9).toFixed(1);
-      function ap(col, wid) {
-        var e9 = document.createElementNS(NS, 'path');
-        e9.setAttribute('d', d9); e9.setAttribute('fill', 'none');
-        e9.setAttribute('stroke', col); e9.setAttribute('stroke-width', wid);
-        e9.setAttribute('stroke-linecap', 'round');
-        e9.setAttribute('vector-effect', 'non-scaling-stroke');
-        armSVG.appendChild(e9);
-      }
-      ap('#143a10', 3.0); ap('#5aa03a', 1.6);
-    })();
-    arm.appendChild(armSVG);
-    box.appendChild(arm);
+    var armPaths = ['#143a10', '#5aa03a'].map(function (col9) {
+      var e9 = document.createElementNS(NS, 'path');
+      e9.setAttribute('fill', 'none');
+      e9.setAttribute('stroke', col9);
+      e9.setAttribute('stroke-width', col9 === '#143a10' ? 3.0 : 1.6);
+      e9.setAttribute('stroke-linecap', 'round');
+      e9.setAttribute('vector-effect', 'non-scaling-stroke');
+      e9.style.display = 'none';
+      stem.appendChild(e9);      // 接在主茎后面 → 同一路径体系，不存在"断开"
+      return e9;
+    });
+    box.appendChild(arm);        // 空容器，只用来给葫芦/叶子定位
     var armItems = [];
     function armItem(wpx, node, anchorPct, rot, xu, kind, dy) {
       var it = document.createElement('div');
@@ -856,7 +850,7 @@ details[open]::details-content{height:auto}
     var gourdXs = [];
     for (var g9 = 0; g9 < GOURDS; g9++) gourdXs.push(90 + g9 * 128);
     gourdXs.forEach(function (xu, i9) {
-      var gw = 24 + (i9 % 3) * 2;
+      var gw = 26 + (i9 % 3) * 2;
       var cc = GCOL[i9 % GCOL.length];
       armItem(gw, gourdSVG(gw, cc[0], cc[1], GDROP[i9]), 0, (i9 % 2 ? 8 : -7), xu, 'g', GDROP[i9]);
     });
@@ -874,16 +868,26 @@ details[open]::details-content{height:auto}
         o.el.style.top = (yTop - o.w * o.anchor).toFixed(2) + 'px';
         o.el.style.transform = 'rotate(' + o.rot + 'deg)';   // 绕锚点转，叶柄不会滑走
       }
-      // 横臂：右端接在竖茎顶端（viewBox x=17,y=10 那条勾），往左伸出 armLen
+      // 横臂：并进主茎 SVG 的那两条 path（同一坐标系，右端起点就是茎顶勾的末端 (17,8)）
       arm.style.display = armLen > 12 ? 'block' : 'none';
-      joint.style.display = armLen > 12 ? 'block' : 'none';
+      for (var pa0 = 0; pa0 < armPaths.length; pa0++) {
+        armPaths[pa0].style.display = armLen > 12 ? 'block' : 'none';
+      }
       if (armLen > 12) {
-        joint.style.left = (w * 0.17 - 3.5).toFixed(2) + 'px';
-        joint.style.top = (h * 0.08 - 3.5).toFixed(2) + 'px';
         arm.style.width = armLen + 'px';
-        arm.style.left = (w * 0.17 - armLen + 6) + 'px';   // 右端多留 6px，臂线穿过茎顶勾的端点
-        arm.style.top = (h * 0.08 - 8).toFixed(2) + 'px';   // 茎顶勾末端在 y=8%（viewBox），臂里 y=8 对齐到它
-        armSVG.setAttribute('width', armLen);
+        arm.style.left = (w * 0.17 - armLen) + 'px';        // 容器只负责给葫芦/叶子定位
+        arm.style.top = (h * 0.08 - 8).toFixed(2) + 'px';
+        var dA = 'M17 8';
+        for (var pp = armLen - 6; pp >= 0; pp -= 6) {
+          var xu9 = pp / armLen * 1000;
+          var vx = 17 - (armLen - pp) * 100 / w;             // 屏幕 px → viewBox 单位
+          var vy = 8 + (armY(xu9) - 8) * 100 / Math.max(1, h);
+          dA += ' L' + vx.toFixed(2) + ' ' + vy.toFixed(2);
+        }
+        for (var pa = 0; pa < armPaths.length; pa++) {
+          armPaths[pa].setAttribute('d', dA);
+          armPaths[pa].style.display = 'block';
+        }
         for (var a9 = 0; a9 < armItems.length; a9++) {
           var q9 = armItems[a9];
           // 竖屏（armLen=0）整条臂都不存在，臂上的叶/葫芦一律不显示，恢复 v21 的"掐尖"收尾
@@ -906,6 +910,12 @@ details[open]::details-content{height:auto}
       var r = hero.getBoundingClientRect();
       var vw = window.innerWidth || document.documentElement.clientWidth;
       var vh = window.innerHeight || document.documentElement.clientHeight;
+      // 横屏/竖屏切换后：草是按旧宽度铺的，百分比一拉伸就出现一段一段的空隙 → 按新宽度重铺
+      var gr = hero.querySelector('.kiki-grass');
+      if (gr && Math.abs((gr.__vw || 0) - vw) > 40) {
+        gr.parentNode && gr.parentNode.removeChild(gr);
+        buildGrass(hero);
+      }
       var w = Math.min(74, Math.max(44, Math.round(vw * 0.14)));
       // 顶部安全区：APK 原生层的"设置"浮钮压在报头卡右上角（本机实测 62×26 CSS，距屏顶 12、距屏右 12）。
       // 网页读不到原生层，只能按实测留白：整条藤从卡片顶往下 VSAFE 处才开始长，
