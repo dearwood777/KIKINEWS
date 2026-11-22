@@ -267,6 +267,10 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
+
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -741,18 +745,22 @@ details[open]::details-content{height:auto}
     cvs.width = W * 2; cvs.height = H * 2;
     var ctx = cvs.getContext('2d');
     if (!ctx) return;
-    ctx.font = '700 ' + F + 'px KikiHead';
-    var mt = ctx.measureText('科');
-    var asc = mt.fontBoundingBoxAscent || F * 1.16, desc = mt.fontBoundingBoxDescent || F * 0.288;
-    var base = (LH - (asc + desc)) / 2 + asc;
+    // 基线一律用字体文件自己的 asc/desc（KIKI_G 里就有），绝不用 ctx.measureText：
+    // 安卓 WebView 上字体没就绪时 measureText 返回回退字体的度量，基线整体偏几像素，
+    // 地形线跟着错位，脚就陷进字里（膝盖以下看不见的真凶）。
+    // 每个字直接用自己 span 的盒子上沿/高度反算基线，顺带免疫标题换行、padding。
+    var upm = KIKI_G.upm || 1000;
+    var AS = (KIKI_G.ascent != null ? KIKI_G.ascent : 1160) / upm * F;
+    var DE = Math.abs((KIKI_G.descent != null ? KIKI_G.descent : -288) / upm) * F;
     ctx.scale(2, 2);
     ctx.fillStyle = '#fff';
     chars.forEach(function (sp) {
       var d = KIKI_G.d[sp.textContent];
       if (!d) return;
       var r = sp.getBoundingClientRect();
+      var byy = r.top - hr.top + (r.height - (AS + DE)) / 2 + AS;
       ctx.save();
-      ctx.translate(r.left - hr.left, base);
+      ctx.translate(r.left - hr.left, byy);
       ctx.scale(k, -k);
       try { ctx.fill(new Path2D(d)); } catch (e) {}
       ctx.restore();
@@ -953,9 +961,12 @@ details[open]::details-content{height:auto}
     })();
 
     var WFw = [1.12, 1.0, 0.9, 1.06, 1.12, 1.0, 0.9];   // 每帧占时（接触/下沉/过渡/抬起...）
+    function sprReady() {
+      return !!(WF.im && WF.im.complete && (WF.im.naturalWidth || 0) > 0);
+    }
     function sprShow(on) {
       if (!WF.box) return;
-      if (WF.bad) on = false;
+      if (WF.bad || (on && !sprReady())) on = false;   // 图没解码完就先用剪纸版，绝不出现整个人消失
       WF.box.style.display = on ? 'block' : 'none';
       if (on) { artW.style.display = 'none'; artH.style.display = 'none'; }
       else { artW.style.display = useHang ? 'none' : 'block'; artH.style.display = useHang ? 'block' : 'none'; }
@@ -1260,7 +1271,7 @@ details[open]::details-content{height:auto}
         var wt = (st.mode === 'vert' && st.x > W * 0.5) ? 'scaleX(-1)' : '';
         if (artW.style.transform !== wt) artW.style.transform = wt;
       }
-      var LIFT = PH * 0.02;   // 墨迹栅格量出的顶边比真实渲染略低，抬这么高脚才真踩在字上沿
+      var LIFT = PH * 0.05;   // 脚比墨迹上沿再抬 5%：视觉上就是站在字上，物理上永不与字重叠
       walker.style.transform = 'translate(' + (st.x - PW / 2).toFixed(2) + 'px,' +
         (st.y - PH - LIFT).toFixed(2) + 'px)';
     }
