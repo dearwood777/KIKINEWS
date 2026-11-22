@@ -1,3 +1,32 @@
+## v18 · 2026-11-22 · 报头卡右边缘加"葫芦藤"竖排花边（叶随风摆）
+
+- **用户口径**（原话）："只做报头那个卡……它右边不是空了点吗，正好用来装饰"；
+  "把卡片当最底端当地，从右侧往上长，长到最顶端再往左拐一点"；"有叶子随风摆动"；
+  定位是"边框花边，稍微装饰一下"。明确**不做**后面列表卡片（"做后边的我感觉可能是会出问题"）。
+- **做法**（`scripts/web_polish.py` 的 `buildVine()` / `layoutVine()`）：纯矢量 + CSS 动画，无新素材。
+  - 一条主茎 SVG（`viewBox="0 0 100 100"` + `preserveAspectRatio="none"`）→ 跟着卡片高度纵向伸缩，
+    斜率被压扁是故意的（藤该顺卡片长）；线宽靠 `vector-effect:non-scaling-stroke` 守住不变粗。
+    顶端收在 `M26 7`，就是"到顶往左拐一点"那一勾。
+  - 7 片叶 + 1 个小葫芦 + 2 根卷须。每片叶三层：`.kv-item`（静态倾角 + 落点）→ `.kv-swing`（CSS 摇摆）→ 内联叶形 SVG；
+    `@keyframes kv-sway` 摆 ±3.4/3.8°，每片叶 `--dl` / `--dur` 错相，整茎另有 `kv-wind` ±0.75° 的慢摆。
+    `prefers-reduced-motion` 下全部关掉。
+  - 配色定稿：叶 `#4aa62f` + 深描边 `#143a10` + 内圈亮边 `#7ecb5e`、叶脉 `#40822c`；
+    茎深 `#143a10` 3.0px + 芯线 `#5aa03a` 1.6px；葫芦 22px，挂 `58% / 40%`。
+    （试过更亮的 `#57b33c/#163b12/#8fd46f`，在深蓝卡面上偏卡通，压深一档才立得住又不跳。）
+- **坑 1（位置）**：一开始 `position:absolute; right:5px` 挂在 `.hero` 里面 ——
+  `.hero` 是通栏卡（`margin:0 -16px`），右边缘本来就在视口外 16~20px；Edge headless 里文档还被 nowrap 内容撑到 484 宽，
+  整条藤被顶到屏外、截图全空。改成**独立 `position:fixed` 层 + JS 每帧按 `min(hero.right, innerWidth)` 摆位**：
+  `left = min(r.right, vw) - w - 14`、`top = r.top`、`height = r.height`；滚出屏幕就 `display:none`，
+  scroll / resize / 320ms 后各重算一次。宽屏（1920 实测）卡片居中，藤就贴在卡片右内缘，不会跑到屏幕边。
+- **坑 2（DOM）**：重写时漏了 `box.appendChild(stem)` → 叶子像一堆浮在半空的蘑菇（截图 `vine3-z.png`），
+  DOM 里 `path` 有 `getBBox()` 却看不见任何茎。补上后成立，代码里留了注释互相提醒。
+- **点击安全**：整层 `pointer-events:none`；同时给 `.hero .pillrow{position:relative;z-index:2}`，
+  保证"共 N 条精选 / 双语 / 难点词汇"三个胶囊永远在藤之上、可点。
+- **实测**（ego 量 rect + Edge headless 截图）：`vine 74×201.8`、`top 0`、`bottom = hero.bottom`（主茎正好落在卡片底边）、
+  `left = 1524.5 = 1612.5-74-14`；`kv-sway` / `kv-wind` 拿出来是 `infinite`；`.kv-item` 8 个（7 叶 + 葫芦）；
+  截图上主茎、7 叶、顶端左勾、小葫芦、卷须齐全，胶囊与标题都没被压住。
+- 调试临时页 `docs/_v.html`、`docs/_v2.html` 已删（只在本地用过，没推过）。
+
 ## v17 · 2026-11-22 · 垂直段第二次改：换成"手在身前、背弓、朝字"的 4 帧爬墙
 
 - **用户否决了 v16 的姿态**（原话）："在下边攀爬的时候双手是向上举的；而垂直往下的，
