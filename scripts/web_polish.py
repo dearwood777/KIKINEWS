@@ -208,7 +208,7 @@ details[open]::details-content{height:auto}
   100%{transform:translateY(0) scaleY(1)}
 }
 /* 小人层：绝对定位盖在报头上，不吃点击，只动 transform（不触发重排） */
-.kiki-walker{position:absolute;left:0;top:0;width:1px;height:1px;pointer-events:none;
+.kiki-walker{position:absolute;left:0;top:0;width:1px;height:1px;pointer-events:none;z-index:6;
   will-change:transform;transition:opacity .35s ease}
 .kiki-walker svg{display:block;overflow:visible}
 /* 绳子层：垫在小人下面。只在"技↔财""经↔国"这种跨间隔点的大空隙里出现，
@@ -514,7 +514,11 @@ JS = """
     var hr = h1.getBoundingClientRect();
     var W = Math.max(40, Math.ceil(hr.width)), H = Math.ceil(F * 2.6);
     var k = F / (KIKI_G.upm || 1000);
-    var sig = W + '|' + F.toFixed(2) + '|' + LH.toFixed(2) + '|' + chars.length;
+    // 字体没加载完时 measureText 拿到的是回退字体的 asc/desc，算出来的基线是错的，
+    // 于是 ts[] 整条地形偏高/偏低，脚就会埋进字里（安卓 WebView 上尤其明显）。
+    // 把字体就绪状态塞进签名里：字体一到位就强制重建一次地形。
+    var fOK = (document.fonts && document.fonts.check) ? (document.fonts.check('700 ' + F + 'px KikiHead') ? 1 : 0) : 1;
+    var sig = W + '|' + F.toFixed(2) + '|' + LH.toFixed(2) + '|' + chars.length + '|' + fOK;
     if (h1.__kwSig === sig && h1.querySelector('.kiki-walker')) return;
     h1.__kwSig = sig;
 
@@ -1042,8 +1046,9 @@ JS = """
         var wt = (st.mode === 'vert' && st.x > W * 0.5) ? 'scaleX(-1)' : '';
         if (artW.style.transform !== wt) artW.style.transform = wt;
       }
+      var LIFT = PH * 0.02;   // 墨迹栅格量出的顶边比真实渲染略低，抬这么高脚才真踩在字上沿
       walker.style.transform = 'translate(' + (st.x - PW / 2).toFixed(2) + 'px,' +
-        (st.y - PH).toFixed(2) + 'px)';
+        (st.y - PH - LIFT).toFixed(2) + 'px)';
     }
     requestAnimationFrame(frame);
 
