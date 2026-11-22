@@ -692,7 +692,7 @@ details[open]::details-content{height:auto}
 
     // (5a) 走路逐帧：AI 按 4 关键姿势出的 7 张迈步图拼成一条横向雪碧图（docs/walk-sheet.png），
     //      用 img + translateX 切帧。不用 SVG image + data URI —— 那套在安卓 WebView 上整块不出图（只剩几个点）。
-    var WF = { w: 150, h: 180, n: 7, url: 'walk-sheet.png', box: null, im: null, cellW: 0, cellH: 0, bad: false };
+    var WF = { w: 150, h: 180, n: 7, url: 'walk-sheet.png?v=3', box: null, im: null, cellW: 0, cellH: 0, bad: false };
 
     // (5b) 走路用的腿：切片的腿只有 23 unit 高（页面上≈6px）、两只脚本来就岔开 29 unit，
     //      绕髋怎么转都跨不过去，所以走路这一段改成"画出来的两段腿"：
@@ -1172,6 +1172,8 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
 
 
 
