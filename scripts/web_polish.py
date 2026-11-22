@@ -661,6 +661,7 @@ JS = """
       useHang = hang;
       artW.style.display = hang ? 'none' : 'block';
       artH.style.display = hang ? 'block' : 'none';
+      if (!hang) artH.style.transform = '';
     }
 
     // (6) 攀爬用的线：挂在"字底 ↔ 字底"，只跨过间隔点那种大空隙
@@ -757,14 +758,15 @@ JS = """
     }
 
     // (8) 动作：全部靠转切件，参数小、频率稳，像人不像木偶
+    // 走：两条腿真前后交替、能交叉过去（不是把步幅放大缩小），配躯干两拍起伏
     function poseWalk(ph) {
       setArt(false);
       var s = Math.sin(ph), c = Math.cos(ph);
-      put(PWp, 'legF', -11 * s, 0);
-      put(PWp, 'legB', 11 * s, 0);
-      put(PWp, 'body', 1.2 * s, -Math.abs(c) * 0.9);   // 起伏 + 极轻摇摆，不前仰
-      put(PWp, 'armB', 15 * s, Math.abs(c) * 0.6);
-      put(PWp, 'head', -0.9 * s, Math.abs(c) * 0.4);
+      put(PWp, 'legF', -26 * s, 0);
+      put(PWp, 'legB', 26 * s, 0);
+      put(PWp, 'body', 2.4 * s, -Math.abs(c) * 1.3);   // 起伏 + 轻摇摆，不前仰
+      put(PWp, 'armB', 17 * -s, Math.abs(c) * 0.8);
+      put(PWp, 'head', -1.4 * s, Math.abs(c) * 0.5);
     }
     function poseHop(s) {
       setArt(false);
@@ -821,9 +823,14 @@ JS = """
           st.y = st.hy1;
           st.mode = 'walk'; st.ph = 0; st.dist = 0;
           st.i = Math.min(merged.length - 1, st.i + 1);
-          land = st.t; shakeDot();
           var rr = merged[st.i];
-          if (st.i < merged.length - 1 && rr && rr.x1 - rr.x0 < SH * 0.85) arrive();
+          var onDot = rr && rr.x1 - rr.x0 < SH * 0.85;
+          if (onDot && st.i < merged.length - 1) {
+            // 脚下就是那个间隔点：不停、不抖，顺势直接再跳过去
+            arrive();
+          } else {
+            land = st.t; shakeDot();
+          }
         }
       } else if (st.mode === 'vert') {
         st.vp += dt;
@@ -848,6 +855,7 @@ JS = """
         st.ph = st.dist / (SH * 0.6) * Math.PI;
         st.y = lineY(st.x) + PH * 0.94;
         poseClimb(st.ph);
+        artH.style.transform = 'scaleX(-1)';
         st.rot = 0;
         if (st.x <= merged[0].x0 + 1) {
           st.x = merged[0].x0 + 1;
