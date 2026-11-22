@@ -1,9 +1,9 @@
 {
- "versionCode": 160009,
- "versionName": "1.6.009",
- "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.009.apk",
- "sha256": "5ec03303db82f836ba231c9d26d0a0474424dac099c14f555d8bcfbe24bb716e",
- "size": 2555302,
- "notes": "修复点难点词汇/返回时的白闪：WebView 与窗口底色改成和网页一致的深色（之前是透明底，跨页瞬间露出白色窗口）；网页侧卡片改成多米诺式从右入场、卡片外框加滚动水波纹。",
+ "versionCode": 160010,
+ "versionName": "1.6.010",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.010.apk",
+ "sha256": "7a90e6c40aca74a89f8d5ea7bc1f9aa7380b0c833fb4bc195b7876525974e468",
+ "size": 2555382,
+ "notes": "报头藤蔓/葫芦/星空重做；原生设置按钮视觉缩小为 40×16dp（长按 6 秒解锁热区完全不变）",
  "minSdk": 24
 }
