@@ -20,6 +20,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -28,6 +29,15 @@ START = "<!-- kiki-polish:start -->"
 END = "<!-- kiki-polish:end -->"
 
 BG = "#0e1320"
+
+# 报头字形轮廓（由 scripts/build_head_glyphs.py 从 docs/fonts/kiki-head-700.woff2 导出）。
+# 缺这个文件时小人整体不启用，其余特效照常。
+try:
+    GLYPHS = json.loads((Path(__file__).with_name("head_glyphs.json")).read_text(encoding="utf-8"))
+    GLYPHS_JS = json.dumps(GLYPHS, ensure_ascii=False, separators=(",", ":"))
+except Exception:  # noqa: BLE001
+    GLYPHS = None
+    GLYPHS_JS = "null"
 
 CSS_TEMPLATE = """
 <style id="kiki-polish-css">
@@ -177,6 +187,32 @@ details[open]::details-content{height:auto}
 
 /* 10. 同页锚点跳转平滑 */
 @media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}
+
+/* 11. 报头小人骨架
+   报头字体换成为此专门打包的子集（Noto Sans SC 700，只含"科技·财经国际速递"这几个字，2.6KB，
+   OFL 授权可自由分发）。换字体的意义是：字形轮廓由我们自己掌握，隐藏层里画的轮廓
+   和屏幕上真正渲染的轮廓来自同一份数据，才会"脚踩在笔画上"。不换字体就只能拿字框近似。 */
+@font-face{font-family:'KikiHead';src:url('fonts/kiki-head-700.woff2') format('woff2');
+  font-weight:700;font-style:normal;font-display:swap}
+.hero h1{font-family:'KikiHead',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',
+  'Hiragino Sans GB','Microsoft YaHei',sans-serif;position:relative}
+/* 逐字拆成 inline-block 只为能单独颤一下那个间隔点；字距仍由 h1 的 letter-spacing 控制。
+   white-space:pre 是关键：否则只含一个空格的 span 会把空格折叠掉，"科技·财经"两侧的
+   间隙就消失，整行比原来窄 28px（实测 331→303）。 */
+.hero h1 .kch{display:inline-block;white-space:pre;transform-origin:50% 100%;will-change:transform}
+.hero h1 .kch.kiki-dot-hit{animation:kiki-dot 300ms cubic-bezier(.3,.7,.4,1)}
+@keyframes kiki-dot{
+  0%{transform:translateY(0) scaleY(1)}
+  28%{transform:translateY(1.2px) scaleY(.86)}
+  62%{transform:translateY(-.8px) scaleY(1.05)}
+  100%{transform:translateY(0) scaleY(1)}
+}
+/* 小人层：绝对定位盖在报头上，不吃点击，只动 transform（不触发重排） */
+.kiki-walker{position:absolute;left:0;top:0;width:1px;height:1px;pointer-events:none;
+  will-change:transform;transition:opacity .35s ease}
+.kiki-walker svg{display:block;overflow:visible}
+.kiki-walker .kw-leg{transform-box:fill-box;transform-origin:50% 0}
+.kiki-walker .kw-body{transform-box:fill-box;transform-origin:50% 50%}
 </style>
 """.strip()
 
@@ -198,6 +234,9 @@ JS = """
 <script id="kiki-polish-js">
 (function () {
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // 报头字形骨架：{"upm":1000,"d":{字:路径,...},"adv":{...}}，由 build_head_glyphs.py 生成
+  var KIKI_G = {{GLYPHS}};
+  window.KIKI_G = KIKI_G;   // 便于线上调试/校验（渲染时也读这份）
 
   // 1) 发音键水波纹：点一次发两圈，先后 140ms
   document.addEventListener('click', function (e) {
@@ -432,6 +471,201 @@ JS = """
   var beamRz;
   function scheduleBeam() { clearTimeout(beamRz); beamRz = setTimeout(buildBeam, 180); }
 
+  // 3d) 报头小人：踩在字的**真实上沿**往右走，遇到空隙就跳过去，落到间隔点那一下点会颤。
+  //     地形不是手写的坐标，是把报头专用字体里的字形轮廓栅格化后"逐列取最上面的墨迹"得来的，
+  //     所以换字号 / 换设备 / 横竖屏都是自动贴合，不需要调像素。
+  var walkerRz;
+  function scheduleWalker() { clearTimeout(walkerRz); walkerRz = setTimeout(buildWalker, 220); }
+
+  function buildWalker() {
+    var h1 = document.querySelector('.hero h1');
+    if (!h1 || !KIKI_G || !KIKI_G.d || !window.Path2D) return;
+    var old = h1.querySelector('.kiki-walker');
+    if (old) old.remove();
+
+    // (1) 逐字拆 span：只为能单独颤那个间隔点。inline-block 下字距仍由 h1 的 letter-spacing 管
+    if (!h1.__kch) {
+      var raw = h1.textContent, arr = [], i;
+      h1.textContent = '';
+      for (i = 0; i < raw.length; i++) {
+        var sp = document.createElement('span');
+        sp.className = 'kch';
+        sp.textContent = raw.charAt(i);
+        h1.appendChild(sp);
+        arr.push(sp);
+      }
+      h1.__kch = arr;
+    }
+    var chars = h1.__kch, cs = getComputedStyle(h1);
+    var F = parseFloat(cs.fontSize) || 23;
+    var LH = parseFloat(cs.lineHeight) || F * 1.3;
+    var hr = h1.getBoundingClientRect();
+    var W = Math.max(40, Math.ceil(hr.width)), H = Math.ceil(F * 2.2);
+    var k = F / (KIKI_G.upm || 1000);
+
+    // (2) 骨架：字形轮廓以 2 倍超采样画进 canvas，再逐列扫描 alpha
+    var cvs = document.createElement('canvas');
+    cvs.width = W * 2; cvs.height = H * 2;
+    var ctx = cvs.getContext('2d');
+    if (!ctx) return;
+    ctx.font = '700 ' + F + 'px KikiHead';        // 用浏览器自己的字体度量，别硬编码 asc/desc
+    var mt = ctx.measureText('科');
+    var asc = mt.fontBoundingBoxAscent || F * 1.16, desc = mt.fontBoundingBoxDescent || F * 0.288;
+    var base = (LH - (asc + desc)) / 2 + asc;     // 半行距 + 上沿：和 CSS 行框严丝合缝
+    ctx.scale(2, 2);
+    ctx.fillStyle = '#fff';
+    chars.forEach(function (sp) {
+      var d = KIKI_G.d[sp.textContent];
+      if (!d) return;
+      var r = sp.getBoundingClientRect();
+      ctx.save();
+      ctx.translate(r.left - hr.left, base);
+      ctx.scale(k, -k);
+      try { ctx.fill(new Path2D(d)); } catch (e) { /* 单字失败就跳 */ }
+      ctx.restore();
+    });
+    var img;
+    try { img = ctx.getImageData(0, 0, cvs.width, cvs.height).data; } catch (e) { return; }
+    function alpha(x, y) { return img[(y * cvs.width + x) * 4 + 3]; }
+    var top = [], x, y;
+    for (x = 0; x < W; x++) {
+      top[x] = -1;
+      for (y = 0; y < cvs.height; y++) {
+        if (alpha(Math.min(cvs.width - 1, x * 2), y) > 28) { top[x] = y / 2; break; }
+      }
+    }
+
+    // (3) 间隔点的真实墨迹直径 → 小人高度 = 点直径 × 2（用户定的比例）
+    var dot = null, dotSpan = null;
+    chars.forEach(function (sp) {
+      if (sp.textContent !== '·') return;
+      dotSpan = sp;
+      var r = sp.getBoundingClientRect();
+      var cx = Math.round((r.left - hr.left + r.width / 2) * 2);
+      cx = Math.max(0, Math.min(cvs.width - 1, cx));
+      var t = -1, b = -1;
+      for (var yy = 0; yy < cvs.height; yy++) {
+        if (alpha(cx, yy) > 28) { if (t < 0) t = yy; b = yy; }
+      }
+      if (t >= 0) dot = { x0: r.left - hr.left, x1: r.left - hr.left + r.width, t: t / 2, b: b / 2 };
+    });
+    var dH = dot ? Math.max(2, dot.b - dot.t) : F * 0.26;
+    var SH = Math.max(8, dH * 2);      // 小人高度 = 点直径 × 2
+    var SW = SH * 0.7;
+
+    // (4) 地形分段：连续的墨迹列 = 一段可走的平地，段与段之间就是要跳的空隙
+    var runs = [], cur = null;
+    for (x = 0; x < W; x++) {
+      if (top[x] >= 0) {
+        if (!cur) { cur = { x0: x, x1: x }; runs.push(cur); }
+        cur.x1 = x;
+      } else cur = null;
+    }
+    var merged = [];
+    runs.forEach(function (r) {
+      var last = merged[merged.length - 1];
+      if (last && r.x0 - last.x1 <= 5) last.x1 = r.x1;   // 字形内部的小缺口并掉，免得一步一跳
+      else merged.push({ x0: r.x0, x1: r.x1 });
+    });
+    if (!merged.length) return;
+
+    // (5) 时间线：走一段 → 跳一段 → 走一段……速度按字号定，字大字小节奏一致
+    var SPEED = Math.max(14, F * 1.1);
+    var segs = [], acc = 0;
+    merged.forEach(function (r, i2) {
+      var d = Math.max(80, (r.x1 - r.x0) / SPEED * 1000);
+      segs.push({ walk: 1, x0: r.x0, x1: r.x1, d: d, t0: acc });
+      acc += d;
+      var nxt = merged[i2 + 1];
+      if (nxt) {
+        var jd = Math.max(120, Math.abs(nxt.x0 - r.x1) / SPEED * 1000 * 1.15);
+        segs.push({ walk: 0, x0: r.x1, x1: nxt.x0, d: jd, t0: acc, fy: top[r.x1], ty: top[nxt.x0] });
+        acc += jd;
+      }
+    });
+
+    // (6) 小人本体：现在先用一个通用占位形象（换形象只要改这段字符串）
+    var walker = document.createElement('div');
+    walker.className = 'kiki-walker';
+    walker.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="' + SW.toFixed(1) + '" height="' + SH.toFixed(1) +
+      '" viewBox="0 0 8 12" shape-rendering="geometricPrecision">' +
+      '<line class="kw-antenna" x1="4" y1="1.6" x2="4" y2=".5" stroke="#ffb84d" stroke-width=".5"/>' +
+      '<circle cx="4" cy=".42" r=".42" fill="#ffcf7a"/>' +
+      '<g class="kw-body">' +
+      '<rect x="1.7" y="1.7" width="4.6" height="6.2" rx="2.2" fill="#d6e9ff" stroke="#8ec2ff" stroke-width=".45"/>' +
+      '<circle cx="4" cy="4.0" r=".72" fill="#2f6bff"/>' +
+      '<circle cx="4" cy="4.0" r=".28" fill="#eaf4ff"/>' +
+      '</g>' +
+      '<g class="kw-leg kw-legL"><line x1="3.2" y1="7.9" x2="3.2" y2="11.6" stroke="#9fc9ff" stroke-width=".55"/></g>' +
+      '<g class="kw-leg kw-legR"><line x1="4.8" y1="7.9" x2="4.8" y2="11.6" stroke="#9fc9ff" stroke-width=".55"/></g>' +
+      '</svg>';
+    h1.appendChild(walker);
+    var body = walker.querySelector('.kw-body');
+    var legL = walker.querySelector('.kw-legL'), legR = walker.querySelector('.kw-legR');
+
+    // (7) 播放：一圈走完停 2.6s 再来；报头滚出视野就暂停
+    var startT = performance.now(), alive = true, pass = -1, raf = 0;
+    var loop = acc + 2600;
+    function shake() {
+      if (!dotSpan) return;
+      dotSpan.classList.remove('kiki-dot-hit');
+      void dotSpan.offsetWidth;           // 强制重排，让动画能重播
+      dotSpan.classList.add('kiki-dot-hit');
+    }
+    function frame(ts) {
+      raf = requestAnimationFrame(frame);
+      if (!alive) return;
+      var t = (ts - startT) % loop;
+      var s = segs[segs.length - 1], idx = segs.length - 1, i3;
+      for (i3 = 0; i3 < segs.length; i3++) {
+        if (t < segs[i3].t0 + segs[i3].d) { s = segs[i3]; idx = i3; break; }
+      }
+      var u = t > acc ? 1 : Math.min(1, Math.max(0, (t - s.t0) / s.d));
+      var wx, fy;
+      if (t > acc) {
+        wx = segs[segs.length - 1].x1;
+        fy = top[Math.round(wx)]; if (fy < 0) fy = 0;
+      } else if (s.walk) {
+        wx = s.x0 + (s.x1 - s.x0) * u;
+        fy = top[Math.round(wx)]; if (fy < 0) fy = 0;
+      } else {
+        wx = s.x0 + (s.x1 - s.x0) * u;
+        fy = s.fy + (s.ty - s.fy) * u - Math.sin(Math.PI * u) * SH * 0.5;   // 抛物线
+      }
+      walker.style.transform = 'translate(' + (wx - SW / 2).toFixed(2) + 'px,' + (fy - SH).toFixed(2) + 'px)';
+
+      // 腿部摆动：走是交替迈步，跳是收腿；身体跟着轻点头
+      var rot = 0, ph = 0;
+      if (s.walk && t <= acc) {
+        ph = (u * s.d / 1000) * 6.4;
+        rot = Math.sin(ph) * 15;
+        legL.style.transform = 'rotate(' + rot.toFixed(1) + 'deg)';
+        legR.style.transform = 'rotate(' + (-rot).toFixed(1) + 'deg)';
+        body.style.transform = 'translateY(' + (Math.sin(ph * 2) * 0.12).toFixed(2) + 'px)';
+      } else {
+        legL.style.transform = 'rotate(13deg)';
+        legR.style.transform = 'rotate(-13deg)';
+        body.style.transform = 'translateY(-0.15px)';
+      }
+
+      // 落在间隔点上：点颤一下（每个 jump 段每圈只触发一次）
+      var pid = Math.floor((ts - startT) / loop);
+      if (!s.walk && u > 0.86 && s.__pid !== pid && dot && s.x1 > dot.x0 - 2 && s.x1 < dot.x1 + 2) {
+        s.__pid = pid; shake();
+      }
+    }
+    raf = requestAnimationFrame(frame);
+
+    // 报头不在视野里就停（省电，避免后台空转）
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        alive = es[0].isIntersecting;
+      }, { threshold: 0.15 }).observe(h1);
+    }
+  }
+
+
   function start() {
     buildBeam();
     // 屏幕旋转 / 折叠屏切换 / 窗口变化：胶囊长度变了就得按新轮廓重画，
@@ -441,7 +675,11 @@ JS = """
       new ResizeObserver(scheduleBeam).observe(beamBtn);
     }
     window.addEventListener('resize', scheduleBeam);
-    window.addEventListener('orientationchange', function () { setTimeout(buildBeam, 320); });
+    window.addEventListener('orientationchange', function () { setTimeout(buildBeam, 320); setTimeout(buildWalker, 360); });
+    // 报头小人：字体是外链 woff2，等它真正到了再量（否则量到的是回退字体的行高）
+    buildWalker();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleWalker);
+    window.addEventListener('resize', scheduleWalker);
     hardLand();          // 跨文档带 #锚点进来时，见下方 hardLand 注释
     // 顶部阅读进度光条（滚动时间线驱动，不支持就什么都不显示）
     var bar = document.createElement('div');
@@ -567,7 +805,8 @@ def polish(html: str) -> str:
     # 只有真找到锚点才加 rel=expect：找不到时它会把首屏渲染一直挡到文档解析结束
     if 'id="kiki-head"' in html:
         parts.append(EXPECT)
-    parts += [SPECULATION, css, JS, END]
+    # 词汇页没有报头，字形骨架（7.9KB）没必要塞进去
+    parts += [SPECULATION, css, JS.replace("{{GLYPHS}}", "null" if vocab else GLYPHS_JS), END]
     block = "\n".join(parts) + "\n"
     if "</head>" in html:
         return html.replace("</head>", block + "</head>", 1)
