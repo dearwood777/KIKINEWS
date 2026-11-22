@@ -13,6 +13,20 @@
 
 **教训**：改 `web_polish.py` 后必须同时推 main 和 gh-pages。只推 gh-pages 的注入结果，第二天早晨必被覆盖。
 
+## 工程守则（接手的人/AI 先读这十条，能省掉 90% 的返工）
+
+1. **`scripts/web_polish.py` 是唯一注入源**，页面里 `<!-- kiki-polish:start -->…end -->` 之间的东西全是它生成的，直接手改 HTML 会在下次注入时被覆盖。
+2. **改脚本必须双推**：`main`（供每天 digest 用）+ `gh-pages`（供线上立即可见）。只推一边一定出问题——只推 gh-pages 第二天早晨被清，只推 main 要等下一期才生效。
+3. **推送顺序**：先 `ghutil.raw()` 拉远端最新 → `web_polish.polish()` → 再 PUT。反过来会拿本地旧页面覆盖当天新内容（11-22 就踩过一次）。每天 **06:18 左右** digest 会整体重写三页，cd 到那个时间窗口之后要重刷。
+4. **环境**：Windows + pwsh 7，**没有 Bash、没有 git 命令**（本机 git 不在 PATH），一切走 GitHub Contents API（`C:\Users\User\AppData\Local\Temp\ghutil.py`）。`python -c "..."` 带引号/正则会被 PowerShell 解析坏，**一律写临时 .py 再执行**。
+5. **验证用 ego lite**：能 `goto`/`evaluate`/CDP 改视口，但 `page.screenshot`、`Page.captureScreenshot`、`Page.printToPDF` **全部 15s 超时**，要看形态只能用 canvas 按 `Path2D + setLineDash` 复刻 SVG 再 `toDataURL`。
+6. **rAF 在页面不可见时被节流**：计数/动画类效果必须加"兜底直接写最终值"，否则后台标签页回来会卡在 0。
+7. **跨文档带 `#` 落地**：浏览器原生锚点滚动会被 `scroll-behavior:smooth` + View Transition 打断并退回顶部 → 用 `hardLand()` 临时 `scroll-behavior:auto` 硬跳，再按 `scroll-margin-top` 校一次。
+8. **数字递增**：数字必须在 `DOMContentLoaded` 就把值折进定宽 `span`（`tabular-nums` + `min-width`），等动画开始才插会让胶囊每次变宽跳一下。
+9. **边缘流光**：虚线周期必须 **= 整圈周长**（`dash + gap = len`），否则转角处会断光；时长用 `周长 / 线速度` 算，**不要写固定 ms**（否则平板快手机慢）；容器尺寸变化必须删旧 SVG 整块重画（`ResizeObserver` + `orientationchange`）。
+10. **已判死的路，别再试**：`offset-path: path()`（安卓 WebView 整条渲染不出来）、`conic-gradient` 旋转（椭圆上速度严重不均）、线性渐变横扫（变成上下两束光）、独立大白头（蝌蚪感、尾巴瞬间变细）、`box-shadow` spread 波纹（两条粗线）、`outline` 串行圈（不是同时荡）。
+
+
 ## 卡片涟漪定版 + 边缘流光 / 数字递增 / 错峰淡入 (2026-11-21)
 
 **一、卡片水波纹定版参数（用户验收通过，改这块先看这张表）**
