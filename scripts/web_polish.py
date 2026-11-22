@@ -794,6 +794,27 @@ def is_vocab(html: str) -> bool:
     return 'id="w-' in html
 
 
+def ensure_font(target_dir: Path | None = None) -> None:
+    """把报头字体子集从 scripts/ 复制到 docs/fonts/。
+
+    字体放在 scripts/ 而不是 docs/，是因为 **往 main 的 docs/** 推任何文件都会触发
+    deploy-docs.yml，把 main 上那份过期的 docs 全量发布到 gh-pages，覆盖掉当天的新页面
+    （2026-11-22 就是这么被覆盖成 11-18 的）。让 polish 在运行时自己复制，
+    Actions 的工作区里就自动有这个文件，主仓 docs 永远不需要动。
+    """
+    src = Path(__file__).with_name("kiki-head-700.woff2")
+    if not src.exists():
+        return
+    dst_dir = Path(target_dir or "docs/fonts")
+    try:
+        dst_dir.mkdir(parents=True, exist_ok=True)
+        dst = dst_dir / "kiki-head-700.woff2"
+        if (not dst.exists()) or dst.stat().st_size != src.stat().st_size:
+            dst.write_bytes(src.read_bytes())
+    except OSError:
+        pass
+
+
 def polish(html: str) -> str:
     html = strip_previous(html)
     html = ensure_head_id(html)
@@ -822,6 +843,10 @@ def main(argv: list[str]) -> int:
         Path("docs/latest-en.html"),
         Path("docs/vocab.html"),
     ]
+    # 报头字体：脚本自己把文件复制进 docs/fonts（这样 Actions 的 docs 里一定有它，
+    # 而主仓的 docs/ 永远不用改，避免触发 deploy-docs 覆盖页面）
+    if files:
+        ensure_font(files[0].parent / "fonts")
     for path in files:
         if not path.exists():
             print(f"skip (missing): {path}")
