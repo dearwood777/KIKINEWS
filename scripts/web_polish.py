@@ -243,8 +243,8 @@ details[open]::details-content{height:auto}
   animation:kv-sway var(--dur,2.8s) ease-in-out infinite alternate;
   animation-delay:var(--dl,0s)}
 .kiki-vine svg{display:block;overflow:visible}
-/* 主茎的 d 是像素坐标、viewBox 也是像素尺寸（1:1），线宽就是真实 px，不需要 non-scaling-stroke */@keyframes kv-sway{from{transform:rotate(-2deg)}to{transform:rotate(2.2deg)}}
-@keyframes kv-wind{from{transform:rotate(-.75deg)}to{transform:rotate(.4deg)}}
+/* 主茎的 d 是像素坐标、viewBox 也是像素尺寸（1:1），线宽就是真实 px，不需要 non-scaling-stroke */@keyframes kv-sway{from{transform:rotate(-4.6deg)}to{transform:rotate(5deg)}}
+@keyframes kv-wind{from{transform:rotate(-1.1deg)}to{transform:rotate(.7deg)}}
 @media (prefers-reduced-motion:reduce){.kiki-vine,.kiki-vine .kv-swing{animation:none}}
 
 /* 13. 报头卡：上半部的微光星空 + 底边一排随风摆的小草
@@ -404,7 +404,7 @@ JS = """
     // 横臂稍后会被拼到这条 d 的末尾（placeVine 里的 dA），所以它俩是**同一条描边**。
     var STEM_TOP = 6;
     var STEM = 'M80 101 C78 90 74 82 71 74 C68 66 66 60 68 53 C70 46 66 41 62 35' +
-               ' C58 29 52 21 51 15 C50 11 45 6.4 40 6 C33 5.7 26 6 17 6';
+               ' C56 27 49 17 44 10 C40 6.4 30 6 17 6';
     var stemDark = addPath(STEM, 3.0, '#143a10');   // 藤身（深）
     var stemLit = addPath(STEM, 1.6, '#5aa03a');    // 高光芯线，深色卡面上才立得住
     // 两卷卷须：葫芦藤最好认的特征（d 存着归一坐标，布局时再换算成像素，见 pxD()）
@@ -412,6 +412,11 @@ JS = """
     var CURL2 = 'M68 53 C58 51 54 56 58 61 C61 64 65 61 63 58';
     var curl1 = addPath(CURL1, 1.5, '#5aa03a');
     var curl2 = addPath(CURL2, 1.5, '#5aa03a');
+    // 转角处往上探的一小段：从主茎拐弯点(17,6)再往上偏右长一节，末端带个小钩，
+    // 收在原生"设置"按钮的正下方 —— 藤不是"到顶就断"，而是拐弯时还抽了个新枝
+    var branch = addPath('', 2.6, '#143a10');
+    var branchLit = addPath('', 1.4, '#5aa03a');
+    var branchCurl = addPath('', 1.4, '#5aa03a');
     box.appendChild(stem);          // 忘了这一行 = 叶子像一堆浮在半空的蘑菇（已经踩过一次）
     document.body.appendChild(box);
 
@@ -508,14 +513,14 @@ JS = """
     // 叶子站点：b = 距容器底部的百分比（藤从地往上长），w = 叶宽 px，rot = 静态朝向（左右交替）。
     // 40% 那一带刻意留空 —— 小葫芦就挂在那儿，不会被叶子压住。
     var SITES = [
-      { b: 8, w: 16, rot: -44, dl: 0.0, dur: 3.2 },
-      { b: 19, w: 13, rot: 40, dl: 1.0, dur: 2.9 },
-      { b: 30, w: 15, rot: -40, dl: 0.4, dur: 3.4 },
-      { b: 48, w: 12, rot: 38, dl: 1.4, dur: 2.8 },
-      { b: 60, w: 14, rot: -38, dl: 0.2, dur: 3.1 },
-      { b: 71, w: 12, rot: 34, dl: 1.2, dur: 2.7 },
-      { b: 82, w: 11, rot: -28, dl: 0.7, dur: 3.3 },
-      { b: 92, w: 11, rot: -10, dl: 1.6, dur: 3.0 }
+      { b: 8, w: 20, rot: -44, dl: 0.0, dur: 3.2 },
+      { b: 19, w: 16, rot: 40, dl: 1.0, dur: 2.9 },
+      { b: 30, w: 19, rot: -40, dl: 0.4, dur: 3.4 },
+      { b: 48, w: 15, rot: 38, dl: 1.4, dur: 2.8 },
+      { b: 60, w: 17, rot: -38, dl: 0.2, dur: 3.1 },
+      { b: 71, w: 15, rot: 34, dl: 1.2, dur: 2.7 },
+      { b: 82, w: 14, rot: -28, dl: 0.7, dur: 3.3 },
+      { b: 92, w: 14, rot: -10, dl: 1.6, dur: 3.0 }
     ];
     var items = [];
     function mkItem(wpx, node, anchor, rot, b, dl, dur) {
@@ -662,6 +667,21 @@ JS = """
       stemLit.setAttribute('d', dA);
       curl1.setAttribute('d', pxD(CURL1));
       curl2.setAttribute('d', pxD(CURL2));
+      // 转角处的新枝：从拐点往上偏右长 12px，末端往回收个小钩 —— 正好收在"设置"按钮下沿
+      var showBranch = armLen > 12;
+      branch.style.display = branchLit.style.display = branchCurl.style.display = showBranch ? 'block' : 'none';
+      if (showBranch) {
+        var bx = w * 0.17, by = baseY;
+        branch.setAttribute('d', 'M' + bx.toFixed(1) + ' ' + by.toFixed(1) +
+          ' C' + (bx + 0.8).toFixed(1) + ' ' + (by - 4.5).toFixed(1) +
+          ' ' + (bx + 3.2).toFixed(1) + ' ' + (by - 8.4).toFixed(1) +
+          ' ' + (bx + 6.4).toFixed(1) + ' ' + (by - 12).toFixed(1));
+        branchLit.setAttribute('d', branch.getAttribute('d'));
+        branchCurl.setAttribute('d', 'M' + (bx + 6.4).toFixed(1) + ' ' + (by - 12).toFixed(1) +
+          ' C' + (bx + 9.6).toFixed(1) + ' ' + (by - 14.6).toFixed(1) +
+          ' ' + (bx + 11.6).toFixed(1) + ' ' + (by - 11.6).toFixed(1) +
+          ' ' + (bx + 9.4).toFixed(1) + ' ' + (by - 9.6).toFixed(1));
+      }
     }
 
     // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
