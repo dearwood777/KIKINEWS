@@ -274,6 +274,10 @@ details[open]::details-content{height:auto}
 .kiki-vine .kv-stem{position:absolute;inset:0;width:100%;height:100%;
   transform-origin:72% 100%;animation:kv-wind 5.4s ease-in-out infinite alternate}
 .kiki-vine .kv-item{position:absolute;transform-origin:50% 100%}
+/* 顶部横臂：容器宽度/位置由 JS 按视口算；臂内的波形 SVG 横向拉伸，线宽同样靠 vector-effect 守住 */
+.kiki-vine .kv-arm{position:absolute;left:0;top:0;height:34px;width:0;overflow:visible}
+.kiki-vine .kv-arm-stem{position:absolute;left:0;top:0;width:100%;height:34px;overflow:visible}
+.kiki-vine .kv-arm-stem path{vector-effect:non-scaling-stroke}
 .kiki-vine .kv-swing{display:block;transform-origin:50% 100%;
   animation:kv-sway var(--dur,2.8s) ease-in-out infinite alternate;
   animation-delay:var(--dl,0s)}
@@ -283,6 +287,26 @@ details[open]::details-content{height:auto}
 @keyframes kv-sway{from{transform:rotate(-3.4deg)}to{transform:rotate(3.8deg)}}
 @keyframes kv-wind{from{transform:rotate(-.75deg)}to{transform:rotate(.4deg)}}
 @media (prefers-reduced-motion:reduce){.kiki-vine .kv-stem,.kiki-vine .kv-swing{animation:none}}
+
+/* 13. 报头卡：上半部的微光星空 + 底边一排随风摆的小草
+   两者都挂在 .hero 内部（不给 fixed，卡片滚走就跟着滚走），纯 DOM + CSS，不吃点击。
+   星空用 mask 往下渐隐，只染上半部，避免和正文卡抢视线；小草高度对齐"每日速递"那一行。 */
+.hero{position:relative}
+.hero .brand,.hero .day{position:relative;z-index:1}
+.kiki-sky{position:absolute;left:0;top:0;width:100%;height:76%;pointer-events:none;z-index:0;
+  -webkit-mask-image:linear-gradient(180deg,#000 0,#000 58%,rgba(0,0,0,.42) 84%,transparent 100%);
+  mask-image:linear-gradient(180deg,#000 0,#000 58%,rgba(0,0,0,.42) 84%,transparent 100%)}
+.kiki-sky i{position:absolute;display:block;border-radius:50%;background:#e8f2ff;
+  animation:kiki-twinkle var(--dur,4s) ease-in-out infinite alternate;
+  animation-delay:var(--dl,0s);will-change:opacity,transform}
+@keyframes kiki-twinkle{from{opacity:.16;transform:scale(.82)}to{opacity:.94;transform:scale(1.12)}}
+.kiki-grass{position:absolute;left:16px;right:16px;bottom:0;height:18px;pointer-events:none;z-index:1;overflow:hidden}
+.kiki-grass .kg{position:absolute;bottom:0;flex:0 0 auto;transform-origin:50% 100%;
+  animation:kiki-grass-sway var(--dur,3.2s) ease-in-out infinite alternate;
+  animation-delay:var(--dl,0s);will-change:transform}
+.kiki-grass .kg svg{display:block;width:100%;height:100%;overflow:visible}
+@keyframes kiki-grass-sway{from{transform:rotate(-2.6deg) skewX(-2.4deg)}to{transform:rotate(3deg) skewX(2.2deg)}}
+@media (prefers-reduced-motion:reduce){.kiki-sky i,.kiki-grass .kg{animation:none}}
 
 /* 藤垫在内容下面：胶囊/链接点击不受影响，也不会盖住文字 */
 .hero .pillrow{position:relative;z-index:2}
@@ -294,12 +318,76 @@ details[open]::details-content{height:auto}
   var KIKI_G = null;
   window.KIKI_G = KIKI_G;   // 便于线上调试/校验（渲染时也读这份）
 
+  // 12a) 报头卡的两层氛围件：上半部星空微光 + 底边一排小草地
+  //      都挂在 .hero 里（不 fixed，卡片滚走就跟着滚走），尺寸按 CSS px 写死，
+  //      靠 CSS 变量错开相位，不做 JS 逐帧 —— 安卓 WebView 上也只是一堆合成层。
+  function buildStars(hero) {
+    var sky = document.createElement('div');
+    sky.className = 'kiki-sky';
+    sky.setAttribute('aria-hidden', 'true');
+    // 固定种子的伪随机：每次加载星位一致，不会刷新一次换一个天
+    var seed = 20261122;
+    function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    for (var i = 0; i < 84; i++) {
+      var s = document.createElement('i');
+      var sz = rnd() < 0.8 ? 1.2 : 2.1;
+      s.style.left = (rnd() * 100).toFixed(2) + '%';
+      s.style.top = (Math.pow(rnd(), 1.45) * 62).toFixed(2) + '%';   // 越靠上越密
+      s.style.width = sz + 'px';
+      s.style.height = sz + 'px';
+      s.style.setProperty('--dur', (2.6 + rnd() * 4.4).toFixed(2) + 's');
+      s.style.setProperty('--dl', (rnd() * 4).toFixed(2) + 's');
+      s.style.opacity = (0.35 + rnd() * 0.5).toFixed(2);
+      if (rnd() < 0.1) s.style.boxShadow = '0 0 3px 1px rgba(190,220,255,.6)';   // 少数几颗带晕
+      sky.appendChild(s);
+    }
+    hero.insertBefore(sky, hero.firstChild);
+  }
+
+  // 一簇草 = 左边斜出、中间微弯、右边外撇三片，切口在底边线上
+  var GRASS_SVG = '<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'
+    + '<path d="M44 100 C39 76 33 52 23 26 C17 40 18 62 27 82 C32 92 38 98 42 100 Z" fill="#3d7a2b"/>'
+    + '<path d="M54 100 C54 70 54 40 51 10 C60 30 61 64 58 100 Z" fill="#52963c"/>'
+    + '<path d="M64 100 C68 80 76 62 86 40 C91 53 88 75 79 90 C74 97 68 100 64 100 Z" fill="#356b26"/>'
+    + '</svg>';
+
+  function buildGrass(hero) {
+    var g = document.createElement('div');
+    g.className = 'kiki-grass';
+    g.setAttribute('aria-hidden', 'true');
+    var seed = 778899;
+    function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    // 密度跟屏宽走：屏宽越宽草越稀，竖屏才不会糊成一条绿边
+    var vw = window.innerWidth || 400;
+    var n = Math.max(14, Math.min(40, Math.round(vw / 26)));
+    for (var i = 0; i < n; i++) {
+      var d = document.createElement('div');
+      d.className = 'kg';
+      var w = 15 + rnd() * 9;
+      d.style.width = w.toFixed(1) + 'px';
+      d.style.height = (11 + rnd() * 7).toFixed(1) + 'px';
+      // 均匀铺满 + 随机抖动，避免"间距一模一样"的栅栏感
+      var pct = (i + 0.5) / n * 100 + (rnd() - 0.5) * (34 / n);
+      pct = Math.max(0, Math.min(100, pct));
+      d.style.left = pct.toFixed(2) + '%';
+      d.style.marginLeft = (-w / 2).toFixed(1) + 'px';
+      d.style.setProperty('--dur', (2.9 + rnd() * 1.8).toFixed(2) + 's');
+      d.style.setProperty('--dl', (rnd() * 2.4).toFixed(2) + 's');
+      d.style.opacity = (0.6 + rnd() * 0.32).toFixed(2);
+      d.innerHTML = GRASS_SVG;
+      g.appendChild(d);
+    }
+    hero.appendChild(g);
+  }
+
   // 12) 报头卡右边缘的葫芦藤（装饰层，纯矢量 + CSS 摇摆；不吃点击、不影响布局）
   //     叶子按"葫芦叶"的真形状画：宽心形、基部有凹口、5 条掌状脉、叶缘浅波齿；
   //     叶柄点不是拍脑袋写百分比，而是"沿主茎采样"算出来的 —— 换屏宽、卡片高度变化都不会脱茎。
   function buildVine() {
     var hero = document.querySelector('.hero');
     if (!hero || document.querySelector('.kiki-vine')) return;
+    if (!document.querySelector('.kiki-sky')) buildStars(hero);
+    if (!document.querySelector('.kiki-grass')) buildGrass(hero);
     var NS = 'http://www.w3.org/2000/svg';
     var box = document.createElement('div');
     box.className = 'kiki-vine';
@@ -380,7 +468,9 @@ details[open]::details-content{height:auto}
       return svg;
     }
     // 小葫芦：上小下大两瓣 + 蒂，蒂在 (50,6)，挂的时候锚点就在这儿
-    function gourdSVG(wpx) {
+    // col/hi 是"葫芦娃"那七个配色：红橙黄绿青蓝紫，高光是同色系提亮一档
+    function gourdSVG(wpx, col, hi) {
+      col = col || '#4aa62f'; hi = hi || '#7ecb5e';
       var svg = document.createElementNS(NS, 'svg');
       svg.setAttribute('viewBox', '0 0 100 100');
       svg.setAttribute('width', wpx.toFixed(1));
@@ -392,9 +482,9 @@ details[open]::details-content{height:auto}
         return e;
       }
       el('path', { d: 'M50 18 L50 6', stroke: '#40822c', 'stroke-width': 4, fill: 'none' });
-      el('ellipse', { cx: 50, cy: 29, rx: 13, ry: 13, fill: '#4aa62f', stroke: '#143a10', 'stroke-width': 3 });
-      el('ellipse', { cx: 50, cy: 66, rx: 23, ry: 24, fill: '#4aa62f', stroke: '#143a10', 'stroke-width': 3 });
-      el('path', { d: 'M32 60 C37 50 44 47 50 47', stroke: '#7ecb5e', 'stroke-width': 2, fill: 'none' });
+      el('ellipse', { cx: 50, cy: 29, rx: 13, ry: 13, fill: col, stroke: '#143a10', 'stroke-width': 3 });
+      el('ellipse', { cx: 50, cy: 66, rx: 23, ry: 24, fill: col, stroke: '#143a10', 'stroke-width': 3 });
+      el('path', { d: 'M32 60 C37 50 44 47 50 47', stroke: hi, 'stroke-width': 2, fill: 'none' });
       return svg;
     }
 
@@ -438,6 +528,75 @@ details[open]::details-content{height:auto}
       mkItem(16, gourdSVG(16), 0.06, 9, 38, 1.8, 4.4);
     }
 
+    // ── 顶部横臂：竖着爬到卡片顶就往左横一段 ─────────────────────────
+    // 竖屏只有窄窄一条空档（日期行右边到卡片右缘），横屏右侧空出一大片 ——
+    // 所以长度按视口宽算，够长（>=160px）时沿臂挂 7 个小葫芦，像葫芦娃排队浮出来。
+    var armLen = 0;
+    var arm = document.createElement('div');
+    arm.className = 'kv-arm';
+    var armSVG = document.createElementNS(NS, 'svg');
+    armSVG.setAttribute('class', 'kv-arm-stem');
+    armSVG.setAttribute('viewBox', '0 0 1000 34');
+    armSVG.setAttribute('preserveAspectRatio', 'none');
+    // 横臂的纵向波形（单位 = 横臂容器像素，0 在顶）：所有挂点都从这条线上算
+    function armY(xu) { return 15 + 4 * Math.sin(xu / 300 * Math.PI * 2 + 0.6); }
+    (function () {
+      var d9 = 'M1000 ' + armY(1000).toFixed(1);
+      for (var i9 = 980; i9 >= 0; i9 -= 20) d9 += ' L' + i9 + ' ' + armY(i9).toFixed(1);
+      function ap(col, wid) {
+        var e9 = document.createElementNS(NS, 'path');
+        e9.setAttribute('d', d9); e9.setAttribute('fill', 'none');
+        e9.setAttribute('stroke', col); e9.setAttribute('stroke-width', wid);
+        e9.setAttribute('stroke-linecap', 'round');
+        e9.setAttribute('vector-effect', 'non-scaling-stroke');
+        armSVG.appendChild(e9);
+      }
+      ap('#143a10', 3.0); ap('#5aa03a', 1.6);
+    })();
+    arm.appendChild(armSVG);
+    box.appendChild(arm);
+    var armItems = [];
+    function armItem(wpx, node, anchorPct, rot, xu, kind, dy) {
+      var it = document.createElement('div');
+      it.className = 'kv-item';
+      it.style.width = wpx + 'px';
+      it.style.height = wpx + 'px';
+      it.style.transformOrigin = '50% ' + (anchorPct * 100).toFixed(1) + '%';
+      var sw = document.createElement('div');
+      sw.className = 'kv-swing';
+      sw.style.transformOrigin = '50% ' + (anchorPct * 100).toFixed(1) + '%';
+      sw.style.setProperty('--dl', ((xu / 1000) * 2.6).toFixed(2) + 's');
+      sw.style.setProperty('--dur', (2.7 + (xu % 7) * 0.09).toFixed(2) + 's');
+      sw.appendChild(node);
+      it.appendChild(sw);
+      arm.appendChild(it);
+      armItems.push({ el: it, w: wpx, anchor: anchorPct, rot: rot, xu: xu, kind: kind, dy: dy || 0 });
+    }
+    // 臂上三片叶：叶柄朝下压在臂上，叶身朝上斜出（横屏才显得开）
+    [150, 430, 760].forEach(function (xu, i9) {
+      armItem(i9 === 1 ? 17 : 19, leafSVG(i9 === 1 ? 17 : 19), 1, i9 === 1 ? -18 : (i9 ? 26 : -30), xu, 'leaf');
+    });
+    // 七个小葫芦：红橙黄绿青蓝紫，按原著那条老藤的挂法 —— 不是齐刷刷一排，
+    // 每个的下垂深度、尺寸、倾斜角都错开一点，像七个葫芦娃各自探着脑袋
+    var GCOL = [
+      ['#d8443c', '#f0766a'],   // 红
+      ['#e08a2e', '#f4b468'],   // 橙
+      ['#e6c334', '#f7e27b'],   // 黄
+      ['#4aa62f', '#7ecb5e'],   // 绿
+      ['#39a9a3', '#7fd4cd'],   // 青
+      ['#4a7fd0', '#8fb3ec'],   // 蓝
+      ['#8b5cc4', '#b596e2']    // 紫
+    ];
+    var GDROP = [1, 6, 2, 9, 4, 7, 3];
+    var GOURDS = 7;
+    var gourdXs = [];
+    for (var g9 = 0; g9 < GOURDS; g9++) gourdXs.push(90 + g9 * 128);
+    gourdXs.forEach(function (xu, i9) {
+      var gw = 24 + (i9 % 3) * 2;
+      var cc = GCOL[i9 % GCOL.length];
+      armItem(gw, gourdSVG(gw, cc[0], cc[1]), 0, (i9 % 2 ? 8 : -7), xu, 'g', GDROP[i9]);
+    });
+
     // 摆位：宽/高每次都要重算，因为茎的 x 随卡片高度伸缩、叶子锚点又必须压在茎上
     function placeVine() {
       var w = box.__w, h = box.__h;
@@ -451,6 +610,25 @@ details[open]::details-content{height:auto}
         o.el.style.top = (yTop - o.w * o.anchor).toFixed(2) + 'px';
         o.el.style.transform = 'rotate(' + o.rot + 'deg)';   // 绕锚点转，叶柄不会滑走
       }
+      // 横臂：右端接在竖茎顶端（viewBox x=17 那条勾），往左伸出 armLen
+      arm.style.display = armLen > 12 ? 'block' : 'none';
+      if (armLen > 12) {
+        arm.style.width = armLen + 'px';
+        arm.style.left = (w * 0.17 - armLen) + 'px';
+        armSVG.setAttribute('width', armLen);
+        for (var a9 = 0; a9 < armItems.length; a9++) {
+          var q9 = armItems[a9];
+          // 竖屏臂太短：只留中间那片叶，小葫芦全收起来（横屏才挂 7 个）
+          var wide = armLen >= 160;
+          q9.el.style.display = (q9.kind === 'g' ? wide : (wide || q9.xu === 430)) ? 'block' : 'none';
+          if (q9.el.style.display === 'none') continue;
+          var axp = q9.xu / 1000 * armLen;
+          var ayp = armY(q9.xu);
+          q9.el.style.left = (axp - q9.w * 0.5).toFixed(2) + 'px';
+          q9.el.style.top = (ayp + q9.dy - q9.w * q9.anchor).toFixed(2) + 'px';
+          q9.el.style.transform = 'rotate(' + q9.rot + 'deg)';
+        }
+      }
     }
 
     // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
@@ -463,7 +641,11 @@ details[open]::details-content{height:auto}
       // 顶部安全区：APK 原生层的"设置"浮钮压在报头卡右上角（本机实测 62×26 CSS，距屏顶 12、距屏右 12）。
       // 网页读不到原生层，只能按实测留白：整条藤从卡片顶往下 VSAFE 处才开始长，
       // 顶端勾收在按钮正下方 —— 按钮区域彻底干净，藤看起来是"掐尖收尾"而不是被切掉。
+      // 原生层如果告诉我们"设置"按钮的真实矩形（window.KikiShell.settingsRect，已换算成 WebView 的 CSS px），
+      // 就直接按它的底边留白；拿不到就退回本机实测的 44px。
       var VSAFE = 44;
+      var ns = window.KikiShell && window.KikiShell.settingsRect;
+      if (ns && ns.b > 0) VSAFE = Math.max(0, ns.b + 6);
       var topY = r.top + VSAFE;
       if (topY > r.bottom - 46) topY = r.top;          // 卡片太矮就别留白了
       box.__w = w; box.__h = Math.max(0, r.bottom - topY);
@@ -472,6 +654,8 @@ details[open]::details-content{height:auto}
       box.style.left = (Math.min(r.right, vw) - w - 6) + 'px';   // 往右贴：留 6px，不再留 14px
       box.style.top = topY + 'px';
       box.style.display = (r.bottom < 6 || r.top > vh - 6) ? 'none' : 'block';
+      // 横臂长度：竖屏只够一段短的（日期行右边到卡片右缘），横屏往左一大片都是空的
+      armLen = vw >= 620 ? Math.min(330, Math.round(vw * 0.4)) : 70;
       placeVine();
     }
     layoutVine();
@@ -1579,6 +1763,14 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
+
+
+
+
+
+
 
 
 
