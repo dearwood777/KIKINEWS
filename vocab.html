@@ -441,6 +441,9 @@ details[open]::details-content{height:auto}
     var branch = addPath('', 2.6, '#143a10');
     var branchLit = addPath('', 1.4, '#5aa03a');
     var branchCurl = addPath('', 1.4, '#5aa03a');
+    // 第 6、7 片叶子之间再抽一根侧枝：往右斜上走，到容器右缘收成一卷螺旋小藤（弹簧须）
+    var tendril = addPath('', 1.8, '#143a10');
+    var tendrilLit = addPath('', 1.0, '#5aa03a');
     box.appendChild(stem);          // 忘了这一行 = 叶子像一堆浮在半空的蘑菇（已经踩过一次）
     document.body.appendChild(box);
 
@@ -655,10 +658,7 @@ details[open]::details-content{height:auto}
       stem.setAttribute('viewBox', '0 0 ' + w.toFixed(1) + ' ' + h.toFixed(1));
       var baseY = h * (ARM_BASE / 100);      // 茎顶（= 横臂基线）在容器里的像素 y
       var dA = 'M' + (PTS[0].x / 100 * w).toFixed(1) + ' ' + (PTS[0].y / 100 * h).toFixed(1);
-      // 竖屏没有横臂时，把茎顶那截"水平勾"截掉，收在自然弧线上 —— 否则顶端留一根小平线，像被切了个小尾巴
-      var cutX = armLen > 12 ? -1 : 40;
       for (var p9 = 1; p9 < PTS.length; p9++) {
-        if (cutX > 0 && PTS[p9].x < cutX) break;
         dA += ' L' + (PTS[p9].x / 100 * w).toFixed(1) + ' ' + (PTS[p9].y / 100 * h).toFixed(1);
       }
       // 横臂：把取样点直接接在主茎那条 d 的末尾 —— 一条 path、一次描边，接缝不可能出现
@@ -686,6 +686,22 @@ details[open]::details-content{height:auto}
           q9.el.style.top = (ayp + q9.dy - q9.w * q9.anchor).toFixed(2) + 'px';
           q9.el.style.transform = 'rotate(' + q9.rot + 'deg)';
         }
+      } else {
+        // 竖屏：藤不再掐尖，而是长到顶端后**沿着原生"设置"按钮的下沿再往右走一小段**，
+        // 末端往下收个小钩 —— 看起来是藤"爬到了按钮边上、搭着它走了一遭"。
+        // 这条线固定在容器顶 2.5px 处（容器顶本身就在按钮底下 6px），所以任何卡片高度都贴着按钮。
+        var sx0 = w * 0.17, syT = 2.5;
+        // 从茎顶缓弧上去（控制点拉高，圆滑的 90° 弯，不是直角）
+        dA += ' C' + (sx0 + 1.2).toFixed(1) + ' ' + (baseY - 12).toFixed(1) +
+              ' ' + (sx0 + 4.5).toFixed(1) + ' ' + (syT + 4).toFixed(1) +
+              ' ' + (sx0 + 10).toFixed(1) + ' ' + syT.toFixed(1);
+        // 沿按钮底往右走：留一点点起伏，不像一根拉直的杆
+        for (var qx = sx0 + 15; qx <= w - 7; qx += 4) {
+          dA += ' L' + qx.toFixed(1) + ' ' + (syT + 0.7 * Math.sin(qx / 7)).toFixed(1);
+        }
+        dA += ' C' + (w - 2).toFixed(1) + ' ' + syT.toFixed(1) +
+              ' ' + (w - 1).toFixed(1) + ' ' + (syT + 2).toFixed(1) +
+              ' ' + (w - 4).toFixed(1) + ' ' + (syT + 3.4).toFixed(1);
       }
       stemDark.setAttribute('d', dA);
       stemLit.setAttribute('d', dA);
@@ -706,6 +722,29 @@ details[open]::details-content{height:auto}
           ' ' + (bx + 11.6).toFixed(1) + ' ' + (by - 11.6).toFixed(1) +
           ' ' + (bx + 9.4).toFixed(1) + ' ' + (by - 9.6).toFixed(1));
       }
+      // 侧枝 + 螺旋：从第 6/7 片叶之间（b≈76.5%）的主茎上分出，往右斜上，到右边空处卷成螺旋
+      var yvT = 100 - 76.5;                       // viewBox 的 y
+      var txT = stemX(yvT) / 100 * w;             // 起点就压在主茎上 —— 不会出现断口
+      var tyT = yvT / 100 * h;
+      var room = Math.max(12, w - 5 - txT);       // 到容器右缘还剩多少横向空间
+      var e2x = txT + Math.min(room, 20) * 0.85, e2y = tyT - Math.min(40, h * 0.12);
+      var litD = 'M' + txT.toFixed(1) + ' ' + tyT.toFixed(1) +
+        ' C' + (txT + room * 0.12).toFixed(1) + ' ' + (tyT - 3.2).toFixed(1) +
+        ' ' + (e2x - room * 0.3).toFixed(1) + ' ' + (e2y + 6).toFixed(1) +
+        ' ' + (e2x - 2.2).toFixed(1) + ' ' + (e2y + 1.2).toFixed(1) +
+        ' C' + (e2x - 0.4).toFixed(1) + ' ' + (e2y - 1.4).toFixed(1) +
+        ' ' + e2x.toFixed(1) + ' ' + (e2y - 2.2).toFixed(1) +
+        ' ' + e2x.toFixed(1) + ' ' + e2y.toFixed(1);
+      // 阿基米德螺线：以 (e2x, e2y-3) 为心，半径从 4.6 收到 1.2，转 2.1 圈，入口角度接侧枝来向
+      var cxs = e2x, cys = e2y - 5.5, r0 = 5.5, r1 = 1.6, turns = 2.4;
+      var a0 = Math.atan2(e2y - cys, e2x - cxs);
+      var dSp = '';
+      for (var si = 1; si <= 40; si++) {
+        var tt = si / 40, ang = a0 + tt * turns * Math.PI * 2, rr = r0 + (r1 - r0) * tt;
+        dSp += ' L' + (cxs + Math.cos(ang) * rr).toFixed(1) + ' ' + (cys + Math.sin(ang) * rr).toFixed(1);
+      }
+      tendril.setAttribute('d', litD + dSp);
+      tendrilLit.setAttribute('d', litD + dSp);
     }
 
     // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
@@ -1847,6 +1886,14 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
+
+
+
+
+
+
 
 
 
