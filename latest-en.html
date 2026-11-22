@@ -291,6 +291,9 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -487,8 +490,8 @@ details[open]::details-content{height:auto}
   pointer-events:none;z-index:2147482000;overflow:visible}
 .kiki-vine .kv-stem{position:absolute;inset:0;width:100%;height:100%;
   transform-origin:72% 100%;animation:kv-wind 5.4s ease-in-out infinite alternate}
-.kiki-vine .kv-item{position:absolute;transform-origin:50% 96%}
-.kiki-vine .kv-swing{display:block;transform-origin:50% 96%;
+.kiki-vine .kv-item{position:absolute;transform-origin:50% 100%}
+.kiki-vine .kv-swing{display:block;transform-origin:50% 100%;
   animation:kv-sway var(--dur,2.8s) ease-in-out infinite alternate;
   animation-delay:var(--dl,0s)}
 .kiki-vine svg{display:block;overflow:visible}
@@ -509,6 +512,8 @@ details[open]::details-content{height:auto}
   window.KIKI_G = KIKI_G;   // 便于线上调试/校验（渲染时也读这份）
 
   // 12) 报头卡右边缘的葫芦藤（装饰层，纯矢量 + CSS 摇摆；不吃点击、不影响布局）
+  //     叶子按"葫芦叶"的真形状画：宽心形、基部有凹口、5 条掌状脉、叶缘浅波齿；
+  //     叶柄点不是拍脑袋写百分比，而是"沿主茎采样"算出来的 —— 换屏宽、卡片高度变化都不会脱茎。
   function buildVine() {
     var hero = document.querySelector('.hero');
     if (!hero || document.querySelector('.kiki-vine')) return;
@@ -523,13 +528,13 @@ details[open]::details-content{height:auto}
     stem.setAttribute('class', 'kv-stem');
     stem.setAttribute('viewBox', '0 0 100 100');
     stem.setAttribute('preserveAspectRatio', 'none');
-    function addPath(d, w, col, cap) {
+    function addPath(d, w, col) {
       var el = document.createElementNS(NS, 'path');
       el.setAttribute('d', d);
       el.setAttribute('fill', 'none');
       el.setAttribute('stroke', col);
       el.setAttribute('stroke-width', w);
-      el.setAttribute('stroke-linecap', cap || 'round');
+      el.setAttribute('stroke-linecap', 'round');
       el.setAttribute('stroke-linejoin', 'round');
       el.setAttribute('vector-effect', 'non-scaling-stroke');
       stem.appendChild(el);
@@ -544,89 +549,126 @@ details[open]::details-content{height:auto}
     addPath('M62 35 C72 33 76 26 71 23 C67 21 64 25 67 28', 1.5, '#5aa03a');
     addPath('M68 53 C58 51 54 56 58 61 C61 64 65 61 63 58', 1.5, '#5aa03a');
     box.appendChild(stem);          // 忘了这一行 = 叶子像一堆浮在半空的蘑菇（已经踩过一次）
+    document.body.appendChild(box);
 
-    // 一片葫芦叶：尖头朝上的细长叶，叶柄在底、落在茎上
-    var LEAF = 'M50 97 C33 93 19 76 18 55 C17 39 27 22 42 11 C46 8 54 8 58 11' +
-               ' C73 22 83 39 82 55 C81 76 67 93 50 97 Z';
+    // 主茎采样 → stemX(y)：给一个 viewBox 的 y（0=顶、100=底），返回茎在那里的 x。
+    // 之前叶子用固定 left% 摆，卡片高度一变（或横屏变宽）叶子就飘离主茎 —— 这个坑用采样一次性解决。
+    var PTS = [], stemPath = stem.querySelector('path');
+    if (stemPath && stemPath.getTotalLength) {
+      var TL = stemPath.getTotalLength();
+      for (var s9 = 0; s9 <= 120; s9++) PTS.push(stemPath.getPointAtLength(TL * s9 / 120));
+    }
+    function stemX(yv) {
+      if (!PTS.length) return 78 - yv * 0.45;            // 极老内核兜底：线性近似
+      if (yv > PTS[0].y) return PTS[0].x;
+      for (var a = 1; a < PTS.length; a++) {
+        var p1 = PTS[a - 1], p2 = PTS[a];
+        if (yv <= p1.y && yv >= p2.y) {
+          var u = (p1.y - yv) / Math.max(0.0001, p1.y - p2.y);
+          return p1.x + (p2.x - p1.x) * u;
+        }
+      }
+      return PTS[PTS.length - 1].x;
+    }
+
+    // 一片葫芦叶：宽心形（bracteate cordate），基部凹口在 (50,82)，
+    // 柄从凹口往下伸到 (50,100) —— 这就是锚点，叶柄一定压在茎上。
+    var LEAF = 'M50 2 C57 8 64 14 70 22 C82 31 96 43 96 55 C96 66 86 76 72 80' +
+               ' C64 84 54 83 50 68 C46 83 36 84 28 80 C14 76 4 66 4 55' +
+               ' C4 43 18 31 30 22 C36 14 43 8 50 2 Z';
     function leafSVG(wpx) {
-      var h = wpx * 1.45;
       var svg = document.createElementNS(NS, 'svg');
       svg.setAttribute('viewBox', '0 0 100 100');
       svg.setAttribute('width', wpx.toFixed(1));
-      svg.setAttribute('height', h.toFixed(1));
+      svg.setAttribute('height', wpx.toFixed(1));
       function el(tag, attrs) {
         var e = document.createElementNS(NS, tag);
         for (var k in attrs) e.setAttribute(k, attrs[k]);
         svg.appendChild(e);
         return e;
       }
-      el('path', { d: LEAF, fill: '#4aa62f', stroke: '#143a10', 'stroke-width': 3.4 });
-      el('path', { d: LEAF, fill: 'none', stroke: '#7ecb5e', 'stroke-width': 1.2,
-                   transform: 'translate(0 1.6) scale(0.93)' });   // 内圈亮边：深底上才有"剪纸边"
-      el('path', { d: 'M50 95 L50 26 M50 70 L30 56 M50 70 L70 56 M50 50 L35 38 M50 50 L65 38',
-                   fill: 'none', stroke: '#2b6b1e', 'stroke-width': 2.2, 'stroke-linecap': 'round' });
-      el('path', { d: 'M50 97 L50 104', fill: 'none', stroke: '#40822c', 'stroke-width': 3.4 });
+      el('path', { d: 'M50 68 L50 100', fill: 'none', stroke: '#40822c', 'stroke-width': 3.0 });
+      el('path', { d: LEAF, fill: '#4aa62f', stroke: '#143a10', 'stroke-width': 2.2 });
+      el('path', { d: LEAF, fill: 'none', stroke: '#7ecb5e', 'stroke-width': 1.0,
+                   transform: 'translate(50 50) scale(0.9) translate(-50 -50)' });
+      // 5 条掌状主脉，全部从基部凹口射出（这是葫芦叶最像的细节）
+      el('path', { d: 'M50 67 L50 8 M50 66 L34 29 M50 66 L66 29 M50 64 L17 56 M50 64 L83 56',
+                   fill: 'none', stroke: '#2e6b1f', 'stroke-width': 1.9, 'stroke-linecap': 'round' });
       return svg;
     }
-    // 小葫芦：上小下大两瓣 + 蒂
+    // 小葫芦：上小下大两瓣 + 蒂，蒂在 (50,6)，挂的时候锚点就在这儿
     function gourdSVG(wpx) {
       var svg = document.createElementNS(NS, 'svg');
       svg.setAttribute('viewBox', '0 0 100 100');
       svg.setAttribute('width', wpx.toFixed(1));
-      svg.setAttribute('height', (wpx * 1.45).toFixed(1));
+      svg.setAttribute('height', wpx.toFixed(1));
       function el(tag, attrs) {
         var e = document.createElementNS(NS, tag);
         for (var k in attrs) e.setAttribute(k, attrs[k]);
         svg.appendChild(e);
         return e;
       }
-      el('path', { d: 'M50 12 L50 4', stroke: '#40822c', 'stroke-width': 4, fill: 'none' });
-      el('ellipse', { cx: 50, cy: 26, rx: 14, ry: 15, fill: '#4aa62f', stroke: '#143a10', 'stroke-width': 3 });
-      el('ellipse', { cx: 50, cy: 64, rx: 25, ry: 26, fill: '#4aa62f', stroke: '#143a10', 'stroke-width': 3 });
-      el('path', { d: 'M31 58 C36 48 44 45 50 45', stroke: '#7ecb5e', 'stroke-width': 2, fill: 'none' });
+      el('path', { d: 'M50 18 L50 6', stroke: '#40822c', 'stroke-width': 4, fill: 'none' });
+      el('ellipse', { cx: 50, cy: 29, rx: 13, ry: 13, fill: '#4aa62f', stroke: '#143a10', 'stroke-width': 3 });
+      el('ellipse', { cx: 50, cy: 66, rx: 23, ry: 24, fill: '#4aa62f', stroke: '#143a10', 'stroke-width': 3 });
+      el('path', { d: 'M32 60 C37 50 44 47 50 47', stroke: '#7ecb5e', 'stroke-width': 2, fill: 'none' });
       return svg;
     }
 
-    // 叶子的"柄点"都落在主茎上（left% 就是茎的 x），旋转让叶尖朝外，两个方向交替。
-    // outer 负责静态朝向，inner 负责摇摆：动画只动 inner，两个 transform 不打架。
+    // 叶子站点：b = 距容器底部的百分比（藤从地往上长），w = 叶宽 px，rot = 静态朝向（左右交替）。
+    // 40% 那一带刻意留空 —— 小葫芦就挂在那儿，不会被叶子压住。
     var SITES = [
-      { left: 79, bottom: 12, w: 31, rot: -38, dl: 0.0, dur: 3.2 },
-      { left: 77, bottom: 27, w: 26, rot: 32, dl: 1.0, dur: 2.9 },
-      { left: 73, bottom: 41, w: 30, rot: -34, dl: 0.4, dur: 3.4 },
-      { left: 72, bottom: 55, w: 25, rot: 30, dl: 1.4, dur: 2.8 },
-      { left: 68, bottom: 68, w: 27, rot: -30, dl: 0.2, dur: 3.1 },
-      { left: 62, bottom: 80, w: 21, rot: 24, dl: 1.2, dur: 2.7 },
-      { left: 49, bottom: 90, w: 19, rot: -12, dl: 0.7, dur: 3.3 }
+      { b: 8, w: 22, rot: -44, dl: 0.0, dur: 3.2 },
+      { b: 19, w: 18, rot: 40, dl: 1.0, dur: 2.9 },
+      { b: 30, w: 21, rot: -40, dl: 0.4, dur: 3.4 },
+      { b: 48, w: 17, rot: 38, dl: 1.4, dur: 2.8 },
+      { b: 60, w: 19, rot: -38, dl: 0.2, dur: 3.1 },
+      { b: 71, w: 17, rot: 34, dl: 1.2, dur: 2.7 },
+      { b: 82, w: 16, rot: -28, dl: 0.7, dur: 3.3 },
+      { b: 92, w: 15, rot: -10, dl: 1.6, dur: 3.0 }
     ];
-    SITES.forEach(function (c) {
+    var items = [];
+    function mkItem(wpx, node, anchor, rot, b, dl, dur) {
       var it = document.createElement('div');
       it.className = 'kv-item';
-      it.style.left = c.left + '%';
-      it.style.bottom = c.bottom + '%';
-      it.style.transform = 'translateX(-50%) rotate(' + c.rot + 'deg)';
+      it.style.width = wpx + 'px';
+      it.style.height = wpx + 'px';
+      it.style.transformOrigin = '50% ' + (anchor * 100).toFixed(1) + '%';
       var sw = document.createElement('div');
       sw.className = 'kv-swing';
-      sw.style.setProperty('--dl', c.dl + 's');
-      sw.style.setProperty('--dur', c.dur + 's');
-      sw.appendChild(leafSVG(c.w));
+      sw.style.transformOrigin = '50% ' + (anchor * 100).toFixed(1) + '%';
+      sw.style.setProperty('--dl', dl + 's');
+      sw.style.setProperty('--dur', dur + 's');
+      sw.appendChild(node);
       it.appendChild(sw);
       box.appendChild(it);
+      items.push({ el: it, w: wpx, anchor: anchor, rot: rot, b: b });
+      return it;
+    }
+    // outer 负责静态朝向，inner 负责摇摆：动画只动 inner，两个 transform 不打架
+    SITES.forEach(function (c) {
+      mkItem(c.w, leafSVG(c.w), 1, c.rot, c.b, c.dl, c.dur);
     });
-    // 挂一个小葫芦（挂在第 5 个叶点下面的那截茎上）
-    var gi = document.createElement('div');
-    gi.className = 'kv-item';
-    gi.style.left = '58%';
-    gi.style.bottom = '40%';
-    gi.style.transform = 'translateX(-50%) rotate(10deg)';
-    var gs = document.createElement('div');
-    gs.className = 'kv-swing';
-    gs.style.setProperty('--dl', '1.8s');
-    gs.style.setProperty('--dur', '4.4s');
-    gs.appendChild(gourdSVG(22));
-    gi.appendChild(gs);
-    box.appendChild(gi);
+    // 小葫芦只挂"难点词汇"那一页（主页报头右边空着，不塞它，也免了和叶子抢位置）
+    var SHOW_GOURD = /vocab/.test(location.pathname) || !!document.querySelector('[id^="w-"]');
+    if (SHOW_GOURD) {
+      mkItem(16, gourdSVG(16), 0.06, 9, 38, 1.8, 4.4);
+    }
 
-    document.body.appendChild(box);
+    // 摆位：宽/高每次都要重算，因为茎的 x 随卡片高度伸缩、叶子锚点又必须压在茎上
+    function placeVine() {
+      var w = box.__w, h = box.__h;
+      if (!w || !h) return;
+      for (var i9 = 0; i9 < items.length; i9++) {
+        var o = items[i9];
+        var yv = 100 - o.b;                 // viewBox 的 y
+        var xpx = stemX(yv) / 100 * w;      // 茎在那里的 x（像素）
+        var yTop = (1 - o.b / 100) * h;     // 锚点距容器顶（像素）
+        o.el.style.left = (xpx - o.w * 0.5).toFixed(2) + 'px';
+        o.el.style.top = (yTop - o.w * o.anchor).toFixed(2) + 'px';
+        o.el.style.transform = 'rotate(' + o.rot + 'deg)';   // 绕锚点转，叶柄不会滑走
+      }
+    }
 
     // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
     // 所以不能用 CSS 的 right —— 一律量矩形再摆（跟 .kiki-walker 同一套做法）。滚出屏幕就收起来。
@@ -635,11 +677,13 @@ details[open]::details-content{height:auto}
       var vw = window.innerWidth || document.documentElement.clientWidth;
       var vh = window.innerHeight || document.documentElement.clientHeight;
       var w = Math.min(74, Math.max(44, Math.round(vw * 0.14)));
+      box.__w = w; box.__h = Math.max(0, r.height);
       box.style.width = w + 'px';
-      box.style.height = Math.max(0, r.height) + 'px';
-      box.style.left = (Math.min(r.right, vw) - w - 14) + 'px';
+      box.style.height = box.__h + 'px';
+      box.style.left = (Math.min(r.right, vw) - w - 6) + 'px';   // 往右贴：留 6px，不再留 14px
       box.style.top = r.top + 'px';
       box.style.display = (r.bottom < 6 || r.top > vh - 6) ? 'none' : 'block';
+      placeVine();
     }
     layoutVine();
     window.addEventListener('scroll', layoutVine, { passive: true });
@@ -647,6 +691,8 @@ details[open]::details-content{height:auto}
     setTimeout(layoutVine, 320);
     window.__kwVine = box;           // 便于线上核对（量 rect 用，不参与逻辑）
     window.__kwVineLayout = layoutVine;
+    window.__kwStemX = stemX;        // 采样函数，自检时用来核对"叶柄是否压在茎上"
+    window.__kwVineItems = items;
   }
 
 
@@ -918,6 +964,15 @@ details[open]::details-content{height:auto}
     var LH = parseFloat(cs.lineHeight) || F * 1.3;
     var hr = h1.getBoundingClientRect();
     var W = Math.max(40, Math.ceil(hr.width)), H = Math.ceil(F * 2.6);
+    // 字迹真实水平中点：h1 是块级元素，横屏时块宽远大于文字长度，
+    // 用块宽一半判朝向，最右端贴边往下就会误判成左侧（人背对字）。
+    var TXMID = hr.width * 0.5;
+    try {
+      var rFirst = chars[0].getBoundingClientRect();
+      var rLast = chars[chars.length - 1].getBoundingClientRect();
+      TXMID = (rFirst.left + rLast.right) / 2 - hr.left;
+    } catch (e) {}
+
     var k = F / (KIKI_G.upm || 1000);
     // 字体没加载完时 measureText 拿到的是回退字体的 asc/desc，算出来的基线是错的，
     // 于是 ts[] 整条地形偏高/偏低，脚就会埋进字里（安卓 WebView 上尤其明显）。
@@ -1446,7 +1501,7 @@ details[open]::details-content{height:auto}
     function poseVert(q, t) {
       if (cfReady() && !CF.bad) {          // 逐帧攀爬：4 帧循环，10 帧/秒，帧序跟时间走但不跟位移解耦
         cfShow(true);
-        cfFrame(Math.floor(Math.max(0, t) * CF.vertFps) % CF.n, st.x > W * 0.5);
+        cfFrame(Math.floor(Math.max(0, t) * CF.vertFps) % CF.n, st.x > TXMID);
         st.rot = 0;
         return;
       }
@@ -1595,11 +1650,11 @@ details[open]::details-content{height:auto}
       }
       // 攀爬图朝向：贴字边上下时脸朝字，横爬时脸朝行进方向
       if (useHang) {
-        var ft = (st.mode === 'crawl' || (st.mode === 'vert' && st.x > W * 0.5)) ? 'scaleX(-1)' : '';
+        var ft = (st.mode === 'crawl' || (st.mode === 'vert' && st.x > TXMID)) ? 'scaleX(-1)' : '';
         if (artH.style.transform !== ft) artH.style.transform = ft;
       } else {
         // 侧身图朝右：在右边贴边往下时翻过来，脸朝字（往左）
-        var wt = (st.mode === 'vert' && st.x > W * 0.5) ? 'scaleX(-1)' : '';
+        var wt = (st.mode === 'vert' && st.x > TXMID) ? 'scaleX(-1)' : '';
         if (artW.style.transform !== wt) artW.style.transform = wt;
       }
       var LIFT = PH * 0.05;   // 脚比墨迹上沿再抬 5%：视觉上就是站在字上，物理上永不与字重叠
