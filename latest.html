@@ -251,6 +251,10 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
+
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -846,11 +850,12 @@ details[open]::details-content{height:auto}
       PHp[n] = walker.querySelector('.p-hang-' + n);
     });
 
-    function put(tbl, name, deg, dy) {
+    function put(tbl, name, deg, dy, tx) {
       var el = tbl[name];
       if (!el) return;
       var t = deg ? 'rotate(' + deg.toFixed(2) + 'deg)' : '';
       if (dy) t += (t ? ' ' : '') + 'translateY(' + dy.toFixed(2) + 'px)';
+      if (tx) t += (t ? ' ' : '') + 'translateX(' + tx.toFixed(2) + 'px)';
       el.style.transform = t;
     }
     var useHang = false;
@@ -860,6 +865,46 @@ details[open]::details-content{height:auto}
       artW.style.display = hang ? 'none' : 'block';
       artH.style.display = hang ? 'block' : 'none';
       if (!hang) artH.style.transform = '';
+    }
+
+    // (5b) 走路用的腿：切片的腿只有 23 unit 高（页面上≈6px）、两只脚本来就岔开 29 unit，
+    //      绕髋怎么转都跨不过去，所以走路这一段改成"画出来的两段腿"：
+    //      脚可以真的落到任意位置、抬起来、绕到另一只脚前面；裤子/肤色/黑边跟原图同一套色。
+    var LEGS = { g: null, inkB: null, whtB: null, ftB: null, inkF: null, whtF: null, ftF: null };
+    (function buildLegs() {
+      var NS = 'http://www.w3.org/2000/svg';
+      var g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'kw-legs');
+      function mk(tag, attrs) {
+        var el = document.createElementNS(NS, tag);
+        for (var k in attrs) el.setAttribute(k, attrs[k]);
+        g.appendChild(el);
+        return el;
+      }
+      function leg(k, col) {
+        var o = mk('path', { fill: 'none', stroke: '#0a0b06', 'stroke-width': 12.2,
+                             'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'class': 'kw-lk-' + k });
+        var w = mk('path', { fill: 'none', stroke: col, 'stroke-width': 10.2,
+                             'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'class': 'kw-lw-' + k });
+        var f = mk('ellipse', { rx: 4.4, ry: 2.1, fill: '#eccaa7', stroke: '#0a0b06', 'stroke-width': 0.7, 'class': 'kw-lf-' + k });
+        return [o, w, f];
+      }
+      mk('path', { d: 'M10,75 H43 V84 Q43,87 39.5,87 H13.5 Q10,87 10,84 Z',
+                   fill: '#eae8e6', stroke: '#0a0b06', 'stroke-width': 0.9,
+                   'stroke-linejoin': 'round', 'class': 'kw-shorts' });
+      var a = leg('B', '#dfdcd8'), b = leg('F', '#eae8e6');
+      LEGS.g = g; LEGS.inkB = a[0]; LEGS.whtB = a[1]; LEGS.ftB = a[2];
+      LEGS.inkF = b[0]; LEGS.whtF = b[1]; LEGS.ftF = b[2];
+      artW.insertBefore(g, artW.firstChild);
+    })();
+
+    function legsShow(on) {              // 走路用画的腿；贴边/攀爬用回剪纸腿
+      if (!LEGS.g) return;
+      LEGS.g.style.display = on ? '' : 'none';
+      ['legB', 'legF'].forEach(function (n) {
+        var el = PWp[n];
+        if (el) el.style.display = on ? 'none' : '';
+      });
     }
 
     // (6) 攀爬用的线：挂在"字底 ↔ 字底"，只跨过间隔点那种大空隙
@@ -956,38 +1001,52 @@ details[open]::details-content{height:auto}
     }
 
     // (8) 动作：全部靠转切件，参数小、频率稳，像人不像木偶
-    // 走：整条腿绕髋摆。摆动期 smoothstep 从后往前划（脚离地），支撑期匀速往后退（脚踩地），
-    //     两条腿错半拍；支撑期再按"髋到地"长度把腿往下推回地面，脚不会浮起来。
-    var AMP = 62, SWING = 0.50, LEGL = 0.19;   // 小人在页面上只有约 30px 高，腿长≈6px，只能靠夸张幅度才读得出"迈步"
-    function legState(u) {
+    // 走：脚落点驱动。每条腿是一段"髋→膝→脚"的两段线，脚按相位在 +S ↔ -S 之间移动：
+    //     摆动期脚离地、smoothstep 从后划到前（膝往前顶，看得出屈膝）；支撑期脚踩地匀速后退
+    //     （相对地面=脚钉在原地）。前脚会真的越过另一只脚跑到前面，再被它超过。
+    var HIP_B = [13.8, 78.2], HIP_F = [39.4, 78.2], GROUND = 99.2;
+    var STRIDE = 19, SWING = 0.46;
+    var _sin = Math.sin, _pi = Math.PI;
+    function footPhase(u) {
       u = u - Math.floor(u);
       if (u < SWING) {
         var t = u / SWING;
         var e = t * t * (3 - 2 * t);
-        return { th: AMP - 2 * AMP * e, lift: Math.sin(Math.PI * t) };
+        return { dx: -STRIDE + 2 * STRIDE * e, lift: _sin(_pi * t) * 4.2, bend: 4.2 * _sin(_pi * t) };
       }
       var w = (u - SWING) / (1 - SWING);
-      return { th: -AMP + 2 * AMP * w, lift: 0 };
+      return { dx: STRIDE - 2 * STRIDE * w, lift: 0, bend: 0 };
+    }
+    function drawLeg(pair, hip, f) {
+      var fx = hip[0] + f.dx, fy = GROUND - f.lift;
+      var kx = (hip[0] + fx) / 2 + f.bend, ky = (hip[1] + fy) / 2 - f.bend * 0.25;
+      var d = 'M' + hip[0].toFixed(2) + ',' + hip[1].toFixed(2) +
+              'L' + kx.toFixed(2) + ',' + ky.toFixed(2) +
+              'L' + fx.toFixed(2) + ',' + fy.toFixed(2);
+      pair.ink.setAttribute('d', d);
+      pair.wht.setAttribute('d', d);
+      pair.foot.setAttribute('cx', fx.toFixed(2));
+      pair.foot.setAttribute('cy', (fy + 0.4).toFixed(2));
     }
     function poseWalk(ph) {
       setArt(false);
+      legsShow(true);
       var u = ph / (2 * Math.PI);
-      var F1 = legState(u), B1 = legState(u + 0.5);
-      // 腿只绕髋转、不做上下推（推了会在短裤下沿露出空档）；摆动期脚自己抬起来
-      var LIFT = PH * 0.12;
-      put(PWp, 'legF', F1.th, -F1.lift * LIFT);
-      put(PWp, 'legB', B1.th, -B1.lift * LIFT);
-      var bob = -PH * 0.07 * Math.abs(Math.sin(2 * Math.PI * u));
-      put(PWp, 'body', 1.6 * Math.sin(2 * Math.PI * u), bob);
-      put(PWp, 'armB', -F1.th * 0.8 - 8, 0);   // 反向摆，基准往前压一点，才看得出"前后"而不是一直撩在身后
-      put(PWp, 'head', -0.5 * Math.sin(2 * Math.PI * u), bob * 0.4);
+      var F1 = footPhase(u), B1 = footPhase(u + 0.5);
+      drawLeg({ ink: LEGS.inkB, wht: LEGS.whtB, foot: LEGS.ftB }, HIP_B, B1);
+      drawLeg({ ink: LEGS.inkF, wht: LEGS.whtF, foot: LEGS.ftF }, HIP_F, F1);
+      var bob = -PH * 0.05 * Math.abs(_sin(2 * _pi * u));
+      put(PWp, 'body', 1.6 * _sin(2 * _pi * u), bob);
+      put(PWp, 'armB', -B1.dx * 1.4 - 6, 0);
+      put(PWp, 'head', -0.5 * _sin(2 * _pi * u), bob * 0.4);
     }
     // 贴字边上下：用侧身图（能看出朝哪边），腿收起来蹬、一只手去够边
     function poseVert(ph) {
       setArt(false);
+      legsShow(false);
       var a = Math.sin(ph), b = Math.sin(ph + Math.PI);
-      put(PWp, 'legF', -14 + 7 * a, 0);
-      put(PWp, 'legB', 10 - 7 * b, 0);
+      put(PWp, 'legF', -14 + 7 * a, 0, 0);
+      put(PWp, 'legB', 10 - 7 * b, 0, 0);
       put(PWp, 'body', 1.5 * a, 0);
       put(PWp, 'armB', -34 - 8 * a, 0);
       put(PWp, 'head', -1.2 * a, 0);
