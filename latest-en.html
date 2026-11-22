@@ -281,6 +281,8 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -999,6 +1001,63 @@ details[open]::details-content{height:auto}
       WF.box = wrap; WF.im = im;
     })();
 
+    // (5d) 垂直段逐帧：手在身前胸前、背弓、面朝字（参照 FC《忍者龙剑传》爬墙），4 帧循环。
+    //      素材 docs/climb-sheet.png = 4 帧 × 150×220，角色身高压到 180 图像像素（与 walk-sheet 同尺度，
+    //      换图时人不会忽大忽小）。框高 = PH × 220/180，框底钉在脚底（= 地形线），
+    //      所以从雪碧图换到攀爬图，脚还在同一条线上 —— 这是"不许沉进字里"的第二道保险。
+    var CF = { w: 150, h: 220, charH: 180, n: 4, url: 'climb-sheet.png?v=1', vertFps: 10,
+               box: null, im: null, cellW: 0, cellH: 0, bad: false, flip: null };
+    (function buildClimb() {
+      var wrap = document.createElement('div');
+      wrap.className = 'kiki-spr';
+      if (!window.__kwClimb) {
+        var pre2 = new Image(); pre2.alt = ''; pre2.src = CF.url; window.__kwClimb = pre2;
+      }
+      var cellH = PH * CF.h / CF.charH;
+      var cellW = cellH * CF.w / CF.h;
+      CF.cellH = cellH; CF.cellW = cellW;
+      wrap.style.width = cellW.toFixed(2) + 'px';
+      wrap.style.height = cellH.toFixed(2) + 'px';
+      wrap.style.left = (PW / 2 - cellW / 2).toFixed(2) + 'px';
+      wrap.style.top = (PH - cellH).toFixed(2) + 'px';         // 框底 = walker 底边 = 脚底
+      wrap.style.transformOrigin = '50% 50%';
+      var im = window.__kwClimb || document.createElement('img');
+      im.alt = '';
+      im.style.width = (cellW * CF.n).toFixed(1) + 'px';
+      im.style.height = cellH.toFixed(1) + 'px';
+      im.style.position = 'absolute';
+      im.style.left = '0'; im.style.bottom = '0'; im.style.top = 'auto';
+      im.style.display = 'block'; im.style.verticalAlign = 'top';
+      im.style.transform = 'translateX(0px)';
+      im.onerror = function () { CF.bad = true; wrap.style.display = 'none'; };
+      im.src = CF.url;
+      wrap.appendChild(im);
+      wrap.style.display = 'none';
+      walker.appendChild(wrap);
+      CF.box = wrap; CF.im = im;
+    })();
+    function cfReady() {
+      return !!(CF.im && CF.im.complete && (CF.im.naturalWidth || 0) > 0);
+    }
+    function cfShow(on) {
+      if (!CF.box) return;
+      if (CF.bad || (on && !cfReady())) on = false;
+      CF.box.style.display = on ? 'block' : 'none';
+      if (on) {
+        artW.style.display = 'none'; artH.style.display = 'none';
+        if (WF.box) WF.box.style.display = 'none';
+      }
+    }
+    // 镜像换朝向：翻转整框（不是翻图），帧的 translateX 一起翻，帧序不会错位
+    function cfFrame(i, flip) {
+      if (!CF.im) return;
+      if (CF.box && CF.flip !== flip) {
+        CF.flip = flip;
+        CF.box.style.transform = flip ? 'scaleX(-1)' : '';
+      }
+      CF.im.style.transform = 'translateX(' + (-(i * CF.cellW)).toFixed(1) + 'px)';
+    }
+
     var WFw = [1.12, 1.0, 0.9, 1.06, 1.12, 1.0, 0.9];   // 每帧占时（接触/下沉/过渡/抬起...）
     function sprReady() {
       return !!(WF.im && WF.im.complete && (WF.im.naturalWidth || 0) > 0);
@@ -1019,6 +1078,7 @@ details[open]::details-content{height:auto}
       WF.cal = 1;
     }
     function sprShow(on) {
+      if (CF.box && CF.box.style.display !== 'none') CF.box.style.display = 'none';
       if (!WF.box) return;
       if (WF.bad || (on && !sprReady())) on = false;   // 图没解码完就先用剪纸版，绝不出现整个人消失
       WF.box.style.display = on ? 'block' : 'none';
@@ -1105,7 +1165,7 @@ details[open]::details-content{height:auto}
     window.__kwSt = st;
     // 调试钩子：URL 带 kwdbg 时才挂出来，方便把小人直接丢进垂直段/跳跃段验帧，不动正式逻辑。
     if (/kwdbg/.test(location.search)) {
-      window.__kwdbg = { st: st, ts: ts, W: W, PH: PH, vertTo: vertTo, hopTo: hopTo };
+      window.__kwdbg = { st: st, ts: ts, W: W, PH: PH, vertTo: vertTo, hopTo: hopTo, CF: CF, cfShow: cfShow, cfFrame: cfFrame, poseVert: poseVert };
     }
     var alive = true, lastT = 0, land = -9, acc = 0, FIX = 1 / 120;
     var H1R = null, h1rT = 0;
@@ -1208,11 +1268,18 @@ details[open]::details-content{height:auto}
     // 用双手抓握的攀爬图：两只手交替往上够、两条腿交替蹬，身体随抓握轻微起伏。
     // 关键是相位跟着"垂直位移"走（step 里传的 ph 由 q*vd 推出），所以手一动、人就挪一截，
     // 不会再出现"人整体平移、四肢是静帧"的观感。
-    function poseVert(ph) {
+    function poseVert(q, t) {
+      if (cfReady() && !CF.bad) {          // 逐帧攀爬：4 帧循环，10 帧/秒，帧序跟时间走但不跟位移解耦
+        cfShow(true);
+        cfFrame(Math.floor(Math.max(0, t) * CF.vertFps) % CF.n, st.x > W * 0.5);
+        st.rot = 0;
+        return;
+      }
+      // 兜底（攀爬图还没下到）：先用剪纸版撑住，绝不让整个人消失
       setArt(true);
       sprShow(false);
-      var a = Math.sin(ph), b = Math.sin(ph + Math.PI);
-      var lg = Math.sin(ph + 0.8);
+      var a = Math.sin(q * 11), b = Math.sin(q * 11 + Math.PI);
+      var lg = Math.sin(q * 11 + 0.8);
       put(PHp, 'armL', -9 - 7 * a, Math.max(0, a) * 2.2, 0);
       put(PHp, 'armR', 9 - 7 * b, Math.max(0, b) * 2.2, 0);
       put(PHp, 'legL', 13 * lg, Math.max(0, lg) * 1.5);
@@ -1293,7 +1360,7 @@ details[open]::details-content{height:auto}
         var q = Math.min(1, st.vp / st.vd);
         st.x = st.vx;
         st.y = st.vy0 + (st.vy1 - st.vy0) * q;
-        poseVert(q * st.vd * 11);
+        poseVert(q, q * st.vd);
         st.rot = 0;
         if (q >= 1) {
           st.y = st.vy1;
