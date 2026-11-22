@@ -278,6 +278,9 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -460,7 +463,7 @@ details[open]::details-content{height:auto}
 /* 小人：两套剪纸（走姿侧身 / 攀爬正面），切件各自绕枢轴转，origin 放在脚底 */
 .kw-art{display:block;position:absolute;left:0;top:0;overflow:visible;user-select:none}
 .kw-art-hang{display:none}
-.kiki-spr{position:absolute;left:0;top:0;overflow:hidden;pointer-events:none;will-change:transform}
+.kiki-spr{position:absolute;left:0;top:0;overflow:hidden;contain:paint;pointer-events:none}
 .kw-art [stroke]{vector-effect:none}
 </style>
 <script id="kiki-polish-js">
@@ -975,6 +978,15 @@ details[open]::details-content{height:auto}
       im.alt = '';
       im.style.width = (cellW * WF.n).toFixed(1) + 'px';
       im.style.height = cellH.toFixed(1) + 'px';
+      // 图脚必须钉在框底：inline 图会按基线留出下行空隙，各家 WebView 的行高/字号默认值
+      // 不一样，脚就会被顶下去几像素，又正好被 overflow:hidden 从下面裁掉 ——
+      // 看起来就是"站着没事、一走腿就陷进字里"。绝对定位 + bottom:0，脚永远是框底，裁不到。
+      im.style.position = 'absolute';
+      im.style.left = '0';
+      im.style.bottom = '0';
+      im.style.top = 'auto';
+      im.style.display = 'block';
+      im.style.verticalAlign = 'top';
       im.style.transform = 'translateX(0px)';
       im.onerror = function () {     // 图没下来就先退回剪纸版，别让人凭空消失
         WF.bad = true; wrap.style.display = 'none';
@@ -991,10 +1003,26 @@ details[open]::details-content{height:auto}
     function sprReady() {
       return !!(WF.im && WF.im.complete && (WF.im.naturalWidth || 0) > 0);
     }
+    // 自校准：图真到了以后，量一次"图实际画在哪、框底在哪"，差多少就补多少。
+    // 脚位不允许依赖任何浏览器默认行为（inline 基线、行高、overflow 裁切各家都不一样），
+    // 量到偏差就当场改回来 —— 这是最后一道保险。
+    function sprCalibrate() {
+      if (!WF.box || !WF.im || WF.cal) return;
+      var br = WF.box.getBoundingClientRect(), ir = WF.im.getBoundingClientRect();
+      if (br.height < 2 || ir.height < 2) return;
+      var dy = ir.bottom - br.bottom;          // 正 = 图比框低（腿会陷）
+      if (Math.abs(dy) > 0.4) WF.im.style.bottom = dy.toFixed(2) + 'px';
+      var dh = ir.height - WF.cellH;
+      if (Math.abs(dh) > 0.4) WF.im.style.height = WF.cellH.toFixed(1) + 'px';
+      var dx = (ir.width / WF.n) - WF.cellW;   // 帧宽被 max-width 之类压过就还原
+      if (Math.abs(dx) > 0.4) WF.im.style.width = (WF.cellW * WF.n).toFixed(1) + 'px';
+      WF.cal = 1;
+    }
     function sprShow(on) {
       if (!WF.box) return;
       if (WF.bad || (on && !sprReady())) on = false;   // 图没解码完就先用剪纸版，绝不出现整个人消失
       WF.box.style.display = on ? 'block' : 'none';
+      if (on) sprCalibrate();
       if (on) { artW.style.display = 'none'; artH.style.display = 'none'; }
       else { artW.style.display = useHang ? 'none' : 'block'; artH.style.display = useHang ? 'block' : 'none'; }
     }
