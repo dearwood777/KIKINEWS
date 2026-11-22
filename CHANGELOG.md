@@ -13,10 +13,31 @@
 
 **教训**：改 `web_polish.py` 后必须同时推 main 和 gh-pages。只推 gh-pages 的注入结果，第二天早晨必被覆盖。
 
-## 工程守则（接手的人/AI 先读这十条，能省掉 90% 的返工）
+## 事故二：deploy-docs 用 main 的过期 docs 覆盖了当日页面（2026-11-22）
+
+**现象**：给报头加字体子集时，往 `main` 的 `docs/fonts/` 推了一个 2.6KB 的 woff2，几分钟后线上三页全部变回 **11-18 期**内容（16 条正文不变，但期号、词卡全退）。
+
+**根因**：`deploy-docs.yml` 的触发条件是 `push: main + paths: docs/**…`，它做的事是把 **main 上的 docs/** 全量发布到 gh-pages。而每日 digest 是直接写 gh-pages 的，**main 的 docs 长期是一份过期快照**。所以任何一次 "往 main/docs 推文件" 都会把当天的新页面整体覆盖成旧快照。
+
+**修法**：
+1. `deploy-docs.yml` 改成**只保留 `workflow_dispatch`**（需要发布 main/docs 时手动 Run），push 不再触发（commit `02ec7551`）。
+2. 报头字体从 `docs/fonts/` 挪到 `scripts/kiki-head-700.woff2`，由 `web_polish.py` 的 `ensure_font()` 在运行时复制进 `docs/fonts/` —— Actions 的工作区里自动有它，**主仓 docs 永远不需要动**。
+3. 从历史提交 `a89b8d173`（11-22 期最后一版）取回三页，用最新脚本重新注入后推回：102230 / 98673 / 55397 字节，16 条正文、25 个词卡、日期 11-22。
+
+## 报头小人（第一版：骨架 + 占位形象）（2026-11-22）
+
+- 报头字体换成专门打包的子集 **KikiHead**（Noto Sans SC 700，只含"科技·财经国际速递"10 字 + 空格，**2.6KB**，OFL 可分发），`@font-face` 指向 `fonts/kiki-head-700.woff2`。换字体的唯一目的是：屏幕上渲染的字和隐藏层里的轮廓来自同一份数据，脚才踩得准。
+- 字形轮廓由 `scripts/build_head_glyphs.py` 从 woff2 导出（`fontTools` + `SVGPathPen`）→ `scripts/head_glyphs.json`（**7.9KB**），注入页面为 `window.KIKI_G`。
+- **地形不是手写坐标**：把整行字形以 2 倍超采样画进离屏 canvas，逐列扫描 alpha 取"最上面的墨迹"→ 得到一条真实的上沿曲线；连续墨迹列合并成"可走段"，段间空隙就是"跳"。所以换字号、换设备、横竖屏全自动贴合，不需要调像素。
+- 基线用浏览器自己的度量算：`ctx.measureText().fontBoundingBoxAscent/Descent` + CSS 的 `line-height` 半行距，不硬编码 asc/desc。
+- 尺寸：先量间隔点 `·` 的**真实墨迹直径**（当前 30px 字号下 7.67px），小人高度 = **直径 × 2**（15.33px），宽度 `0.7×高度`——用户指定的比例。
+- 逐字拆 `span.kch`（`inline-block` + **`white-space:pre`**；少了 `pre` 只含空格的 span 会把空格折叠，整行从 331.45px 缩到 303px，字之间的间隙全没了）。
+- 动作：走（两腿交替 `sin` 摆动、身体轻点头）→ 空隙抛物线跳（`sin(πu)` 抬到 0.5 倍身高）→ 落在 `·` 上时给该 span 加 `kiki-dot-hit`（300ms 压扁回弹）。一圈走完停 2.6s 重来；报头离开视野暂停。
+- 现状：形象是**占位机器人**（`buildWalker()` 里的一段 SVG 字符串，换形象只改这段）。后半段（沿"际/速"下去 → 像长臂猿抓着上沿荡回来）还没做。
 
 1. **`scripts/web_polish.py` 是唯一注入源**，页面里 `<!-- kiki-polish:start -->…end -->` 之间的东西全是它生成的，直接手改 HTML 会在下次注入时被覆盖。
 2. **改脚本必须双推**：`main`（供每天 digest 用）+ `gh-pages`（供线上立即可见）。只推一边一定出问题——只推 gh-pages 第二天早晨被清，只推 main 要等下一期才生效。
+3. **绝对不要往 main 的 `docs/**` 推任何文件**：会触发 `deploy-docs.yml`，把 main 上那份过期的 docs 全量发布到 gh-pages，直接覆盖当日页面（11-22 真被覆盖成 11-18）。需要放在页面目录的静态资源（如字体），放 `scripts/`，由 `web_polish.py` 运行时复制到 `docs/`。
 3. **推送顺序**：先 `ghutil.raw()` 拉远端最新 → `web_polish.polish()` → 再 PUT。反过来会拿本地旧页面覆盖当天新内容（11-22 就踩过一次）。每天 **06:18 左右** digest 会整体重写三页，cd 到那个时间窗口之后要重刷。
 4. **环境**：Windows + pwsh 7，**没有 Bash、没有 git 命令**（本机 git 不在 PATH），一切走 GitHub Contents API（`C:\Users\User\AppData\Local\Temp\ghutil.py`）。`python -c "..."` 带引号/正则会被 PowerShell 解析坏，**一律写临时 .py 再执行**。
 5. **验证用 ego lite**：能 `goto`/`evaluate`/CDP 改视口，但 `page.screenshot`、`Page.captureScreenshot`、`Page.printToPDF` **全部 15s 超时**，要看形态只能用 canvas 按 `Path2D + setLineDash` 复刻 SVG 再 `toDataURL`。
