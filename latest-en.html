@@ -301,6 +301,8 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -524,12 +526,12 @@ details[open]::details-content{height:auto}
   animation:kiki-twinkle var(--dur,4s) ease-in-out infinite alternate;
   animation-delay:var(--dl,0s);will-change:opacity,transform}
 @keyframes kiki-twinkle{from{opacity:.16;transform:scale(.82)}to{opacity:.94;transform:scale(1.12)}}
-.kiki-grass{position:absolute;left:16px;right:16px;bottom:0;height:18px;pointer-events:none;z-index:1;overflow:hidden}
+.kiki-grass{position:absolute;left:6px;right:6px;bottom:0;height:7px;pointer-events:none;z-index:1;overflow:hidden}
 .kiki-grass .kg{position:absolute;bottom:0;flex:0 0 auto;transform-origin:50% 100%;
   animation:kiki-grass-sway var(--dur,3.2s) ease-in-out infinite alternate;
   animation-delay:var(--dl,0s);will-change:transform}
 .kiki-grass .kg svg{display:block;width:100%;height:100%;overflow:visible}
-@keyframes kiki-grass-sway{from{transform:rotate(-2.6deg) skewX(-2.4deg)}to{transform:rotate(3deg) skewX(2.2deg)}}
+@keyframes kiki-grass-sway{from{transform:rotate(-1.4deg) skewX(-9deg)}to{transform:rotate(1.6deg) skewX(9deg)}}
 @media (prefers-reduced-motion:reduce){.kiki-sky i,.kiki-grass .kg{animation:none}}
 
 /* 藤垫在内容下面：胶囊/链接点击不受影响，也不会盖住文字 */
@@ -552,27 +554,30 @@ details[open]::details-content{height:auto}
     // 固定种子的伪随机：每次加载星位一致，不会刷新一次换一个天
     var seed = 20261122;
     function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
-    for (var i = 0; i < 84; i++) {
+    // 星星压得很轻：小、暗、数量少。报头那行时间和标题是主信息，星点一旦亮就会
+    // 和"06:01"的冒号、字缝混成一片噪点 —— 这里只留"夜里远处有星星"的暗示。
+    for (var i = 0; i < 52; i++) {
       var s = document.createElement('i');
-      var sz = rnd() < 0.8 ? 1.2 : 2.1;
+      var sz = rnd() < 0.85 ? 1 : 1.5;
       s.style.left = (rnd() * 100).toFixed(2) + '%';
-      s.style.top = (Math.pow(rnd(), 1.45) * 62).toFixed(2) + '%';   // 越靠上越密
+      s.style.top = (Math.pow(rnd(), 1.45) * 60).toFixed(2) + '%';   // 越靠上越密
       s.style.width = sz + 'px';
       s.style.height = sz + 'px';
-      s.style.setProperty('--dur', (2.6 + rnd() * 4.4).toFixed(2) + 's');
+      s.style.setProperty('--dur', (3 + rnd() * 4.4).toFixed(2) + 's');
       s.style.setProperty('--dl', (rnd() * 4).toFixed(2) + 's');
-      s.style.opacity = (0.35 + rnd() * 0.5).toFixed(2);
-      if (rnd() < 0.1) s.style.boxShadow = '0 0 3px 1px rgba(190,220,255,.6)';   // 少数几颗带晕
+      s.style.opacity = (0.16 + rnd() * 0.28).toFixed(2);
+      if (rnd() < 0.06) s.style.boxShadow = '0 0 2px rgba(190,220,255,.35)';   // 极少数带一点点晕
       sky.appendChild(s);
     }
     hero.insertBefore(sky, hero.firstChild);
   }
 
-  // 一簇草 = 左边斜出、中间微弯、右边外撇三片，切口在底边线上
+  // 一簇草 = 左斜、中弯、右撇三根细叶，切口压在卡片底边线上。
+  // 画得窄而高（viewBox 100×100 被压成 6~9px 宽、4~7px 高），才像真的草叶而不是小扇子
   var GRASS_SVG = '<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'
-    + '<path d="M44 100 C39 76 33 52 23 26 C17 40 18 62 27 82 C32 92 38 98 42 100 Z" fill="#3d7a2b"/>'
-    + '<path d="M54 100 C54 70 54 40 51 10 C60 30 61 64 58 100 Z" fill="#52963c"/>'
-    + '<path d="M64 100 C68 80 76 62 86 40 C91 53 88 75 79 90 C74 97 68 100 64 100 Z" fill="#356b26"/>'
+    + '<path d="M38 100 C31 74 25 48 15 18 C10 46 15 78 28 100 Z" fill="#3d7a2b"/>'
+    + '<path d="M56 100 C56 66 56 34 52 4 C64 40 65 76 60 100 Z" fill="#52963c"/>'
+    + '<path d="M72 100 C78 78 86 56 96 30 C98 62 92 86 80 100 Z" fill="#356b26"/>'
     + '</svg>';
 
   function buildGrass(hero) {
@@ -581,23 +586,22 @@ details[open]::details-content{height:auto}
     g.setAttribute('aria-hidden', 'true');
     var seed = 778899;
     function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
-    // 密度跟屏宽走：屏宽越宽草越稀，竖屏才不会糊成一条绿边
+    // 铺满：一根挨一根。密度按屏宽（每 6~8px 一簇），竖屏约 55 簇、横屏约 110 簇
     var vw = window.innerWidth || 400;
-    var n = Math.max(14, Math.min(40, Math.round(vw / 26)));
+    var n = Math.max(20, Math.min(96, Math.round((vw - 12) / 10)));
     for (var i = 0; i < n; i++) {
       var d = document.createElement('div');
       d.className = 'kg';
-      var w = 15 + rnd() * 9;
+      var w = 8 + rnd() * 4;               // 8~12px，比上一版细一半
       d.style.width = w.toFixed(1) + 'px';
-      d.style.height = (11 + rnd() * 7).toFixed(1) + 'px';
-      // 均匀铺满 + 随机抖动，避免"间距一模一样"的栅栏感
-      var pct = (i + 0.5) / n * 100 + (rnd() - 0.5) * (34 / n);
+      d.style.height = (4.5 + rnd() * 2.5).toFixed(1) + 'px';   // 4.5~7px，约为上一版（11~18）的 1/3
+      var pct = (i + 0.5) / n * 100 + (rnd() - 0.5) * (24 / n);
       pct = Math.max(0, Math.min(100, pct));
       d.style.left = pct.toFixed(2) + '%';
       d.style.marginLeft = (-w / 2).toFixed(1) + 'px';
-      d.style.setProperty('--dur', (2.9 + rnd() * 1.8).toFixed(2) + 's');
+      d.style.setProperty('--dur', (2.6 + rnd() * 1.6).toFixed(2) + 's');
       d.style.setProperty('--dl', (rnd() * 2.4).toFixed(2) + 's');
-      d.style.opacity = (0.6 + rnd() * 0.32).toFixed(2);
+      d.style.opacity = (0.55 + rnd() * 0.34).toFixed(2);
       d.innerHTML = GRASS_SVG;
       g.appendChild(d);
     }
@@ -691,9 +695,16 @@ details[open]::details-content{height:auto}
                    fill: 'none', stroke: '#2e6b1f', 'stroke-width': 1.9, 'stroke-linecap': 'round' });
       return svg;
     }
-    // 小葫芦：上小下大两瓣 + 蒂，蒂在 (50,6)，挂的时候锚点就在这儿
+    // 葫芦的"一体轮廓"：上瓣圆、腰部收、下瓣圆，两瓣在腰处是连着的（不是两个圆拼）
+    var GOURD_OUT = 'M50 13 C58 13 62 20 60 28 C59 34 56 40 53 44 C51 46 52 47 56 49'
+      + ' C66 52 72 58 72 68 C72 80 63 88 50 88 C37 88 28 80 28 68'
+      + ' C28 58 34 52 44 49 C48 47 49 46 47 44 C44 40 41 34 40 28'
+      + ' C38 20 42 13 50 13 Z';
+    // 小葫芦：一条闭合轮廓画出"上小下大、腰部收缩、两瓣互相重叠"的真葫芦形，
+    // 而不是两个独立椭圆拼起来（那样中间会有一道横线，看着像两只气球）。
+    // 蒂从葫芦顶一路向上探出画布，长度正好补齐 dy —— 所以每个葫芦都真的挂在藤上。
     // col/hi 是"葫芦娃"那七个配色：红橙黄绿青蓝紫，高光是同色系提亮一档
-    function gourdSVG(wpx, col, hi) {
+    function gourdSVG(wpx, col, hi, dy) {
       col = col || '#4aa62f'; hi = hi || '#7ecb5e';
       var svg = document.createElementNS(NS, 'svg');
       svg.setAttribute('viewBox', '0 0 100 100');
@@ -705,10 +716,11 @@ details[open]::details-content{height:auto}
         svg.appendChild(e);
         return e;
       }
-      el('path', { d: 'M50 18 L50 6', stroke: '#40822c', 'stroke-width': 4, fill: 'none' });
-      el('ellipse', { cx: 50, cy: 29, rx: 13, ry: 13, fill: col, stroke: '#143a10', 'stroke-width': 3 });
-      el('ellipse', { cx: 50, cy: 66, rx: 23, ry: 24, fill: col, stroke: '#143a10', 'stroke-width': 3 });
-      el('path', { d: 'M32 60 C37 50 44 47 50 47', stroke: hi, 'stroke-width': 2, fill: 'none' });
+      // 蒂：顶端探到画布外（负 y），长度 = 葫芦顶到臂线的真实像素距离，overflow:visible 负责显示
+      var tipY = -((dy || 0) * 100 / Math.max(1, wpx));
+      el('path', { d: 'M50 16 L50 ' + tipY.toFixed(2), stroke: '#40822c', 'stroke-width': 3.4, fill: 'none', 'stroke-linecap': 'round' });
+      el('path', { d: GOURD_OUT, fill: col, stroke: '#143a10', 'stroke-width': 3, 'stroke-linejoin': 'round' });
+      el('path', { d: 'M33 66 C37 58 43 55 49 55', stroke: hi, 'stroke-width': 1.8, fill: 'none', 'stroke-linecap': 'round' });
       return svg;
     }
 
@@ -763,7 +775,9 @@ details[open]::details-content{height:auto}
     armSVG.setAttribute('viewBox', '0 0 1000 34');
     armSVG.setAttribute('preserveAspectRatio', 'none');
     // 横臂的纵向波形（单位 = 横臂容器像素，0 在顶）：所有挂点都从这条线上算
-    function armY(xu) { return 15 + 4 * Math.sin(xu / 300 * Math.PI * 2 + 0.6); }
+    // 横臂的纵向波形（单位 = 横臂容器像素）。右端 y=8 就是竖茎顶端那个勾的像素位置，
+    // 臂容器在 placeVine 里按 h*0.10 - 8 定位 —— 两边端点像素级重合，接缝才不断开。
+    function armY(xu) { return 8 + 4.6 * Math.sin((xu - 1000) / 300 * Math.PI * 2); }
     (function () {
       var d9 = 'M1000 ' + armY(1000).toFixed(1);
       for (var i9 = 980; i9 >= 0; i9 -= 20) d9 += ' L' + i9 + ' ' + armY(i9).toFixed(1);
@@ -818,7 +832,7 @@ details[open]::details-content{height:auto}
     gourdXs.forEach(function (xu, i9) {
       var gw = 24 + (i9 % 3) * 2;
       var cc = GCOL[i9 % GCOL.length];
-      armItem(gw, gourdSVG(gw, cc[0], cc[1]), 0, (i9 % 2 ? 8 : -7), xu, 'g', GDROP[i9]);
+      armItem(gw, gourdSVG(gw, cc[0], cc[1], GDROP[i9]), 0, (i9 % 2 ? 8 : -7), xu, 'g', GDROP[i9]);
     });
 
     // 摆位：宽/高每次都要重算，因为茎的 x 随卡片高度伸缩、叶子锚点又必须压在茎上
@@ -834,18 +848,20 @@ details[open]::details-content{height:auto}
         o.el.style.top = (yTop - o.w * o.anchor).toFixed(2) + 'px';
         o.el.style.transform = 'rotate(' + o.rot + 'deg)';   // 绕锚点转，叶柄不会滑走
       }
-      // 横臂：右端接在竖茎顶端（viewBox x=17 那条勾），往左伸出 armLen
+      // 横臂：右端接在竖茎顶端（viewBox x=17,y=10 那条勾），往左伸出 armLen
       arm.style.display = armLen > 12 ? 'block' : 'none';
       if (armLen > 12) {
         arm.style.width = armLen + 'px';
         arm.style.left = (w * 0.17 - armLen) + 'px';
+        arm.style.top = (h * 0.10 - 8).toFixed(2) + 'px';   // 让臂里 y=8 落在茎顶勾的像素高度上
         armSVG.setAttribute('width', armLen);
         for (var a9 = 0; a9 < armItems.length; a9++) {
           var q9 = armItems[a9];
-          // 竖屏臂太短：只留中间那片叶，小葫芦全收起来（横屏才挂 7 个）
+          // 竖屏（armLen=0）整条臂都不存在，臂上的叶/葫芦一律不显示，恢复 v21 的"掐尖"收尾
           var wide = armLen >= 160;
-          q9.el.style.display = (q9.kind === 'g' ? wide : (wide || q9.xu === 430)) ? 'block' : 'none';
-          if (q9.el.style.display === 'none') continue;
+          var on = (armLen > 12) && (q9.kind === 'g' ? wide : (wide || q9.xu === 430));
+          q9.el.style.display = on ? 'block' : 'none';
+          if (!on) continue;
           var axp = q9.xu / 1000 * armLen;
           var ayp = armY(q9.xu);
           q9.el.style.left = (axp - q9.w * 0.5).toFixed(2) + 'px';
@@ -879,7 +895,8 @@ details[open]::details-content{height:auto}
       box.style.top = topY + 'px';
       box.style.display = (r.bottom < 6 || r.top > vh - 6) ? 'none' : 'block';
       // 横臂长度：竖屏只够一段短的（日期行右边到卡片右缘），横屏往左一大片都是空的
-      armLen = vw >= 620 ? Math.min(330, Math.round(vw * 0.4)) : 70;
+      // 竖屏（armLen=0）不横长：卡片宽度不够，往左伸会横穿标题，反而乱
+      armLen = vw >= 620 ? Math.min(330, Math.round(vw * 0.4)) : 0;
       placeVine();
     }
     layoutVine();
