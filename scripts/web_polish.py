@@ -208,7 +208,7 @@ details[open]::details-content{height:auto}
   100%{transform:translateY(0) scaleY(1)}
 }
 /* 小人层：绝对定位盖在报头上，不吃点击，只动 transform（不触发重排） */
-.kiki-walker{position:absolute;left:0;top:0;width:1px;height:1px;pointer-events:none;z-index:6;
+.kiki-walker{position:fixed;left:0;top:0;width:1px;height:1px;pointer-events:none;z-index:2147483000;
   will-change:transform;transition:opacity .35s ease}
 .kiki-walker svg{display:block;overflow:visible}
 /* 绳子层：垫在小人下面。只在"技↔财""经↔国"这种跨间隔点的大空隙里出现，
@@ -637,12 +637,16 @@ JS = """
       a.setAttribute('height', PH.toFixed(1));
       a.setAttribute('width', (PH * ar).toFixed(1));
     });
-    var prevWalker = h1.querySelector('.kiki-walker');
+    var prevWalker = document.querySelector('.kiki-walker');
     if (prevWalker) prevWalker.remove();
     var prevRopes = h1.querySelector('.kw-ropes');
     if (prevRopes) prevRopes.remove();
     h1.appendChild(ropes);
-    h1.appendChild(walker);
+    // 关键：挂到 body 上做 fixed 铺满页的层，不再放进 h1。
+    // 放进 h1 时，祖先的 overflow/transform/背景/伪元素任意一个都能把小腿裁掉或盖住 ——
+    // 而且这些在各家 WebView 上行为不一致，桌面看不出来。搬到顶层就一律盖不住了。
+    walker.style.position = 'fixed';
+    document.body.appendChild(walker);
 
     // 一开始只显示走姿那套，别两张叠着
     artW.style.display = 'block';
@@ -822,6 +826,10 @@ JS = """
                hp: 0, hd: 0, hx0: 0, hx1: 0, hy0: 0, hy1: 0, hh: 0,
                vp: 0, vd: 0, vy0: 0, vy1: 0, vx: 0, vafter: 'walk' };
     var alive = true, lastT = 0, land = -9, acc = 0, FIX = 1 / 120;
+    var H1R = null, h1rT = 0;
+    function refreshH1R() { H1R = h1.getBoundingClientRect(); h1rT = st.t; }
+    window.addEventListener('scroll', function () { refreshH1R(); }, { passive: true });
+    window.addEventListener('resize', function () { refreshH1R(); }, { passive: true });
 
     function groundAt(px) {
       var i1 = Math.floor(px);
@@ -1054,8 +1062,10 @@ JS = """
         if (artW.style.transform !== wt) artW.style.transform = wt;
       }
       var LIFT = PH * 0.05;   // 脚比墨迹上沿再抬 5%：视觉上就是站在字上，物理上永不与字重叠
-      walker.style.transform = 'translate(' + (st.x - PW / 2).toFixed(2) + 'px,' +
-        (st.y - PH - LIFT).toFixed(2) + 'px)';
+      // fixed 层用的是视口坐标：h1 的矩形 + 局部坐标。h1 滚走了就同步跟过去。
+      if (!H1R || (st.t - h1rT) > 0.3 || !h1.isConnected) { refreshH1R(); }
+      walker.style.transform = 'translate(' + (H1R.left + st.x - PW / 2).toFixed(2) + 'px,' +
+        (H1R.top + st.y - PH - LIFT).toFixed(2) + 'px)';
     }
     requestAnimationFrame(frame);
 
