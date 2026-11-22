@@ -229,9 +229,12 @@ details[open]::details-content{height:auto}
    第一版整条藤都被顶到屏幕外，截图里一片空白。所以这里用 fixed 层 + 每帧跟随
    "卡片可见右边缘 min(hero.right, 视口宽)"，跟报头小人用的是同一套思路。 */
 .kiki-vine{position:fixed;left:0;top:0;width:54px;height:180px;
-  pointer-events:none;z-index:2147482000;overflow:visible}
-.kiki-vine .kv-stem{position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:2147482000;overflow:visible;
   transform-origin:72% 100%;animation:kv-wind 5.4s ease-in-out infinite alternate}
+/* 风摆挂在**整个层**上，而不是只挂在主茎 SVG 上：横臂上的葫芦和叶子是兄弟元素，
+   让它们绕同一个原点、同一个相位一起摆，藤上下走的时候葫芦才会跟着走，
+   否则藤动了、葫芦不动，葫芦就会压在藤上（v25 的老毛病） */
+.kiki-vine .kv-stem{position:absolute;inset:0;width:100%;height:100%}
 .kiki-vine .kv-item{position:absolute;transform-origin:50% 100%}
 /* 顶部横臂：线条本身已并进主茎同一条 SVG（见 buildVine 的 armPaths）；
    这里只留一个空容器，用来给横臂上的葫芦和叶子定位 */
@@ -240,11 +243,9 @@ details[open]::details-content{height:auto}
   animation:kv-sway var(--dur,2.8s) ease-in-out infinite alternate;
   animation-delay:var(--dl,0s)}
 .kiki-vine svg{display:block;overflow:visible}
-/* 主茎在纵向上被拉长，线宽靠 vector-effect 守住；叶子是定尺寸的，不会被拉变形 */
-.kiki-vine .kv-stem path{vector-effect:non-scaling-stroke}
-@keyframes kv-sway{from{transform:rotate(-3.4deg)}to{transform:rotate(3.8deg)}}
+/* 主茎的 d 是像素坐标、viewBox 也是像素尺寸（1:1），线宽就是真实 px，不需要 non-scaling-stroke */@keyframes kv-sway{from{transform:rotate(-2deg)}to{transform:rotate(2.2deg)}}
 @keyframes kv-wind{from{transform:rotate(-.75deg)}to{transform:rotate(.4deg)}}
-@media (prefers-reduced-motion:reduce){.kiki-vine .kv-stem,.kiki-vine .kv-swing{animation:none}}
+@media (prefers-reduced-motion:reduce){.kiki-vine,.kiki-vine .kv-swing{animation:none}}
 
 /* 13. 报头卡：上半部的微光星空 + 底边一排随风摆的小草
    两者都挂在 .hero 内部（不给 fixed，卡片滚走就跟着滚走），纯 DOM + CSS，不吃点击。
@@ -379,6 +380,10 @@ JS = """
 
     // 主茎：从卡片底部往上，顶端往左拐一点。坐标是 0~100 的相对值 + preserveAspectRatio=none，
     // 所以它跟着卡片高度一起伸缩（斜率被压扁是故意的：藤本来就该顺卡片长），线宽由 vector-effect 守住。
+    // 线宽 1:1 像素。**不再用 preserveAspectRatio=none 硬拉 + non-scaling-stroke**：
+    // 非等比放大时 Chrome/WebView 对 non-scaling-stroke 的绘制会出现整段细线甚至漏段
+    // （用户看到的"藤断开"就是这个，几何上其实一直是连着的，isPointInStroke 逐列扫也没有空列）。
+    // 现在每次布局都把 viewBox 改成真实像素尺寸，d 也用像素坐标重建 —— 1:1，渲染器和几何一模一样。
     var stem = document.createElementNS(NS, 'svg');
     stem.setAttribute('class', 'kv-stem');
     stem.setAttribute('viewBox', '0 0 100 100');
@@ -391,19 +396,22 @@ JS = """
       el.setAttribute('stroke-width', w);
       el.setAttribute('stroke-linecap', 'round');
       el.setAttribute('stroke-linejoin', 'round');
-      el.setAttribute('vector-effect', 'non-scaling-stroke');
       stem.appendChild(el);
       return el;
     }
-    // 主干：底部粗一点、往上收，顶端往左勾。勾的末端 (17,8) 的切线是**水平**的
-    // （控制点改成 33,7 / 26,8），所以横臂从这里接着往左长时不会有折角
+    // 主干：底部粗一点、往上收，顶端往左勾。勾的末端 (17,6) 的切线是**水平**的，
+    // 而且顶端比上一版高了 2 个单位（8 → 6）—— 横臂整体往卡片顶上提，不压"北京时间"那行。
+    // 横臂稍后会被拼到这条 d 的末尾（placeVine 里的 dA），所以它俩是**同一条描边**。
+    var STEM_TOP = 6;
     var STEM = 'M80 101 C78 90 74 82 71 74 C68 66 66 60 68 53 C70 46 66 41 62 35' +
-               ' C58 29 52 22 51 16 C50 12 46 8 40 7 C33 7 26 8 17 8';
-    addPath(STEM, 3.0, '#143a10');                 // 藤身（深）
-    addPath(STEM, 1.6, '#5aa03a');                 // 高光芯线，深色卡面上才立得住
-    // 两卷卷须：葫芦藤最好认的特征
-    addPath('M62 35 C72 33 76 26 71 23 C67 21 64 25 67 28', 1.5, '#5aa03a');
-    addPath('M68 53 C58 51 54 56 58 61 C61 64 65 61 63 58', 1.5, '#5aa03a');
+               ' C58 29 52 21 51 15 C50 11 45 6.4 40 6 C33 5.7 26 6 17 6';
+    var stemDark = addPath(STEM, 3.0, '#143a10');   // 藤身（深）
+    var stemLit = addPath(STEM, 1.6, '#5aa03a');    // 高光芯线，深色卡面上才立得住
+    // 两卷卷须：葫芦藤最好认的特征（d 存着归一坐标，布局时再换算成像素，见 pxD()）
+    var CURL1 = 'M62 35 C72 33 76 26 71 23 C67 21 64 25 67 28';
+    var CURL2 = 'M68 53 C58 51 54 56 58 61 C61 64 65 61 63 58';
+    var curl1 = addPath(CURL1, 1.5, '#5aa03a');
+    var curl2 = addPath(CURL2, 1.5, '#5aa03a');
     box.appendChild(stem);          // 忘了这一行 = 叶子像一堆浮在半空的蘑菇（已经踩过一次）
     document.body.appendChild(box);
 
@@ -412,7 +420,21 @@ JS = """
     var PTS = [], stemPath = stem.querySelector('path');
     if (stemPath && stemPath.getTotalLength) {
       var TL = stemPath.getTotalLength();
-      for (var s9 = 0; s9 <= 120; s9++) PTS.push(stemPath.getPointAtLength(TL * s9 / 120));
+      for (var s9 = 0; s9 <= 240; s9++) PTS.push(stemPath.getPointAtLength(TL * s9 / 240));
+    }
+    // 归一化 d 换算成像素 d：M/L/C 后的数字按 x 走宽、y 走高，交替缩放
+    function pxD(dstr) {
+      var w = box.__w, h = box.__h;
+      var parts = dstr.split(/([MLCZmlcz]|-?\\d+(?:\\.\\d+)?)/).filter(function (t) { return t && t.trim(); });
+      var out = '', isX = true;
+      for (var k = 0; k < parts.length; k++) {
+        var t = parts[k];
+        if (/^[MLCZmlcz]$/.test(t)) { out += t + ' '; isX = true; continue; }
+        var v = parseFloat(t);
+        out += (isX ? v * w / 100 : v * h / 100).toFixed(1) + ' ';
+        isX = !isX;
+      }
+      return out;
     }
     function stemX(yv) {
       if (!PTS.length) return 78 - yv * 0.45;            // 极老内核兜底：线性近似
@@ -486,14 +508,14 @@ JS = """
     // 叶子站点：b = 距容器底部的百分比（藤从地往上长），w = 叶宽 px，rot = 静态朝向（左右交替）。
     // 40% 那一带刻意留空 —— 小葫芦就挂在那儿，不会被叶子压住。
     var SITES = [
-      { b: 8, w: 22, rot: -44, dl: 0.0, dur: 3.2 },
-      { b: 19, w: 18, rot: 40, dl: 1.0, dur: 2.9 },
-      { b: 30, w: 21, rot: -40, dl: 0.4, dur: 3.4 },
-      { b: 48, w: 17, rot: 38, dl: 1.4, dur: 2.8 },
-      { b: 60, w: 19, rot: -38, dl: 0.2, dur: 3.1 },
-      { b: 71, w: 17, rot: 34, dl: 1.2, dur: 2.7 },
-      { b: 82, w: 16, rot: -28, dl: 0.7, dur: 3.3 },
-      { b: 92, w: 15, rot: -10, dl: 1.6, dur: 3.0 }
+      { b: 8, w: 16, rot: -44, dl: 0.0, dur: 3.2 },
+      { b: 19, w: 13, rot: 40, dl: 1.0, dur: 2.9 },
+      { b: 30, w: 15, rot: -40, dl: 0.4, dur: 3.4 },
+      { b: 48, w: 12, rot: 38, dl: 1.4, dur: 2.8 },
+      { b: 60, w: 14, rot: -38, dl: 0.2, dur: 3.1 },
+      { b: 71, w: 12, rot: 34, dl: 1.2, dur: 2.7 },
+      { b: 82, w: 11, rot: -28, dl: 0.7, dur: 3.3 },
+      { b: 92, w: 11, rot: -10, dl: 1.6, dur: 3.0 }
     ];
     var items = [];
     function mkItem(wpx, node, anchor, rot, b, dl, dur) {
@@ -529,21 +551,14 @@ JS = """
     var armLen = 0;
     var arm = document.createElement('div');
     arm.className = 'kv-arm';
-    // 横臂**并进主茎的同一条 SVG**：从下往上长到顶、再往左横过去是一条连续路径，
-    // 没有两段线拼接，也就不存在接缝。坐标复用主茎的 0~100 viewBox（纵向被拉伸，
-    // 所以波幅按 h 换算，屏幕上仍是 ±4.6px）。
-    function armY(xu) { return 8 + 4.6 * Math.sin((xu - 1000) / 300 * Math.PI * 2); }
-    var armPaths = ['#143a10', '#5aa03a'].map(function (col9) {
-      var e9 = document.createElementNS(NS, 'path');
-      e9.setAttribute('fill', 'none');
-      e9.setAttribute('stroke', col9);
-      e9.setAttribute('stroke-width', col9 === '#143a10' ? 3.0 : 1.6);
-      e9.setAttribute('stroke-linecap', 'round');
-      e9.setAttribute('vector-effect', 'non-scaling-stroke');
-      e9.style.display = 'none';
-      stem.appendChild(e9);      // 接在主茎后面 → 同一路径体系，不存在"断开"
-      return e9;
-    });
+    // 横臂**就是主茎那条 path 的延长线**：placeVine 里把横臂的取样点拼到 STEM 的 d 末尾，
+    // 一条 path 一次描边，粗细、颜色、连接点全都连续 —— 之前两条 path 端点重合还能看出断口，
+    // 是因为两个元素的抗锯齿/圆头各画各的，交界处会露出一道缝。
+    // armY 是"屏幕像素"偏置：y 基线 = 主茎顶端的 y，往左再抬 1.5px（横臂稍稍往上走）。
+    var ARM_BASE = STEM_TOP;
+    function armY(xu) {
+      return ARM_BASE - 1.5 * (1 - xu / 1000) + 4.2 * Math.sin((xu - 1000) / 300 * Math.PI * 2);
+    }
     box.appendChild(arm);        // 空容器，只用来给葫芦/叶子定位
     var armItems = [];
     function armItem(wpx, node, anchorPct, rot, xu, kind, dy) {
@@ -583,7 +598,8 @@ JS = """
       ['#4a7fd0', '#8fb3ec'],   // 蓝
       ['#8b5cc4', '#b596e2']    // 紫
     ];
-    var GDROP = [1, 6, 2, 9, 4, 7, 3];
+    // 下垂深度都 >=7px：藤线是上下起伏的，蒂短了葫芦的嘴就会贴到线上、看着像压着藤
+    var GDROP = [7, 12, 8, 14, 10, 13, 9];
     var GOURDS = 7;
     var gourdXs = [];
     for (var g9 = 0; g9 < GOURDS; g9++) gourdXs.push(90 + g9 * 128);
@@ -606,25 +622,27 @@ JS = """
         o.el.style.top = (yTop - o.w * o.anchor).toFixed(2) + 'px';
         o.el.style.transform = 'rotate(' + o.rot + 'deg)';   // 绕锚点转，叶柄不会滑走
       }
-      // 横臂：并进主茎 SVG 的那两条 path（同一坐标系，右端起点就是茎顶勾的末端 (17,8)）
-      arm.style.display = armLen > 12 ? 'block' : 'none';
-      for (var pa0 = 0; pa0 < armPaths.length; pa0++) {
-        armPaths[pa0].style.display = armLen > 12 ? 'block' : 'none';
+      // 先把 SVG 的坐标系改成真实像素尺寸（1:1），再把主茎按采样点重建成像素折线
+      stem.setAttribute('viewBox', '0 0 ' + w.toFixed(1) + ' ' + h.toFixed(1));
+      var baseY = h * (ARM_BASE / 100);      // 茎顶（= 横臂基线）在容器里的像素 y
+      var dA = 'M' + (PTS[0].x / 100 * w).toFixed(1) + ' ' + (PTS[0].y / 100 * h).toFixed(1);
+      // 竖屏没有横臂时，把茎顶那截"水平勾"截掉，收在自然弧线上 —— 否则顶端留一根小平线，像被切了个小尾巴
+      var cutX = armLen > 12 ? -1 : 26;
+      for (var p9 = 1; p9 < PTS.length; p9++) {
+        if (cutX > 0 && PTS[p9].x < cutX) break;
+        dA += ' L' + (PTS[p9].x / 100 * w).toFixed(1) + ' ' + (PTS[p9].y / 100 * h).toFixed(1);
       }
+      // 横臂：把取样点直接接在主茎那条 d 的末尾 —— 一条 path、一次描边，接缝不可能出现
+      arm.style.display = armLen > 12 ? 'block' : 'none';
       if (armLen > 12) {
         arm.style.width = armLen + 'px';
         arm.style.left = (w * 0.17 - armLen) + 'px';        // 容器只负责给葫芦/叶子定位
-        arm.style.top = (h * 0.08 - 8).toFixed(2) + 'px';
-        var dA = 'M17 8';
-        for (var pp = armLen - 6; pp >= 0; pp -= 6) {
+        arm.style.top = (baseY - ARM_BASE).toFixed(2) + 'px';
+        for (var pp = armLen - 2; pp >= 0; pp -= 2) {
           var xu9 = pp / armLen * 1000;
-          var vx = 17 - (armLen - pp) * 100 / w;             // 屏幕 px → viewBox 单位
-          var vy = 8 + (armY(xu9) - 8) * 100 / Math.max(1, h);
-          dA += ' L' + vx.toFixed(2) + ' ' + vy.toFixed(2);
-        }
-        for (var pa = 0; pa < armPaths.length; pa++) {
-          armPaths[pa].setAttribute('d', dA);
-          armPaths[pa].style.display = 'block';
+          var ax = w * 0.17 - (armLen - pp);                 // 像素 x：从茎顶往左
+          var ay = baseY + (armY(xu9) - ARM_BASE);           // 像素 y：跟随起伏，往左略抬
+          dA += ' L' + ax.toFixed(1) + ' ' + ay.toFixed(1);
         }
         for (var a9 = 0; a9 < armItems.length; a9++) {
           var q9 = armItems[a9];
@@ -640,6 +658,10 @@ JS = """
           q9.el.style.transform = 'rotate(' + q9.rot + 'deg)';
         }
       }
+      stemDark.setAttribute('d', dA);
+      stemLit.setAttribute('d', dA);
+      curl1.setAttribute('d', pxD(CURL1));
+      curl2.setAttribute('d', pxD(CURL2));
     }
 
     // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
