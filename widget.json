@@ -1,102 +1,102 @@
 {
- "date": "2026-11-18",
- "updated": "06:06",
+ "date": "2026-11-23",
+ "updated": "06:02",
  "total": 16,
  "items": [
   {
-   "t": "Jensen Huang Expresses Willingness to Return as Nvidia CEO",
-   "s": "9.0",
-   "a": "item-tech-news-1",
-   "sec": "TECH"
-  },
-  {
-   "t": "Ukrainian Forces Destroy Key Section of Crimean Bridge",
+   "t": "Democrats win largest House majority since 1992 after flipping North Carolina seat",
    "s": "9.0",
    "a": "item-world-news-1",
    "sec": "WORLD"
   },
   {
-   "t": "GPT‑6.2 Astra and Sol",
-   "s": "8.0",
-   "a": "item-tech-news-2",
-   "sec": "TECH"
-  },
-  {
-   "t": "Highly classified US national security communications network goes down",
-   "s": "8.0",
-   "a": "item-tech-news-3",
-   "sec": "TECH"
-  },
-  {
-   "t": "Waymo suspends freeway robotaxi rides nationwide after California DMV order",
-   "s": "8.0",
-   "a": "item-tech-news-4",
-   "sec": "TECH"
-  },
-  {
-   "t": "AI models can be tricked into identifying civilians as military targets by telling them it’s a game",
-   "s": "8.0",
-   "a": "item-tech-news-5",
-   "sec": "TECH"
-  },
-  {
-   "t": "Ukraine attack collapses part of Crimean Bridge",
-   "s": "8.0",
+   "t": "COP31 Talks Collapse After EU Rejects Key Deal",
+   "s": "9.0",
    "a": "item-world-news-2",
    "sec": "WORLD"
   },
   {
-   "t": "US Loses Measles-Free Status After 26 Years",
-   "s": "8.0",
+   "t": "Two groups verify mathematician’s claim that Claude helped prove mathematics problem",
+   "s": "9.0",
    "a": "item-world-news-3",
    "sec": "WORLD"
   },
   {
-   "t": "US Army Officer Arrested in UK on Spying Allegations",
+   "t": "Perplexity and Intelligence",
+   "s": "8.0",
+   "a": "item-tech-news-1",
+   "sec": "TECH"
+  },
+  {
+   "t": "Russian warship sinks in Benghazi after suspected Ukrainian drone attack",
    "s": "8.0",
    "a": "item-world-news-4",
    "sec": "WORLD"
   },
   {
-   "t": "Nvidia partner Megaspeed being investigated by US government over chip exports",
+   "t": "South Korean minister quits after AI cheating scandal engulfs university exams",
    "s": "8.0",
    "a": "item-world-news-5",
    "sec": "WORLD"
   },
   {
-   "t": "BBC reports from Kyiv bridge hit by Russian attack",
-   "s": "8.0",
+   "t": "OpenAI Chief Scientist Proposes Perplexity‑Based Limits on AI Development",
+   "s": "7.0",
+   "a": "item-tech-news-2",
+   "sec": "TECH"
+  },
+  {
+   "t": "Russian cargo ship attacked in Gulf of Finland, towed away",
+   "s": "7.0",
    "a": "item-world-news-6",
    "sec": "WORLD"
   },
   {
-   "t": "Will President Trump meet Kim Jong Un?",
-   "s": "8.0",
+   "t": "摩尔线程产品经理：庐山 GPU 显存 64 GB",
+   "s": "6.0",
+   "a": "item-tech-news-3",
+   "sec": "TECH"
+  },
+  {
+   "t": "US Army to Detonate 5 Tonnes of Explosives in Iowa Despite Court Order",
+   "s": "6.0",
    "a": "item-world-news-7",
    "sec": "WORLD"
   },
   {
-   "t": "Spain&\\#x27;s Snap Election: Key Candidates to Watch",
-   "s": "8.0",
+   "t": "Netanyahu rival condemns settler arson in West Bank villages",
+   "s": "6.0",
    "a": "item-world-news-8",
    "sec": "WORLD"
   },
   {
-   "t": "Huang to testify on alleged national security breach",
-   "s": "8.0",
+   "t": "Pip review will call for overhaul rather than scrapping benefit for under-25s",
+   "s": "6.0",
    "a": "item-world-news-9",
    "sec": "WORLD"
   },
   {
-   "t": "Hi-tech Shenzhen takes centre stage as Xi sends ‘Chinamaxxing’ message at Apec summit",
-   "s": "8.0",
+   "t": "UK Taxpayers Hold Over £1 Trillion Offshore",
+   "s": "6.0",
    "a": "item-world-news-10",
    "sec": "WORLD"
   },
   {
-   "t": "How Ukraine struck the Kerch bridge, a symbol of Putin’s rule",
-   "s": "8.0",
+   "t": "&\\#x27;Danger seems greater all the time&\\#x27;: Ukrainians search for missing after Russian strikes",
+   "s": "5.0",
    "a": "item-world-news-11",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Three killed and dozens missing after fire at Indonesian factory",
+   "s": "5.0",
+   "a": "item-world-news-12",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Australian politics live: Labor to extend PBS medicine freeze to 2030; Bowen ‘failed’ on Cop, Hume says",
+   "s": "5.0",
+   "a": "item-world-news-13",
    "sec": "WORLD"
   }
  ]

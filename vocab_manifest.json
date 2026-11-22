@@ -1,106 +1,86 @@
 {
- "source": "2026-11-21-summary-en.md",
- "date": "2026-11-22",
+ "source": "2026-11-22-summary-en.md",
+ "date": "2026-11-23",
  "terms": [
   {
-   "id": "w-screenshot",
-   "term": "screenshot"
+   "id": "w-confectionery",
+   "term": "confectionery"
   },
   {
-   "id": "w-generative",
-   "term": "generative"
+   "id": "w-perplexity",
+   "term": "perplexity"
   },
   {
-   "id": "w-melodramatic",
-   "term": "melodramatic"
+   "id": "w-detonation",
+   "term": "detonation"
   },
   {
-   "id": "w-retaliatory",
-   "term": "retaliatory"
+   "id": "w-azide",
+   "term": "azide"
   },
   {
-   "id": "w-serie",
-   "term": "serie"
-  },
-  {
-   "id": "w-spillover",
-   "term": "spillover"
+   "id": "w-corvette",
+   "term": "corvette"
   },
   {
    "id": "w-exclave",
    "term": "exclave"
   },
   {
-   "id": "w-fentanyl",
-   "term": "fentanyl"
-  },
-  {
-   "id": "w-groundbreaking",
-   "term": "groundbreaking"
-  },
-  {
-   "id": "w-indistinguishable",
-   "term": "indistinguishable"
-  },
-  {
    "id": "w-mathematic",
    "term": "mathematic"
   },
   {
-   "id": "w-monetize",
-   "term": "monetize"
+   "id": "w-oversea",
+   "term": "oversea"
   },
   {
-   "id": "w-serialize",
-   "term": "serialize"
+   "id": "w-corroborate",
+   "term": "corroborate"
   },
   {
-   "id": "w-incursion",
-   "term": "incursion"
+   "id": "w-midterm",
+   "term": "midterm"
   },
   {
-   "id": "w-verification",
-   "term": "verification"
+   "id": "w-politic",
+   "term": "politic"
   },
   {
-   "id": "w-airspace",
-   "term": "airspace"
+   "id": "w-arson",
+   "term": "arson"
   },
   {
-   "id": "w-existential",
-   "term": "existential"
+   "id": "w-overhaul",
+   "term": "overhaul"
   },
   {
-   "id": "w-incremental",
-   "term": "incremental"
+   "id": "w-benchmark",
+   "term": "benchmark"
   },
   {
-   "id": "w-seamless",
-   "term": "seamless"
+   "id": "w-noteworthy",
+   "term": "noteworthy"
   },
   {
-   "id": "w-unsolved",
-   "term": "unsolved"
+   "id": "w-throttle",
+   "term": "throttle"
   },
   {
-   "id": "w-automation",
-   "term": "automation"
+   "id": "w-avoidance",
+   "term": "avoidance"
   },
   {
-   "id": "w-deadlock",
-   "term": "deadlock"
+   "id": "w-ignite",
+   "term": "ignite"
   },
   {
-   "id": "w-cartel",
-   "term": "cartel"
+   "id": "w-traction",
+   "term": "traction"
   },
   {
-   "id": "w-expulsion",
-   "term": "expulsion"
-  },
-  {
-   "id": "w-sanction",
-   "term": "sanction"
+   "id": "w-tow",
+   "term": "tow"
   }
  ]
 }
