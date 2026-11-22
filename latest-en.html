@@ -317,6 +317,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -891,7 +892,7 @@ details[open]::details-content{height:auto}
       var baseY = h * (ARM_BASE / 100);      // 茎顶（= 横臂基线）在容器里的像素 y
       var dA = 'M' + (PTS[0].x / 100 * w).toFixed(1) + ' ' + (PTS[0].y / 100 * h).toFixed(1);
       // 竖屏没有横臂时，把茎顶那截"水平勾"截掉，收在自然弧线上 —— 否则顶端留一根小平线，像被切了个小尾巴
-      var cutX = armLen > 12 ? -1 : 26;
+      var cutX = armLen > 12 ? -1 : 40;
       for (var p9 = 1; p9 < PTS.length; p9++) {
         if (cutX > 0 && PTS[p9].x < cutX) break;
         dA += ' L' + (PTS[p9].x / 100 * w).toFixed(1) + ' ' + (PTS[p9].y / 100 * h).toFixed(1);
