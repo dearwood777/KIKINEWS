@@ -252,8 +252,10 @@ details[open]::details-content{height:auto}
 .kiki-walker{position:absolute;left:0;top:0;width:1px;height:1px;pointer-events:none;
   will-change:transform;transition:opacity .35s ease}
 .kiki-walker svg{display:block;overflow:visible}
+.kiki-walker .kw-pic{display:block;position:absolute;left:0;top:0;transform-origin:50% 0;
+  image-rendering:auto;user-select:none;-webkit-user-drag:none;transition:opacity .2s linear}
+/* 精灵图是 52×68，按显示高度等比缩；宽度用 JS 写死，避免加载前占位跳动 */
 .kiki-walker .kw-leg{transform-box:fill-box;transform-origin:50% 0}
-.kiki-walker .kw-body{transform-box:fill-box;transform-origin:50% 50%}
 </style>
 <script id="kiki-polish-js">
 (function () {
@@ -495,28 +497,26 @@ details[open]::details-content{height:auto}
   var beamRz;
   function scheduleBeam() { clearTimeout(beamRz); beamRz = setTimeout(buildBeam, 180); }
 
-  // 3d) 报头小人：踩在字的**真实上沿**往右走，遇到空隙就跳过去，落到间隔点那一下点会颤。
-  //     地形不是手写的坐标，是把报头专用字体里的字形轮廓栅格化后"逐列取最上面的墨迹"得来的，
-  //     所以换字号 / 换设备 / 横竖屏都是自动贴合，不需要调像素。
+  // 3d) 报头小人（葫芦娃）：把报头字形轮廓栅格化成"地形"，按小游戏角色的方式走。
+  //     走 / 跳 / 拽着字边往上爬 / 从右端滑下去 / 像长臂猿一样挂着荡回左边，一整圈。
+  //     地形是逐列扫出来的真实上沿与下沿，不是手写坐标。
   var walkerRz;
   function scheduleWalker() { clearTimeout(walkerRz); walkerRz = setTimeout(buildWalker, 220); }
 
   function buildWalker() {
     var h1 = document.querySelector('.hero h1');
     if (!h1 || !KIKI_G || !KIKI_G.d || !window.Path2D) return;
-    var old = h1.querySelector('.kiki-walker');
-    if (old) old.remove();
 
-    // (1) 逐字拆 span：只为能单独颤那个间隔点。inline-block 下字距仍由 h1 的 letter-spacing 管
+    // (1) 逐字拆 span（只为能单独颤间隔点）
     if (!h1.__kch) {
-      var raw = h1.textContent, arr = [], i;
+      var raw = h1.textContent, arr = [], i0;
       h1.textContent = '';
-      for (i = 0; i < raw.length; i++) {
-        var sp = document.createElement('span');
-        sp.className = 'kch';
-        sp.textContent = raw.charAt(i);
-        h1.appendChild(sp);
-        arr.push(sp);
+      for (i0 = 0; i0 < raw.length; i0++) {
+        var sp0 = document.createElement('span');
+        sp0.className = 'kch';
+        sp0.textContent = raw.charAt(i0);
+        h1.appendChild(sp0);
+        arr.push(sp0);
       }
       h1.__kch = arr;
     }
@@ -524,18 +524,23 @@ details[open]::details-content{height:auto}
     var F = parseFloat(cs.fontSize) || 23;
     var LH = parseFloat(cs.lineHeight) || F * 1.3;
     var hr = h1.getBoundingClientRect();
-    var W = Math.max(40, Math.ceil(hr.width)), H = Math.ceil(F * 2.2);
+    var W = Math.max(40, Math.ceil(hr.width)), H = Math.ceil(F * 2.4);
     var k = F / (KIKI_G.upm || 1000);
+    // 同一套几何不用重建：字体就绪 / 轻微 resize 会重复触发 buildWalker，
+    // 每重建一次小人就从最左边重走，看起来像"一直在重来"。
+    var sig = W + '|' + F.toFixed(2) + '|' + LH.toFixed(2) + '|' + chars.length;
+    if (h1.__kwSig === sig && h1.querySelector('.kiki-walker')) return;
+    h1.__kwSig = sig;
 
-    // (2) 骨架：字形轮廓以 2 倍超采样画进 canvas，再逐列扫描 alpha
+    // (2) 骨架栅格化（2 倍超采样），逐列取上沿 top[] 与下沿 bot[]
     var cvs = document.createElement('canvas');
     cvs.width = W * 2; cvs.height = H * 2;
     var ctx = cvs.getContext('2d');
     if (!ctx) return;
-    ctx.font = '700 ' + F + 'px KikiHead';        // 用浏览器自己的字体度量，别硬编码 asc/desc
+    ctx.font = '700 ' + F + 'px KikiHead';
     var mt = ctx.measureText('科');
     var asc = mt.fontBoundingBoxAscent || F * 1.16, desc = mt.fontBoundingBoxDescent || F * 0.288;
-    var base = (LH - (asc + desc)) / 2 + asc;     // 半行距 + 上沿：和 CSS 行框严丝合缝
+    var base = (LH - (asc + desc)) / 2 + asc;
     ctx.scale(2, 2);
     ctx.fillStyle = '#fff';
     chars.forEach(function (sp) {
@@ -545,42 +550,70 @@ details[open]::details-content{height:auto}
       ctx.save();
       ctx.translate(r.left - hr.left, base);
       ctx.scale(k, -k);
-      try { ctx.fill(new Path2D(d)); } catch (e) { /* 单字失败就跳 */ }
+      try { ctx.fill(new Path2D(d)); } catch (e) {}
       ctx.restore();
     });
     var img;
     try { img = ctx.getImageData(0, 0, cvs.width, cvs.height).data; } catch (e) { return; }
     function alpha(x, y) { return img[(y * cvs.width + x) * 4 + 3]; }
-    var top = [], x, y;
+    var top = [], bot = [], x, y;
     for (x = 0; x < W; x++) {
-      top[x] = -1;
+      top[x] = -1; bot[x] = -1;
       for (y = 0; y < cvs.height; y++) {
         if (alpha(Math.min(cvs.width - 1, x * 2), y) > 28) { top[x] = y / 2; break; }
       }
+      for (y = cvs.height - 1; y >= 0; y--) {
+        if (alpha(Math.min(cvs.width - 1, x * 2), y) > 28) { bot[x] = y / 2; break; }
+      }
+    }
+    // 上沿先取"窗口最高墨迹"（±3 列）：汉字笔画的缝隙（撇和竖之间）只有 2~4px 宽，
+    // 逐列取会掉进缝里，曲线上下来回 10px 以上，小人跟上去就是"一顿一顿地抽"。
+    // 再对这条包络做 ±2 移动平均，得到连续、可走的坡。bot 同理取窗口最低。
+    var env = [], ts = [], bs = [], d3;
+    for (x = 0; x < W; x++) {
+      var hi = -1, lo = -1;
+      for (d3 = -3; d3 <= 3; d3++) {
+        var xx0 = x + d3;
+        if (xx0 < 0 || xx0 >= W) continue;
+        if (top[xx0] >= 0 && (hi < 0 || top[xx0] < hi)) hi = top[xx0];
+        if (bot[xx0] > lo) lo = bot[xx0];
+      }
+      env[x] = hi; bs[x] = lo;
+    }
+    for (x = 0; x < W; x++) {
+      var s1 = 0, n1 = 0, s2 = 0, n2 = 0;
+      for (d3 = -2; d3 <= 2; d3++) {
+        var xx1 = x + d3;
+        if (xx1 < 0 || xx1 >= W) continue;
+        if (env[xx1] >= 0 && env[x] >= 0) { s1 += env[xx1]; n1++; }
+        if (bs[xx1] >= 0 && bs[x] >= 0) { s2 += bs[xx1]; n2++; }
+      }
+      ts[x] = n1 ? s1 / n1 : env[x];
+      bot[x] = n2 ? s2 / n2 : bs[x];
     }
 
-    // (3) 间隔点的真实墨迹直径 → 小人高度 = 点直径 × 2（用户定的比例）
-    var dot = null, dotSpan = null;
+    // (3) 间隔点：真实墨迹直径 → 小人高度 = 直径 × 2；两个点都记下来（落到哪个哪个颤）
+    var dots = [], dot = null, dotSpan = null;
     chars.forEach(function (sp) {
       if (sp.textContent !== '·') return;
       dotSpan = sp;
       var r = sp.getBoundingClientRect();
-      var cx = Math.round((r.left - hr.left + r.width / 2) * 2);
-      cx = Math.max(0, Math.min(cvs.width - 1, cx));
+      var cx = Math.max(0, Math.min(cvs.width - 1, Math.round((r.left - hr.left + r.width / 2) * 2)));
       var t = -1, b = -1;
       for (var yy = 0; yy < cvs.height; yy++) {
         if (alpha(cx, yy) > 28) { if (t < 0) t = yy; b = yy; }
       }
-      if (t >= 0) dot = { x0: r.left - hr.left, x1: r.left - hr.left + r.width, t: t / 2, b: b / 2 };
+      if (t >= 0) dots.push({ x0: r.left - hr.left, x1: r.left - hr.left + r.width, t: t / 2, b: b / 2, span: sp });
     });
+    dot = dots[0] || null;
     var dH = dot ? Math.max(2, dot.b - dot.t) : F * 0.26;
-    var SH = Math.max(8, dH * 2);      // 小人高度 = 点直径 × 2
-    var SW = SH * 0.7;
+    var SH = Math.max(8, dH * 2);            // 显示高度 = 点直径 × 2
+    var SW = SH * 0.77;                      // 精灵图是 52×68
 
-    // (4) 地形分段：连续的墨迹列 = 一段可走的平地，段与段之间就是要跳的空隙
+    // (4) 可走段：连续墨迹列；窄缝（≤4px）并段，段间空隙才是真的要跳
     var runs = [], cur = null;
     for (x = 0; x < W; x++) {
-      if (top[x] >= 0) {
+      if (ts[x] >= 0) {
         if (!cur) { cur = { x0: x, x1: x }; runs.push(cur); }
         cur.x1 = x;
       } else cur = null;
@@ -588,107 +621,210 @@ details[open]::details-content{height:auto}
     var merged = [];
     runs.forEach(function (r) {
       var last = merged[merged.length - 1];
-      if (last && r.x0 - last.x1 <= 5) last.x1 = r.x1;   // 字形内部的小缺口并掉，免得一步一跳
+      if (last && r.x0 - last.x1 <= 4) last.x1 = r.x1;
       else merged.push({ x0: r.x0, x1: r.x1 });
     });
-    if (!merged.length) return;
+    if (merged.length < 2) return;
 
-    // (5) 时间线：走一段 → 跳一段 → 走一段……速度按字号定，字大字小节奏一致
-    var SPEED = Math.max(14, F * 1.1);
-    var segs = [], acc = 0;
-    merged.forEach(function (r, i2) {
-      var d = Math.max(80, (r.x1 - r.x0) / SPEED * 1000);
-      segs.push({ walk: 1, x0: r.x0, x1: r.x1, d: d, t0: acc });
-      acc += d;
-      var nxt = merged[i2 + 1];
-      if (nxt) {
-        var jd = Math.max(120, Math.abs(nxt.x0 - r.x1) / SPEED * 1000 * 1.15);
-        segs.push({ walk: 0, x0: r.x1, x1: nxt.x0, d: jd, t0: acc, fy: top[r.x1], ty: top[nxt.x0] });
-        acc += jd;
-      }
-    });
-
-    // (6) 小人本体：现在先用一个通用占位形象（换形象只要改这段字符串）
+    // (5) 精灵：葫芦娃四帧（脚本从参考图切出来，放在 scripts/head → docs/head）
+    var SPR = { w1: 'head/chw-walk1.png', w1b: 'head/chw-walk1b.png', w2: 'head/chw-walk2.png', hg: 'head/chw-hang.png' };
     var walker = document.createElement('div');
     walker.className = 'kiki-walker';
-    walker.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="' + SW.toFixed(1) + '" height="' + SH.toFixed(1) +
-      '" viewBox="0 0 8 12" shape-rendering="geometricPrecision">' +
-      '<line class="kw-antenna" x1="4" y1="1.6" x2="4" y2=".5" stroke="#ffb84d" stroke-width=".5"/>' +
-      '<circle cx="4" cy=".42" r=".42" fill="#ffcf7a"/>' +
-      '<g class="kw-body">' +
-      '<rect x="1.7" y="1.7" width="4.6" height="6.2" rx="2.2" fill="#d6e9ff" stroke="#8ec2ff" stroke-width=".45"/>' +
-      '<circle cx="4" cy="4.0" r=".72" fill="#2f6bff"/>' +
-      '<circle cx="4" cy="4.0" r=".28" fill="#eaf4ff"/>' +
-      '</g>' +
-      '<g class="kw-leg kw-legL"><line x1="3.2" y1="7.9" x2="3.2" y2="11.6" stroke="#9fc9ff" stroke-width=".55"/></g>' +
-      '<g class="kw-leg kw-legR"><line x1="4.8" y1="7.9" x2="4.8" y2="11.6" stroke="#9fc9ff" stroke-width=".55"/></g>' +
-      '</svg>';
+    var pic = document.createElement('img');
+    pic.className = 'kw-pic';
+    pic.alt = '';
+    pic.width = Math.round(SW);
+    pic.height = Math.round(SH);
+    pic.src = SPR.w1;
+    walker.appendChild(pic);
+    var prevWalker = h1.querySelector('.kiki-walker');
+    if (prevWalker) prevWalker.remove();
     h1.appendChild(walker);
-    var body = walker.querySelector('.kw-body');
-    var legL = walker.querySelector('.kw-legL'), legR = walker.querySelector('.kw-legR');
 
-    // (7) 播放：一圈走完停 2.6s 再来；报头滚出视野就暂停
-    var startT = performance.now(), alive = true, pass = -1, raf = 0;
-    var loop = acc + 2600;
-    function shake() {
-      if (!dotSpan) return;
-      dotSpan.classList.remove('kiki-dot-hit');
-      void dotSpan.offsetWidth;           // 强制重排，让动画能重播
-      dotSpan.classList.add('kiki-dot-hit');
+    function pose(key) {
+      if (pic.getAttribute('data-pose') === key) return;
+      pic.setAttribute('data-pose', key);
+      pic.src = SPR[key];
     }
-    function frame(ts) {
-      raf = requestAnimationFrame(frame);
+    function place(x, feetY, rot) {
+      walker.style.transform = 'translate(' + (x - SW / 2).toFixed(2) + 'px,' + (feetY - SH).toFixed(2) + 'px)';
+      pic.style.transform = rot ? 'rotate(' + rot.toFixed(2) + 'deg)' : '';
+    }
+
+    // (6) 运动：脚本化 + 缓动，不做"自由物理"（自由落体落点不可控，
+    //     在 7px 宽的间隔点上必然错位，那才是"歘一下"的来源）。全部按字号缩放。
+    //     走  ：匀速，脚下地形缓动跟随
+    //     跳  ：一段固定时长的抛物弧线，起终点都精确落在字形上沿，抬升高度随缝隙长度
+    //     更低的段：小抬升 + 下落弧（不再是"先掉下去再窜上来"）
+    //     更高的段：贴竖边匀速爬上去
+    //     右端  ：滑到字的下沿 → 扒着下沿荡回左端 → 爬上去，接回第一段
+    var SPEED = F * 1.25;    // 行走速度 px/s（约 1.6 身高/秒）
+    var HOPX  = F * 1.55;    // 跳跃水平速度
+    var CLIMB = F * 1.05;    // 攀爬 / 下滑速度
+    var HANG  = F * 2.30;    // 悬挂回荡速度
+    var st = { mode: 'walk', i: 0, x: merged[0].x0 + 1, y: ts[merged[0].x0 + 1] || 0,
+               ph: 0, t: 0, rot: 0, ni: 0,
+               hp: 0, hd: 0, hx0: 0, hx1: 0, hy0: 0, hy1: 0, hh: 0,
+               sp: 0, sd: 0, sx0: 0, sy0: 0, sx1: 0, sy1: 0, safter: '' };
+    var alive = true, lastT = 0, land = -9;
+
+    function groundAt(px) {
+      var i1 = Math.floor(px);
+      if (i1 < 0) i1 = 0;
+      if (i1 >= W - 1) return ts[W - 1];
+      return ts[i1] * (1 - (px - i1)) + ts[i1 + 1] * (px - i1);   // 线性插值，去掉 1px 台阶
+    }
+    function bottomAt(px) {
+      var i1 = Math.floor(px);
+      if (i1 < 0) i1 = 0;
+      if (i1 >= W - 1) return bot[W - 1];
+      var b0 = bot[i1], b1 = bot[i1 + 1];
+      if (b0 < 0) b0 = b1;
+      if (b1 < 0) b1 = b0;
+      return b0 * (1 - (px - i1)) + b1 * (px - i1);
+    }
+    function shakeDot() {
+      for (var i2 = 0; i2 < dots.length; i2++) {
+        if (!dots[i2].span) continue;
+        if (st.x < dots[i2].x0 - SH * 0.6 || st.x > dots[i2].x1 + SH * 0.6) continue;
+        var sp2 = dots[i2].span;
+        sp2.classList.remove('kiki-dot-hit');
+        void sp2.offsetWidth;
+        sp2.classList.add('kiki-dot-hit');
+      }
+    }
+    // 开始一段跳跃：从 (x0,y0) 落到 (x1,y1)，抬升 hh
+    function hopTo(x0, y0, x1, y1, lift) {
+      var gap = Math.max(2, x1 - x0);
+      st.mode = 'hop';
+      st.hp = 0;
+      st.hd = Math.min(0.62, Math.max(0.24, gap / HOPX));
+      st.hx0 = x0; st.hx1 = x1; st.hy0 = y0; st.hy1 = y1;
+      st.hh = lift;
+    }
+    // 开始一段匀速位移（攀爬 / 下滑 / 爬回起点）：起终点都用缓入缓出，别硬切
+    function slideTo(x1, y1, v) {
+      st.mode = 'slide';
+      st.sp = 0;
+      st.sx0 = st.x; st.sy0 = st.y; st.sx1 = x1; st.sy1 = y1;
+      st.sd = Math.min(1.4, Math.max(0.22, Math.max(Math.abs(x1 - st.x), Math.abs(y1 - st.y)) / v));
+      pose('hg');
+      st.rot = 0;
+    }
+
+    function step(dt) {
+      st.t += dt;
+      if (st.mode === 'walk') {
+        var r = merged[st.i];
+        st.ph += dt * 12;                          // 步频：约 0.5s 一个来回（两步）
+        pose(st.ph % 2 > 1 ? 'w1b' : 'w1');
+        st.x += SPEED * dt;
+        if (st.x >= r.x1) { st.x = r.x1; arrive(); }
+        else {
+          var gy = groundAt(st.x);
+          if (gy >= 0) st.y += (gy - st.y) * Math.min(1, dt * 9);    // 缓动跟随地形（慢一点，像重心过渡）
+        }
+      } else if (st.mode === 'hop') {
+        st.hp += dt;
+        var s = Math.min(1, st.hp / st.hd);
+        pose('w2');
+        st.x = st.hx0 + (st.hx1 - st.hx0) * s;                       // 水平匀速
+        st.y = st.hy0 + (st.hy1 - st.hy0) * s - st.hh * 4 * s * (1 - s);   // 抛物线
+        st.rot = Math.sin(Math.PI * s) * 9;                          // 前倾一点
+        if (s >= 1) {
+          st.x = st.hx1; st.y = st.hy1; st.rot = 0;
+          st.mode = 'walk'; st.ph = 0; st.i = st.ni;
+          land = st.t;
+          shakeDot();
+        }
+      } else if (st.mode === 'slide') {
+        // 攀爬 / 下滑 / 爬回起点，统一用"缓入缓出 + 直线位移"，起终点都精确
+        st.sp += dt;
+        var s2 = Math.min(1, st.sp / st.sd);
+        var e2 = 0.5 - 0.5 * Math.cos(Math.PI * s2);
+        st.x = st.sx0 + (st.sx1 - st.sx0) * e2;
+        st.y = st.sy0 + (st.sy1 - st.sy0) * e2;
+        st.rot = 0;
+        if (s2 >= 1) {
+          st.x = st.sx1; st.y = st.sy1;
+          if (st.safter === 'hang') {
+            st.mode = 'hang';
+            st.rot = 0;
+          } else {
+            st.mode = 'walk'; st.ph = 0; st.i = st.safter === 'first' ? 0 : st.ni;
+            land = st.t;
+          }
+        }
+      } else if (st.mode === 'hang') {
+        // 手扒着字的下沿，身体像长臂猿一样荡回左边
+        pose('hg');
+        st.x -= HANG * dt;
+        var by = bottomAt(st.x);
+        var tgt = by >= 0 ? by + SH : st.y;
+        // 字的下沿是一串笔画的底边，起伏很陡；这里限速跟随，手不会跟着抖
+        var mv = SH * 1.3 * dt;
+        st.y += Math.max(-mv, Math.min(mv, tgt - st.y));
+        st.rot = Math.sin(st.t * 2.2) * 11;         // 钟摆
+        if (st.x <= merged[0].x0 + 2) {
+          st.x = merged[0].x0 + 1;
+          slideTo(st.x, ts[Math.round(st.x)] || 0, CLIMB);
+          st.safter = 'first';
+        }
+      }
+    }
+
+    function arrive() {
+      var r = merged[st.i], next = merged[st.i + 1];
+      if (!next) {                   // 走到右端：滑到字的下沿 → 挂着荡回来
+        var bb = bottomAt(r.x1);
+        slideTo(st.x, (bb >= 0 ? bb + SH : st.y + SH * 1.6), CLIMB);
+        st.safter = 'hang';
+        return;
+      }
+      var curY = ts[Math.round(r.x1)], nextY = ts[Math.round(next.x0)];
+      var dy = nextY - curY;         // >0 下一段更低
+      var gap = Math.max(2, next.x0 - r.x1);
+      st.ni = st.i + 1;
+      if (dy < -5) {                 // 明显更高：贴边爬上去，不硬跳
+        slideTo(next.x0 + 1, nextY, CLIMB);
+        st.safter = 'walk';
+        return;
+      }
+      // 其余的都用同一套抛物线：抬升 = 缝隙越长越高，但最多 0.45 身高；
+      // 往下走（dy>0）抬升压一半，看起来是"跃出去、往下落"，不会先掉再窜上来
+      var lift = Math.max(SH * 0.12, Math.min(SH * 0.45, gap * 0.32));
+      if (dy > 4) lift *= 0.55;
+      hopTo(st.x, st.y, next.x0 + 1, nextY, lift);   // 起点用"当前高度"而不是地形值，避免第一帧就窜一下
+    }
+
+    function reset() {
+      st.mode = 'walk'; st.i = 0; st.x = merged[0].x0 + 1;
+      st.y = ts[Math.round(st.x)] || 0; st.ph = 0; st.rot = 0;
+      pic.style.opacity = '0';
+      setTimeout(function () { pic.style.opacity = '1'; }, 220);
+    }
+
+    function frame(now) {
+      requestAnimationFrame(frame);
+      var dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0.016;
+      lastT = now;
       if (!alive) return;
-      var t = (ts - startT) % loop;
-      var s = segs[segs.length - 1], idx = segs.length - 1, i3;
-      for (i3 = 0; i3 < segs.length; i3++) {
-        if (t < segs[i3].t0 + segs[i3].d) { s = segs[i3]; idx = i3; break; }
-      }
-      var u = t > acc ? 1 : Math.min(1, Math.max(0, (t - s.t0) / s.d));
-      var wx, fy;
-      if (t > acc) {
-        wx = segs[segs.length - 1].x1;
-        fy = top[Math.round(wx)]; if (fy < 0) fy = 0;
-      } else if (s.walk) {
-        wx = s.x0 + (s.x1 - s.x0) * u;
-        fy = top[Math.round(wx)]; if (fy < 0) fy = 0;
-      } else {
-        wx = s.x0 + (s.x1 - s.x0) * u;
-        fy = s.fy + (s.ty - s.fy) * u - Math.sin(Math.PI * u) * SH * 0.5;   // 抛物线
-      }
-      walker.style.transform = 'translate(' + (wx - SW / 2).toFixed(2) + 'px,' + (fy - SH).toFixed(2) + 'px)';
-
-      // 腿部摆动：走是交替迈步，跳是收腿；身体跟着轻点头
-      var rot = 0, ph = 0;
-      if (s.walk && t <= acc) {
-        ph = (u * s.d / 1000) * 6.4;
-        rot = Math.sin(ph) * 15;
-        legL.style.transform = 'rotate(' + rot.toFixed(1) + 'deg)';
-        legR.style.transform = 'rotate(' + (-rot).toFixed(1) + 'deg)';
-        body.style.transform = 'translateY(' + (Math.sin(ph * 2) * 0.12).toFixed(2) + 'px)';
-      } else {
-        legL.style.transform = 'rotate(13deg)';
-        legR.style.transform = 'rotate(-13deg)';
-        body.style.transform = 'translateY(-0.15px)';
-      }
-
-      // 落在间隔点上：点颤一下（每个 jump 段每圈只触发一次）
-      var pid = Math.floor((ts - startT) / loop);
-      if (!s.walk && u > 0.86 && s.__pid !== pid && dot && s.x1 > dot.x0 - 2 && s.x1 < dot.x1 + 2) {
-        s.__pid = pid; shake();
-      }
+      step(dt);
+      place(st.x, st.y, st.rot);
+      // 落地压扁：200ms 内做一个 0.88 → 1 的回弹
+      var since = st.t - land;
+      pic.style.width = SW + 'px';
+      if (since >= 0 && since < 0.2) {
+        var q = since / 0.2;
+        pic.style.scale = (1 + 0.12 * Math.sin(Math.PI * q)) + ' ' + (1 - 0.14 * Math.sin(Math.PI * q)) + ' ';
+      } else pic.style.scale = '';
     }
-    raf = requestAnimationFrame(frame);
+    requestAnimationFrame(frame);
 
-    // 报头不在视野里就停（省电，避免后台空转）
     if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (es) {
-        alive = es[0].isIntersecting;
-      }, { threshold: 0.15 }).observe(h1);
+      new IntersectionObserver(function (es) { alive = es[0].isIntersecting; }, { threshold: 0.15 }).observe(h1);
     }
   }
-
 
   function start() {
     buildBeam();
@@ -786,6 +922,8 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
 
 
 
