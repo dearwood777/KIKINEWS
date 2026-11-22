@@ -250,6 +250,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -976,7 +977,7 @@ details[open]::details-content{height:auto}
       var LIFT = PH * 0.12;
       put(PWp, 'legF', F1.th, -F1.lift * LIFT);
       put(PWp, 'legB', B1.th, -B1.lift * LIFT);
-      var bob = -PH * 0.035 * Math.abs(Math.sin(2 * Math.PI * u));
+      var bob = -PH * 0.07 * Math.abs(Math.sin(2 * Math.PI * u));
       put(PWp, 'body', 1.6 * Math.sin(2 * Math.PI * u), bob);
       put(PWp, 'armB', -F1.th * 0.8 - 8, 0);   // 反向摆，基准往前压一点，才看得出"前后"而不是一直撩在身后
       put(PWp, 'head', -0.5 * Math.sin(2 * Math.PI * u), bob * 0.4);
