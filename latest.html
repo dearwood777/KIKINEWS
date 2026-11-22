@@ -298,6 +298,8 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -1399,7 +1401,8 @@ details[open]::details-content{height:auto}
     window.__kwSt = st;
     // 调试钩子：URL 带 kwdbg 时才挂出来，方便把小人直接丢进垂直段/跳跃段验帧，不动正式逻辑。
     if (/kwdbg/.test(location.search)) {
-      window.__kwdbg = { st: st, ts: ts, W: W, PH: PH, vertTo: vertTo, hopTo: hopTo, CF: CF, cfShow: cfShow, cfFrame: cfFrame, poseVert: poseVert };
+      window.__kwdbg = { st: st, ts: ts, W: W, PH: PH, vertTo: vertTo, hopTo: hopTo, CF: CF, cfShow: cfShow, cfFrame: cfFrame, poseVert: poseVert,
+        bot: bot, merged: merged, bridges: bridges, lineY: lineY, bottomAt: bottomAt, groundAt: groundAt, TXMID: TXMID, dots: dots };
     }
     var alive = true, lastT = 0, land = -9, acc = 0, FIX = 1 / 120;
     var H1R = null, h1rT = 0;
@@ -1411,22 +1414,41 @@ details[open]::details-content{height:auto}
     window.addEventListener('scroll', function () { refreshH1R(); }, { passive: true });
     window.addEventListener('resize', function () { refreshH1R(); }, { passive: true });
 
+    // 空列（该列没有墨迹，值是 -1）绝不能直接参与插值：
+    // 以前 bottomAt 把 "两列都 -1" 兜成 0，等于说"这儿的字底在行顶"——
+    // 横屏字距被拉开、字符之间出现空列时，横爬经过那里就会**瞬间闪到字的最上方再闪下来**。
+    // 现在一律向左/右找最近的有效列；实在找不到才用全行第一个有效值当兜底。
+    function tsRefOf(arr) {
+      for (var i8 = 0; i8 < W; i8++) if (arr[i8] >= 0) return arr[i8];
+      return -1;
+    }
+    var TSREF = tsRefOf(ts), BOTREF = tsRefOf(bot);
+    function neib(arr, x, dir) {
+      for (var k8 = 0; k8 < 30; k8++) {
+        var q8 = x + dir * k8;
+        if (q8 < 0 || q8 >= W) return -1;
+        if (arr[q8] >= 0) return arr[q8];
+      }
+      return -1;
+    }
+    function colAt(arr, px, dflt) {
+      var i0 = Math.floor(px);
+      if (i0 < 0) i0 = 0;
+      if (i0 > W - 1) i0 = W - 1;
+      var i1 = (i0 + 1 > W - 1) ? i0 : i0 + 1;
+      var u = px - i0, a0 = arr[i0], a1 = arr[i1];
+      if (a0 < 0) a0 = neib(arr, i0, -1);
+      if (a1 < 0) a1 = neib(arr, i1, 1);
+      if (a0 < 0 && a1 < 0) return dflt;
+      if (a0 < 0) return a1;
+      if (a1 < 0) return a0;
+      return a0 * (1 - u) + a1 * u;
+    }
     function groundAt(px) {
-      var i1 = Math.floor(px);
-      if (i1 < 0) i1 = 0;
-      if (i1 >= W - 1) return ts[W - 1];
-      return ts[i1] * (1 - (px - i1)) + ts[i1 + 1] * (px - i1);
+      return colAt(ts, px, TSREF >= 0 ? TSREF : F * 0.95);
     }
     function bottomAt(px) {
-      var i1 = Math.floor(px);
-      if (i1 < 0) i1 = 0;
-      if (i1 >= W - 1) return bot[W - 1];
-      var b0 = bot[i1], b1 = bot[i1 + 1];
-      if (b0 < 0) b0 = b1;
-      if (b1 < 0) b1 = b0;
-      if (b0 < 0) b0 = 0;
-      if (b1 < 0) b1 = 0;
-      return b0 * (1 - (px - i1)) + b1 * (px - i1);
+      return colAt(bot, px, BOTREF >= 0 ? BOTREF : F * 1.15);
     }
     function bridgeAt(px) {
       for (var i7 = 0; i7 < bridges.length; i7++) {
@@ -1610,7 +1632,10 @@ details[open]::details-content{height:auto}
         var mv = CRAWL * dt;
         st.x -= mv; st.dist += mv;
         st.ph = st.dist / (SH * 0.6) * Math.PI;
-        st.y = lineY(st.x) + PH * 0.94;
+        // 平滑跟地形：单帧大跳在视觉上就是"闪现"。这里用一阶滤波，约 80ms 内收敛，
+        // 既不会被残存的坏数据甩到行顶，也不会在真地形起伏时卡住。
+        var yC = lineY(st.x) + PH * 0.94;
+        st.y += (yC - st.y) * Math.min(1, dt * 12);
         poseClimb(st.ph);
         st.rot = 0;
         if (st.x <= merged[0].x0 + 1) {
@@ -1627,7 +1652,7 @@ details[open]::details-content{height:auto}
         vertTo(st.x, st.y, lineY(st.x) + PH * 0.94, 'crawl');
         return;
       }
-      var curY = ts[Math.round(r.x1)], nextY = ts[Math.round(next.x0)];
+      var curY = groundAt(r.x1), nextY = groundAt(next.x0);
       var gap = Math.max(2, next.x0 - r.x1);
       var lift = gap <= 7 ? Math.max(SH * 0.16, gap * 0.45) : Math.max(SH * 0.32, gap * 0.5);
       var tx = next.x0 + 1;
