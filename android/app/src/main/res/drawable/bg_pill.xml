@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="#99000000" />
-    <corners android:radius="20dp" />
-</shape>
+<!-- 只在 View 内部画一块 40×16dp 的小胶囊（View 本体 62×26dp 当作透明热区）。
+     inset 不改变 View 的尺寸，所以点击/长按范围一点没缩，缩的只是视觉。 -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="11dp"
+    android:insetRight="11dp"
+    android:insetTop="5dp"
+    android:insetBottom="5dp">
+    <shape android:shape="rectangle">
+        <solid android:color="#99000000" />
+        <corners android:radius="8dp" />
+    </shape>
+</inset>
