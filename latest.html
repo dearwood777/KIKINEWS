@@ -300,6 +300,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -548,7 +549,7 @@ details[open]::details-content{height:auto}
     }
     // 主干：底部粗一点、往上收，顶端往左勾
     var STEM = 'M80 101 C78 90 74 82 71 74 C68 66 66 60 68 53 C70 46 66 41 62 35' +
-               ' C58 29 52 22 51 16 C50 12 47 8 42 6 C36 4 30 5 26 7';
+               ' C58 29 52 22 51 16 C50 12 46 8 40 7 C33 6 25 6 17 10';
     addPath(STEM, 3.0, '#143a10');                 // 藤身（深）
     addPath(STEM, 1.6, '#5aa03a');                 // 高光芯线，深色卡面上才立得住
     // 两卷卷须：葫芦藤最好认的特征
@@ -683,11 +684,17 @@ details[open]::details-content{height:auto}
       var vw = window.innerWidth || document.documentElement.clientWidth;
       var vh = window.innerHeight || document.documentElement.clientHeight;
       var w = Math.min(74, Math.max(44, Math.round(vw * 0.14)));
-      box.__w = w; box.__h = Math.max(0, r.height);
+      // 顶部安全区：APK 原生层的"设置"浮钮压在报头卡右上角（本机实测 62×26 CSS，距屏顶 12、距屏右 12）。
+      // 网页读不到原生层，只能按实测留白：整条藤从卡片顶往下 VSAFE 处才开始长，
+      // 顶端勾收在按钮正下方 —— 按钮区域彻底干净，藤看起来是"掐尖收尾"而不是被切掉。
+      var VSAFE = 44;
+      var topY = r.top + VSAFE;
+      if (topY > r.bottom - 46) topY = r.top;          // 卡片太矮就别留白了
+      box.__w = w; box.__h = Math.max(0, r.bottom - topY);
       box.style.width = w + 'px';
       box.style.height = box.__h + 'px';
       box.style.left = (Math.min(r.right, vw) - w - 6) + 'px';   // 往右贴：留 6px，不再留 14px
-      box.style.top = r.top + 'px';
+      box.style.top = topY + 'px';
       box.style.display = (r.bottom < 6 || r.top > vh - 6) ? 'none' : 'block';
       placeVine();
     }
