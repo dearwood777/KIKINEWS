@@ -255,6 +255,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -917,9 +918,10 @@ details[open]::details-content{height:auto}
       g.setAttribute('class', 'kw-frames');
       var hh = 85.7, ww = hh * WF.w / WF.h;
       WF.fr.forEach(function (src) {
+        var uri = 'data:image/png;base64,' + src;
         var im = document.createElementNS(NS, 'image');
-        im.setAttributeNS(XL, 'xlink:href', src);
-        im.setAttribute('href', src);
+        im.setAttributeNS(XL, 'xlink:href', uri);
+        im.setAttribute('href', uri);
         im.setAttribute('x', (26.4 - ww / 2).toFixed(2));
         im.setAttribute('y', (100 - hh).toFixed(2));
         im.setAttribute('width', ww.toFixed(2));
