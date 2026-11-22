@@ -262,6 +262,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -914,12 +915,19 @@ details[open]::details-content{height:auto}
     (function buildFrames() {
       var wrap = document.createElement('div');
       wrap.className = 'kiki-spr';
-      var cellH = PH * 0.857, cellW = cellH * WF.w / WF.h;
+      // 位置和大小不再拍脑袋：直接量剪纸那套图的实际包围盒（getBBox），让雪碧图的
+      // 脚底、头顶、身体中线跟剪纸一模一样。否则一旦估算比例错，人就像沉进字里。
+      var bb = artW.getBBox();
+      var U = PH / 100;                       // 1 个 viewBox 单位 = 多少 px
+      var cellH = bb.height * U;
+      var cellW = cellH * WF.w / WF.h;
       WF.cellW = cellW; WF.cellH = cellH;
-      wrap.style.width = cellW.toFixed(1) + 'px';
-      wrap.style.height = cellH.toFixed(1) + 'px';
-      wrap.style.left = (PW * 0.5 - cellW * 0.5).toFixed(1) + 'px';
-      wrap.style.top = (PH - cellH).toFixed(1) + 'px';
+      WF.footY = (bb.y + bb.height) * U;      // 剪纸的脚底线（px，相对 walker 顶部）
+      WF.midX = (bb.x + bb.width / 2) * U;
+      wrap.style.width = cellW.toFixed(2) + 'px';
+      wrap.style.height = cellH.toFixed(2) + 'px';
+      wrap.style.left = (WF.midX - cellW / 2).toFixed(2) + 'px';
+      wrap.style.top = (WF.footY - cellH).toFixed(2) + 'px';
       var im = document.createElement('img');
       im.alt = '';
       im.style.width = (cellW * WF.n).toFixed(1) + 'px';
