@@ -249,6 +249,8 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -956,7 +958,7 @@ details[open]::details-content{height:auto}
     // (8) 动作：全部靠转切件，参数小、频率稳，像人不像木偶
     // 走：整条腿绕髋摆。摆动期 smoothstep 从后往前划（脚离地），支撑期匀速往后退（脚踩地），
     //     两条腿错半拍；支撑期再按"髋到地"长度把腿往下推回地面，脚不会浮起来。
-    var AMP = 48, SWING = 0.46, LEGL = 0.19;   // LEGL=髋到地占小人高度的比例
+    var AMP = 62, SWING = 0.50, LEGL = 0.19;   // 小人在页面上只有约 30px 高，腿长≈6px，只能靠夸张幅度才读得出"迈步"
     function legState(u) {
       u = u - Math.floor(u);
       if (u < SWING) {
@@ -972,11 +974,12 @@ details[open]::details-content{height:auto}
       var u = ph / (2 * Math.PI);
       var F1 = legState(u), B1 = legState(u + 0.5);
       // 腿只绕髋转、不做上下推（推了会在短裤下沿露出空档）；摆动期脚自己抬起来
-      put(PWp, 'legF', F1.th, -F1.lift * 1.2);
-      put(PWp, 'legB', B1.th, -B1.lift * 1.2);
-      var bob = -1.2 * Math.abs(Math.sin(2 * Math.PI * u));
+      var LIFT = PH * 0.12;
+      put(PWp, 'legF', F1.th, -F1.lift * LIFT);
+      put(PWp, 'legB', B1.th, -B1.lift * LIFT);
+      var bob = -PH * 0.07 * Math.abs(Math.sin(2 * Math.PI * u));
       put(PWp, 'body', 1.6 * Math.sin(2 * Math.PI * u), bob);
-      put(PWp, 'armB', -F1.th * 0.6, 0);
+      put(PWp, 'armB', -F1.th * 0.8 - 8, 0);   // 反向摆，基准往前压一点，才看得出"前后"而不是一直撩在身后
       put(PWp, 'head', -0.5 * Math.sin(2 * Math.PI * u), bob * 0.4);
     }
     // 贴字边上下：用侧身图（能看出朝哪边），腿收起来蹬、一只手去够边
