@@ -1,300 +1,108 @@
 {
- "generated_at": "2026-11-21T22:01:56+00:00",
- "count": 49,
+ "generated_at": "2026-11-12T05:55:40+00:00",
+ "count": 17,
  "items": [
   {
-   "title": "Lean verification of the Riemann Hypothesis",
-   "url": "https://leanprover-community.github.io/blog/posts/riemann-hypothesis/",
-   "score": 9.0,
-   "profile": "tech-news"
+   "title": "Lock Your GitHub Actions",
+   "url": "https://hugovk.dev/blog/2026/lock-github-actions/",
+   "score": null,
+   "profile": "hackernews"
   },
   {
-   "title": "Two groups verify mathematician’s claim that Claude helped prove mathematics problem",
-   "url": "https://www.theguardian.com/technology/2026/nov/21/anthropic-riemann-hypothesis-solved-claude-ai",
-   "score": 9.0,
-   "profile": "world-news"
+   "title": "AWS emulator",
+   "url": "https://github.com/aws/aws-emulator",
+   "score": null,
+   "profile": "hackernews"
   },
   {
-   "title": "Fight over fossil fuels leaves COP31 climate talks in deadlock",
-   "url": "https://www.bbc.co.uk/news/articles/c6ly5w40eg07o?at_medium=RSS&at_campaign=rss",
-   "score": 8.0,
-   "profile": "world-news"
+   "title": "Gemini Decisions API",
+   "url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/",
+   "score": null,
+   "profile": "hackernews"
   },
   {
-   "title": "Mexican drug lord on FBI's 10 most wanted list arrested in shoot-out",
-   "url": "https://www.bbc.co.uk/news/articles/ckz749ey0r75o?at_medium=RSS&at_campaign=rss",
-   "score": 8.0,
-   "profile": "world-news"
+   "title": "United Airlines bans AI agents from booking flights on behalf of travelers",
+   "url": "https://www.cbsnews.com/news/united-airlines-bans-ai-agents-booking-flights/",
+   "score": null,
+   "profile": "hackernews"
   },
   {
-   "title": "Alleged Mexican drug cartel boss ‘El Chapo Isidro’ arrested in special forces raid",
-   "url": "https://www.theguardian.com/world/2026/nov/21/alleged-mexican-drug-cartel-boss-el-chapo-isidro-meza-flores-arrested",
-   "score": 8.0,
-   "profile": "world-news"
+   "title": "93% of paint splatters are valid Perl programs (2019)",
+   "url": "https://www.mcmillen.dev/sigbovik/",
+   "score": null,
+   "profile": "hackernews"
   },
   {
-   "title": "International UN talks on controlling use of autonomous weapons collapse",
-   "url": "https://www.theguardian.com/technology/2026/nov/21/international-talks-control-ai-autonomous-weapons-collapse",
-   "score": 8.0,
-   "profile": "world-news"
+   "title": "Nvidia is preparing to oust Jensen Huang",
+   "url": "https://www.wsj.com/business/nvidia-is-preparing-to-oust-nvidia-ceo-jensen-huang-30f421ad",
+   "score": null,
+   "profile": "hackernews"
   },
   {
-   "title": "Rejoining EU ‘on the table’ as UK makes deals on trade and young people",
-   "url": "https://www.theguardian.com/politics/2026/nov/21/rejoining-eu-uk-trade-youth-deals-ed-miliband",
-   "score": 8.0,
-   "profile": "world-news"
+   "title": "Prediction markets tied to clinical trials and drug approvals draw lawmakers' ire",
+   "url": "https://www.cnbc.com/2026/11/11/kalsi-polymarket-prediction-market-senators-hhs-drug-approval.html",
+   "score": null,
+   "profile": "rss"
   },
   {
-   "title": "NATO Secretary General pledges solidarity with Poland after missile incursion - Vatican News",
-   "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOZ2NEV1JYcmtCMEJ0SjZnZVB6R2dGX3BkUURKSDNOVC1sdklBa0JXWlY2Q3YtbG1VMlZjYkF3dHFwOXo0bnVvVDlGSFM0M0tXbkJuQmNrWTJLUExFR2RpN0JYMmp6cUtYN21DWm9ROUpPSklkcmFham1fbzZNeVBoR3kyTGhNRGlOeHlYTXl0US1PS2hGUExyOF83T3Q0dEtRcjhUY1pMWmN1Um9Nc1l5eXhWMkl1emlqZ0E?oc=5",
-   "score": 8.0,
-   "profile": "world-news"
+   "title": "Who could replace Jensen Huang? A highly unscientific list of possible successors",
+   "url": "https://techcrunch.com/2026/11/11/who-could-replace-jensen-huang-a-highly-unscientific-list-of-possible-successors/",
+   "score": null,
+   "profile": "rss"
   },
   {
-   "title": "Signal restricts mobile screenshots as it confronts ‘existential threat’ of AI surveillance",
-   "url": "https://techcrunch.com/2026/11/21/signal-restricts-mobile-screenshots-as-it-confronts-existential-threat-of-ai-surveillance/",
-   "score": 7.0,
-   "profile": "tech-news"
+   "title": "The unfolding Jensen Huang scandal: a timeline",
+   "url": "https://techcrunch.com/2026/11/11/nvidia-ceo-jensen-huangs-affair-with-alleged-chinese-spy-a-timeline/",
+   "score": null,
+   "profile": "rss"
   },
   {
-   "title": "Here are the top AI agents that can live in your text messages",
-   "url": "https://techcrunch.com/2026/11/21/all-the-ai-agents-that-can-live-in-your-text-messages/",
-   "score": 7.0,
-   "profile": "tech-news"
+   "title": "Nvidia’s stock drops as board reportedly preps to oust CEO Jensen Huang",
+   "url": "https://techcrunch.com/2026/11/11/nvidias-stock-drops-as-board-reportedly-preps-to-oust-ceo-jensen-huang/",
+   "score": null,
+   "profile": "rss"
   },
   {
-   "title": "Zelensky says Crimean Bridge strikes 'fair response' as he meets UK's Streeting",
-   "url": "https://www.bbc.co.uk/news/articles/c6wy0qj7w5zqo?at_medium=RSS&at_campaign=rss",
-   "score": 7.0,
-   "profile": "world-news"
+   "title": "Jensen Huang accused of having another affair — with an Nvidia exec",
+   "url": "https://techcrunch.com/2026/11/11/jensen-huang-accused-of-having-another-affair-with-a-nvidia-exec/",
+   "score": null,
+   "profile": "rss"
   },
   {
-   "title": "FBI reportedly investigating apparent hack of its criminal database",
-   "url": "https://www.bbc.co.uk/news/articles/cvze7de86pk3o?at_medium=RSS&at_campaign=rss",
-   "score": 7.0,
-   "profile": "world-news"
+   "title": "Why the data center you dread might never even be built",
+   "url": "https://techcrunch.com/video/why-the-data-center-you-dread-might-never-even-be-built/",
+   "score": null,
+   "profile": "rss"
   },
   {
-   "title": "Denmark to expel Russian diplomat over alleged plot to kill US-Ukrainian rapper",
-   "url": "https://www.theguardian.com/world/2026/nov/20/denmark-russian-diplomat-us-ukrainian-rapper-attempted-killing",
-   "score": 7.0,
-   "profile": "world-news"
+   "title": "Meta is losing its longtime head of  infrastructure",
+   "url": "https://techcrunch.com/2026/11/11/meta-is-losing-its-longtime-head-of-infrastructure/",
+   "score": null,
+   "profile": "rss"
   },
   {
-   "title": "Is selling an AI version of your face to this microdrama startup the future of Hollywood?",
-   "url": "https://techcrunch.com/2026/11/21/is-selling-an-ai-version-of-your-face-to-this-microdrama-startup-the-future-of-hollywood/",
-   "score": 6.0,
-   "profile": "tech-news"
+   "title": "Olaf Sakkers is betting he can beat the emerging-manager squeeze",
+   "url": "https://techcrunch.com/2026/11/11/olaf-sakkers-is-betting-he-can-beat-the-emerging-manager-squeeze/",
+   "score": null,
+   "profile": "rss"
   },
   {
-   "title": "Russia-bound ship attacked in Gulf of Finland",
-   "url": "https://www.bbc.co.uk/news/articles/cj752ddve27ko?at_medium=RSS&at_campaign=rss",
-   "score": 6.0,
-   "profile": "world-news"
+   "title": "CoreWeave turns to customer prepayments, shorter contracts to fund AI growth",
+   "url": "https://techcrunch.com/2026/11/11/coreweave-turns-to-customer-prepayments-shorter-contracts-to-fund-ai-growth/",
+   "score": null,
+   "profile": "rss"
   },
   {
-   "title": "Denmark accuses Russia of plotting to assassinate US-Ukrainian rapper",
-   "url": "https://www.bbc.co.uk/news/articles/cmde1lj4yjxno?at_medium=RSS&at_campaign=rss",
-   "score": 6.0,
-   "profile": "world-news"
+   "title": "With $720M round, Britain’s Fractile gets a leg up in the race for AI chips",
+   "url": "https://techcrunch.com/2026/11/11/with-720m-round-britains-fractile-gets-a-leg-up-in-the-race-for-ai-chips/",
+   "score": null,
+   "profile": "rss"
   },
   {
-   "title": "‘Six, seven, maybe more preventable deaths’: Queensland’s LNP faces reckoning over broken health system",
-   "url": "https://www.theguardian.com/australia-news/2026/nov/22/queensland-health-ambulance-deaths-lnp-labor-ntwnfb",
-   "score": 6.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Australian neo-Nazis among far-right groups raising hundreds of thousands via global crowdfunding platform",
-   "url": "https://www.theguardian.com/australia-news/2026/nov/22/australian-neo-nazis-among-far-right-groups-raising-hundreds-of-thousands-via-global-crowdfunding-platform-ntwnfb",
-   "score": 6.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Virginia child dies in state’s first measles-associated death of 2026",
-   "url": "https://www.theguardian.com/us-news/2026/nov/21/virginia-child-dies-measles",
-   "score": 6.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Inkling-2-Mini in 5.4 GB Memory",
-   "url": "https://github.com/ShinMegamiBoson/lookatmyquant",
-   "score": 5.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "A tale of two Nvidias",
-   "url": "https://techcrunch.com/2026/11/21/a-tale-of-two-nvidias/",
-   "score": 5.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Trump says reported FBI database hack is ‘not good’",
-   "url": "https://techcrunch.com/2026/11/21/trump-says-reported-fbi-database-hack-is-not-good/",
-   "score": 5.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Haitians excited but uneasy as El Salvador troops fight gangs",
-   "url": "https://www.theguardian.com/world/2026/nov/21/excitement-unease-haiti-el-salvador-troops-gangs-war-bukele",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "British man recalls ‘despair’ over son’s death after fall from Cyprus window",
-   "url": "https://www.theguardian.com/uk-news/2026/nov/21/british-man-recalls-despair-over-sons-death-after-fall-from-cyprus-window",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Reform UK considers pact with Restore Britain to overcome stalling performance in polls",
-   "url": "https://www.theguardian.com/politics/2026/nov/21/reform-uk-considers-pact-restore-britain-stalling-performance-polls",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "🤖 谷歌 Antigravity 重置全员 Gemini 额度，鼓励大家周末用 Neon 开发",
-   "url": "https://x.com/_mohansolo/status/2124070033534161407",
-   "score": 5.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Colturi lands breakthrough ski World Cup win, delivers Albania's first triumph - Reuters",
-   "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQVlFtSEZNelI1ZU9zQUhFSU12WHU4eDZXNXhJVHB3c01xQWpFb1JyeW4tTWRwVEk5aUJZRDdwUk9DODF6UnRQRjBMN3Vnbmk2WXdIOXFZMGtiS3NLWi1sYWlGNW5wdFR0TzhKRWRadlp3QU1Rc01EZDBadVh5YU5sdTFXblZndTR4Szl1Q215N1NhUFlXWElLYl83b2lORGtJSWFZdC1YaW9KY0paT05LNk9nUEgzUQ?oc=5",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Croatians Rally in Zagreb Demanding Justice Over Psychiatric Hospital Death - U.S. News & World Report",
-   "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxPS18yYlFfNmZ5NFJ2T2NoS3dTbkxaNjVrR3lGRXZPX1NyNm83OFVETGNPalEzZGgxRFdHV1FCVWdlRkoxbkZ3cTlUdGFLZnF5dktmY056RGF4Nkw2T1hMNTdocU8wdUpKQ2QzSERQVUpJLVZQRFBBWURWRWp4aWNGNUlPVGFzWVRMZ0hLaHpkOVltdVNtbW0wa0dJaEZ1Nk5Va2VtR3dsMTVwVFNVdGpPMDVjVjRwRklleWRrWEczZFIwdWxFMldzTg?oc=5",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Suffolk village votes to ‘leave the UK’ over plans to house asylum seekers nearby",
-   "url": "https://www.theguardian.com/uk-news/2026/nov/21/suffolk-village-votes-to-leave-the-uk-over-plans-to-house-asylum-seekers-nearby",
-   "score": 4.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "国家数据局将健全词元计量计费与质量测评标准",
-   "url": "https://www.cls.cn/detail/2540805",
-   "score": 4.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "My monitor was cutting my download speed by 75%",
-   "url": "https://blog.tymscar.com/posts/studiodisplayethernet/",
-   "score": 3.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Cigarettes on silver platters at Bondi ‘clean’ beauty business lip gloss launch referred for investigation",
-   "url": "https://www.theguardian.com/australia-news/2026/nov/22/cigarette-platter-bondi-copini-beauty-event-investigation",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Man charged with attempted murder after councillor stabbed in Bradford",
-   "url": "https://www.theguardian.com/uk-news/2026/nov/21/man-charged-with-attempted-after-councillor-stabbed-in-bradford",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Cold gives way to rain in parts of UK as weather warning issued for south-west England",
-   "url": "https://www.theguardian.com/uk-news/2026/nov/21/uk-weather-cold-rain-warning-south-west-england",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Princess of Wales speaks about impact of cancer diagnosis in BBC film Heal",
-   "url": "https://www.theguardian.com/uk-news/2026/nov/21/princess-of-wales-impact-cancer-diagnosis-bbc-film-heal",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Louisiana man charged with killing woman on hiking trail and murdering co-worker with crossbow",
-   "url": "https://www.theguardian.com/us-news/2026/nov/21/louisiana-mississippi-hiking-trail-crossbow-murder-charges",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Vance stops short of endorsing Trump’s claim that Iran was close to nuclear weapon",
-   "url": "https://www.theguardian.com/us-news/2026/nov/21/vance-trump-iran-nuclear-weapon",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Total Chess 2026: Everything You Need To Know / News / World Chess - Official FIDE Online Chess Gaming Platform - World Chess",
-   "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFB0SUV1OTdBd2N0TzduZFBKOS0wcTRIQ1h4VWRLMnoyY3g0ZVROclJGLVdObjRTZjFXS0lyRk9qUThlSUdrNjduVmtIeUUzSlV0TW0teFdJSzJHTXNvclloVl9PRENLdzNGQ0xaazlwdWtmMHJxZUE5bmMxZmU?oc=5",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Tour the real-world inspiration for GTA 6 - BBC",
-   "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE15QTdzN3ViamMxajhfUXIxQUQxbFNJbWhOcS03MWxMclo2WjNzcFhIQTlxYjlXZUpNMVBJSlV3SDN6X3hNOXdFTkU1bGJzQjZ6VUxmV3VubTQ?oc=5",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Louisiana man charged with killing woman on hiking trail and murdering co-worker with crossbow - The Guardian",
-   "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOZUlONFZfcVUwbHAwNDJwaXhTdFNFQkw1TGg4Yjgwa09vWHBUU25QcmdSLVh1RFlyd3Y2Rml4dVdzX3ZrV19valpDU18wbUhHRE1TUzJJTXF1eThqWlJQNkFteW5FQWptVDNINm5KaHhRSW5MWHJERTVPdWtZWHlkWE5iMGcwUEJ4UmhPTFRrTjZ0U0JXNkxWUmlrWGZZYWtxNHZlMzU0UEdZZw?oc=5",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "U.S. News recognized these Louisville hospitals in latest rankings - The Courier-Journal",
-   "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxQSVNkSG1BUml4WFp0eTVaRlJvM2RvVHItYmNLdHZIOEJuQzdGVlp1R05GVjMwRENzeU93c0J4TDZXbEwzNllVcEtMajFzeXdlN2lnUkVkUjNJUGZ5Y2FLdDlxRTBVX1J6SDhIczlqUkZKTllVbnNmQl91TXJGTmtwdzZLb1hfNy01NW1XT1NNa09WUWc0a0lYdXlWaGxhTjUxQWhDdWF0N09fSURyeU00dWpRV1Vabnk4ajVuZkx5V0lqTWlZWGV6SlFrYmFWWC1KdU0zWnhJdlE?oc=5",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "US senator says Pentagon restrictions on Canada focus on think tanks and social events - News4JAX",
-   "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxOV1lSMWRXdldSaTZZQTU2Y0NYLXVqMndWbjUtNW1CNlBIc1RuZTduTi1uODB0OU1jWm1Bd0VMTS1HX1BnLWdOX3lRMUY5MmxYYU9RYkJMMk9MRlJ4bGtvSmsyWjRrVENHeWI5WUdiVmIycnJDVnNQbElRYWdhV09vM2VpOEltMGpZUUdKMjZIRE44bmRBSXp4OEZ6cVdVUGNpYkxZRV9nb2tmNnFYb0V5UFlEN1BMNWxKUXJfUEtTVUxMTko0NlNKRFRHT2R3cFU?oc=5",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Russia Ukraine War - WV News",
-   "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPSEFkU3RnTUNtdDhIX3dXQkZzVkxsYVZxSTZqOWZlenVGbW4tckhjTUVoS0pta3ZvRDN3MkxRNWJHWW0xYWNWTVlGZDRvS1JpSGlmbzZkR0ZJR2o2eUd0aWVfZVJCTDNabVVTeDZjTVhKUDV4STNtRFlDaHpQTWlFeUhWcWFJMFBkeVR4NWp3a2taYm5BMzJydFJwUWprYmg0OUtpbzFzTQ?oc=5",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "US senator says Pentagon restrictions on Canada focus on think tanks and social events - Audacy",
-   "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOcTVJNU9oc01Kbm5yaG5ZVXlXU3Jpakl0X0tsUF9jRDE2STc4VTJfUG50WWxGdEcyZDZsTGl2MGNkTkhEN3dsTFM5eHZ0U3d1bXNEREVFMXIxSXpfZUh5REF1aTl0aEgxalJuZ3I0aUZHUF9DRDFmWjVYbEItTGJGWnl5ZDNKZzZfUWROak16QThtUkwzLUpQNGxqTUVHNnlrSWR2ak92SWE2d0gzUGVWWnVZUzc5WEh3MkdPay1HcXFLNlRqakE?oc=5",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Trump orders contractors to check with White House over any congressional inquiries",
-   "url": "https://www.theguardian.com/us-news/2026/nov/21/trump-contractors-congress-executive-order",
-   "score": 2.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Alaska, your next governor is a Wikipedia nerd",
-   "url": "https://techcrunch.com/2026/11/21/alaska-your-next-governor-is-a-wikipedia-nerd/",
-   "score": 1.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Detonating a pile of lead azide",
-   "url": "https://www.science.org/content/blog-post/detonating-huge-pile-lead-azide-really",
-   "score": 0.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "胰腺癌口服药一线数据：61 例中约 1/12 肿瘤消失",
-   "url": "https://event.eortc.org/ena2026/2026/11/20/metastatic-pancreatic-cancer-responds-well-to-initial-treatment/",
-   "score": 0.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "周末，大家今天都在干嘛？👍",
-   "url": "https://telegram.me/zaihuapd/45281",
-   "score": 0.0,
-   "profile": "tech-news"
+   "title": "Congress to call Jensen Huang in to answer for alleged Chinese spy affair",
+   "url": "https://techcrunch.com/2026/11/11/congress-to-call-jensen-huang-in-to-answer-for-alleged-chinese-spy-affair/",
+   "score": null,
+   "profile": "rss"
   }
  ]
 }
