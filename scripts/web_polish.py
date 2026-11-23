@@ -263,7 +263,7 @@ details[open]::details-content{height:auto}
   58%{opacity:.6}72%{opacity:0}100%{opacity:0}}
 .kiki-grass{position:absolute;left:6px;right:6px;bottom:0;height:9px;pointer-events:none;z-index:1;overflow:hidden}
 .kiki-grass .kg{position:absolute;bottom:0;flex:0 0 auto;transform-origin:50% 100%;
-  animation:kiki-grass-sway var(--dur,3.2s) ease-in-out infinite alternate;
+  animation:kiki-grass-sway var(--dur,0.62s) ease-in-out infinite alternate;
   animation-delay:var(--dl,0s);will-change:transform}
 .kiki-grass .kg svg{display:block;width:100%;height:100%;overflow:visible;transform:scaleX(var(--fl,1))}
 /* 摆动幅度/斜度/时长/相位**每簇都不一样**（buildGrass 按一维噪波逐簇写入）。
@@ -367,17 +367,23 @@ JS = """
       pct = Math.max(0, Math.min(100, pct));
       d.style.left = pct.toFixed(2) + '%';
       d.style.marginLeft = (-w / 2).toFixed(1) + 'px';
-      d.style.setProperty('--dur', (3.0 + noise1(i / 2.6) * 2.6 + rnd() * 0.9).toFixed(2) + 's');
+      // 频率：草是被风"抽"着抖的，一个来回 0.5~1.5s（单程 0.24~0.72s），像"哒哒哒"；
+      // 其中约 1/5 的簇是"阵风急抽"（单程 0.14~0.26s），成片里就有快有慢，不会整排一个节奏。
+      // 藤蔓体积大、惯性大，那边要慢要稳（5.4s），两者节奏必须拉开，否则草看着还是不动。
+      var nz = noise1(i / 2.6);
+      var dur = rnd() < 0.20
+        ? 0.14 + rnd() * 0.12
+        : 0.24 + nz * 0.34 + rnd() * 0.14;
+      d.style.setProperty('--dur', dur.toFixed(2) + 's');
       // 摆幅 / 斜度：按噪波取，3~9deg 不等。草只有 7px 高，角度太小（<2deg）顶部位移不到 0.3px，
       // 实机上根本看不出在动 —— 上一版就是这个毛病。
-      var nz = noise1(i / 2.6);
-      var amp = 3.2 + nz * 6.8 + rnd() * 1.2;
+      var amp = 3.6 + nz * 7.6 + rnd() * 1.2;
       d.style.setProperty('--g1', (-amp).toFixed(2) + 'deg');
       d.style.setProperty('--g2', (amp * 0.85 + rnd() * 1.0).toFixed(2) + 'deg');
-      var sk = 8 + nz * 15;
+      var sk = 9 + nz * 16;
       d.style.setProperty('--g1k', (-sk).toFixed(1) + 'deg');
       d.style.setProperty('--g2k', sk.toFixed(1) + 'deg');
-      d.style.setProperty('--dl', (rnd() * 4.2).toFixed(2) + 's');
+      d.style.setProperty('--dl', (rnd() * 1.0).toFixed(2) + 's');
       if (rnd() < 0.5) d.style.setProperty('--fl', '-1');   // 一半草簇左右镜像，形状也不一样
       d.style.opacity = (0.55 + rnd() * 0.34).toFixed(2);
       d.innerHTML = GRASS_SVG;
