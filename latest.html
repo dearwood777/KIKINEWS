@@ -249,6 +249,9 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -475,14 +478,12 @@ details[open]::details-content{height:auto}
 @keyframes kiki-spark{0%{opacity:0}24%{opacity:0}34%{opacity:var(--o,.85)}46%{opacity:.12}
   58%{opacity:.6}72%{opacity:0}100%{opacity:0}}
 .kiki-grass{position:absolute;left:6px;right:6px;bottom:0;height:9px;pointer-events:none;z-index:1;overflow:hidden}
-.kiki-grass .kg{position:absolute;bottom:0;flex:0 0 auto;transform-origin:50% 100%;
-  animation:kiki-grass-sway var(--dur,0.62s) ease-in-out infinite alternate;
-  animation-delay:var(--dl,0s);will-change:transform}
+.kiki-grass .kg{position:absolute;bottom:0;flex:0 0 auto;transform-origin:50% 100%;will-change:transform}
 .kiki-grass .kg svg{display:block;width:100%;height:100%;overflow:visible;transform:scaleX(var(--fl,1))}
-/* 摆动幅度/斜度/时长/相位**每簇都不一样**（buildGrass 按一维噪波逐簇写入）。
-   一块草同时在摇、却各摇各的幅度和节奏，才是真草；全簇同一个幅度一眼就假。 */
-@keyframes kiki-grass-sway{from{transform:rotate(var(--g1,-1.4deg)) skewX(var(--g1k,-9deg))}to{transform:rotate(var(--g2,1.6deg)) skewX(var(--g2k,9deg))}}
-@media (prefers-reduced-motion:reduce){.kiki-sky i,.kiki-grass .kg{animation:none}}
+/* 草的摆动**不用 CSS 关键帧**：固定周期 + 固定幅度 = 一个人在原地招手，一看看出假。
+   改由 startGrassWind() 每帧从"沿 x 传播的一维噪波段"取值算角度 —— 每簇的幅度、方向、
+   节奏都跟着波走的深浅变，再加一层整片一起"来一阵歇一阵"的阵风包络。 */
+@media (prefers-reduced-motion:reduce){.kiki-sky i{animation:none}}
 
 /* 藤垫在内容下面：胶囊/链接点击不受影响，也不会盖住文字 */
 .hero .pillrow{position:relative;z-index:2}
@@ -563,23 +564,12 @@ details[open]::details-content{height:auto}
       pct = Math.max(0, Math.min(100, pct));
       d.style.left = pct.toFixed(2) + '%';
       d.style.marginLeft = (-w / 2).toFixed(1) + 'px';
-      // 频率：草是被风"抽"着抖的，一个来回 0.5~1.5s（单程 0.24~0.72s），像"哒哒哒"；
-      // 其中约 1/5 的簇是"阵风急抽"（单程 0.14~0.26s），成片里就有快有慢，不会整排一个节奏。
-      // 藤蔓体积大、惯性大，那边要慢要稳（5.4s），两者节奏必须拉开，否则草看着还是不动。
-      var nz = noise1(i / 2.6);
-      var dur = rnd() < 0.20
-        ? 0.14 + rnd() * 0.12
-        : 0.24 + nz * 0.34 + rnd() * 0.14;
-      d.style.setProperty('--dur', dur.toFixed(2) + 's');
-      // 摆幅 / 斜度：按噪波取，3~9deg 不等。草只有 7px 高，角度太小（<2deg）顶部位移不到 0.3px，
-      // 实机上根本看不出在动 —— 上一版就是这个毛病。
-      var amp = 3.6 + nz * 7.6 + rnd() * 1.2;
-      d.style.setProperty('--g1', (-amp).toFixed(2) + 'deg');
-      d.style.setProperty('--g2', (amp * 0.85 + rnd() * 1.0).toFixed(2) + 'deg');
-      var sk = 9 + nz * 16;
-      d.style.setProperty('--g1k', (-sk).toFixed(1) + 'deg');
-      d.style.setProperty('--g2k', sk.toFixed(1) + 'deg');
-      d.style.setProperty('--dl', (rnd() * 1.0).toFixed(2) + 's');
+      // 每簇只存自己的"底子"：横向位置（决定波的相位）、最大摆幅、最大斜度、微小随机相。
+      // 真正每一帧的角度由 startGrassWind() 现算 —— 固定的 --dur/--g1 就是"机械招手"，
+      // 用户要的是波扫过来时"深浅不同"，所以这三个数只是上限，实际值是随波变的。
+      d.__x = pct / 100;
+      d.__amp = 4.4 + rnd() * 8.2;
+      d.__sk = 9 + rnd() * 14;
       if (rnd() < 0.5) d.style.setProperty('--fl', '-1');   // 一半草簇左右镜像，形状也不一样
       d.style.opacity = (0.55 + rnd() * 0.34).toFixed(2);
       d.innerHTML = GRASS_SVG;
@@ -587,6 +577,62 @@ details[open]::details-content{height:auto}
     }
     g.__vw = vw;                       // 记下生成时的视口宽：旋转屏幕后按新宽度重铺，否则草簇会被拉散
     hero.appendChild(g);
+    startGrassWind(hero);
+  }
+
+  // 草的风：不做 CSS 关键帧（固定周期 + 固定幅度，一眼看出是一个人在原地招手）。
+  // 真实游戏里的做法是**沿风方向传播的一维噪波场** —— 草在场上取到的是"这一刻波到了什么深浅"，
+  // 深浅决定摆动幅度与方向，波往右扫过去，同一簇下一 frame 又取到另一个深度，所以永远不重复。
+  // 再叠一层整片一起"来一阵、歇一阵"的阵风包络，就有了"风一阵一阵吹过来"的真实感。
+  function startGrassWind(hero) {
+    if (window.__kwGrass) return;                       // 已经有一份在跑（换屏重建时不必再起一循环）
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var NZ = [], q0, s0 = 20261;
+    function r0() { s0 = (s0 * 1103515245 + 12345) & 0x7fffffff; return s0 / 0x7fffffff; }
+    for (q0 = 0; q0 < 96; q0++) NZ.push(r0());
+    function nz(x) {                                     // 1D value noise，三次缓，相邻点平滑过渡
+      var a = Math.floor(x), b = a + 1, t = x - a;
+      t = t * t * (3 - 2 * t);
+      var va = NZ[(a % 96 + 96) % 96], vb = NZ[(b % 96 + 96) % 96];
+      return va * (1 - t) + vb * t;
+    }
+    var last = 0;
+    var wind = { raf: 0, dead: false, frames: 0 };
+    window.__kwGrass = wind;
+    function tick(ts) {
+      if (wind.dead) return;
+      wind.raf = requestAnimationFrame(tick);
+      if (ts - last < 20) return;                        // ~50fps 就够，省电也够顺
+      last = ts;
+      var t = ts / 1000;
+      var g = hero.querySelector('.kiki-grass');
+      if (!g) return;
+      var kids = g.children, i, el, f1, f2, s, jit, ang, sk;
+      // 阵风包络：0.55~1，慢速起伏 —— 大风来的时候整片都弯，过去了整片都轻
+      var gust = 0.55 + 0.45 * nz(t * 0.45 + 4);
+      for (i = 0; i < kids.length; i++) {
+        el = kids[i];
+        if (!el.__amp) continue;
+        // 两个尺度的波叠在一起：f1 是"一片片一起倒"的长波（整个草带约 5 个波峰），
+        // f2 是"细碎抖动"的短波（约 12 个波峰）—— 两者不同相，才不会整排同步招手
+        f1 = nz(el.__x * 4.6 - t * 0.45);
+        f2 = nz(el.__x * 11.5 - t * 1.05 + 11);
+        s = (f1 * 0.70 + f2 * 0.30 - 0.5) * 3.6;        // 放大到满幅，否则两个噪波一平均就把起伏抹平了
+        if (s > 1) s = 1; if (s < -1) s = -1;           // -1..1：这一刻这簇被推到哪边、推多深
+        jit = (nz(t * 1.7 + el.__x * 11 + 30) - 0.5) * 3.0;
+        if (jit > 1) jit = 1; if (jit < -1) jit = -1;
+        ang = el.__amp * (s * 0.82 + jit * 0.18) * gust;
+        sk = el.__sk * (0.26 + 0.74 * Math.abs(s)) * gust * (ang >= 0 ? 1 : -1);
+        el.style.transform = 'rotate(' + ang.toFixed(2) + 'deg) skewX(' + sk.toFixed(2) + 'deg)';
+        wind.frames++;
+      }
+    }
+    wind.raf = requestAnimationFrame(tick);
+    // 页面不可见时停掉，回来再接上 —— 手机后台不白烧 CPU
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { cancelAnimationFrame(wind.raf); }
+      else if (!wind.dead) { last = 0; wind.raf = requestAnimationFrame(tick); }
+    });
   }
 
   // 12) 报头卡右边缘的葫芦藤（装饰层，纯矢量 + CSS 摇摆；不吃点击、不影响布局）
@@ -1039,17 +1085,17 @@ details[open]::details-content{height:auto}
       var pC = { x: txT + dxr * 0.85, y: tyT - uy * 0.56 };
       var pD = { x: txT + dxr, y: tyT - uy };
       var sidePts = cubicPts(pA, pB, pC, pD, 16);
-      // **卷须从侧枝的一半就开始**：前一半是平滑的分枝，后一半一路螺旋收小到尖。
-      // 全留到最后 9px 才卷，末梢就簇成一个疙瘩（用户说的"都簇在一块"）。
-      var half = Math.round(sidePts.length / 2);   // 后一半（含中点）给弹簧用
-      var midP = sidePts[half - 1], prevP = sidePts[half - 3] || sidePts[0];
-      // 竖屏卡片窄（boxW≈68），侧枝总长只有 ~27px，一半 13px 装不下"半径 5 × 2.5 圈"，
-      // 硬塞就被压成一个小疙瘩 —— 窄屏改用更小的半径、更少的圈，卷出来才是舒展的螺旋。
-      var spR = w < 72 ? 3.4 : 5.0, spT = w < 72 ? 1.9 : 2.5, spL = w < 72 ? 8.8 : 9.5;
+      // **卷须从侧枝的 1/3 处就开始卷**：用户连着两轮说"开始得太晚"，一半还是嫌迟。
+      // 前 1/3 是平滑的分枝，后 2/3 一路螺旋收小到尖 —— 螺旋要占大头才像藤尖在找东西抓。
+      var split = Math.max(3, Math.round(sidePts.length * 0.34));
+      var midP = sidePts[split - 1], prevP = sidePts[split - 3] || sidePts[0];
+      // 卷须起点提前后留给弹簧的长度更短，半径/圈数得跟着改：与其在小空间里塞 2.5 圈糊成一坨，
+      // 不如少转几圈、每圈半径大一点 —— 屏幕上才看得出"一圈一圈往里收"的螺旋。
+      var spR = w < 72 ? 3.6 : 5.6, spT = w < 72 ? 1.7 : 1.9, spL = w < 72 ? 9.0 : 11.0;
       var spPts = springPts(midP.x, midP.y, midP.x - prevP.x, midP.y - prevP.y,
                             spL, spT, spR, 0.7, 0.46, 46);
       // 整根一起喂给 ribbon：深色 3.1px（跟主茎同宽）起、0.12px 收；亮色芯线 1.5→0.05
-      drawSprout(sproutSide, sidePts.slice(0, half).concat(spPts.slice(1)), 3.1, 0.12, 1.5, 0.05);
+      drawSprout(sproutSide, sidePts.slice(0, split).concat(spPts.slice(1)), 3.1, 0.12, 1.5, 0.05);
     }
 
     // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
