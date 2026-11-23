@@ -239,6 +239,9 @@ footer .dot{opacity:.45;margin:0 6px}
 .top.show{display:flex}
 </style>
 
+
+
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -468,8 +471,10 @@ details[open]::details-content{height:auto}
 .kiki-grass .kg{position:absolute;bottom:0;flex:0 0 auto;transform-origin:50% 100%;
   animation:kiki-grass-sway var(--dur,3.2s) ease-in-out infinite alternate;
   animation-delay:var(--dl,0s);will-change:transform}
-.kiki-grass .kg svg{display:block;width:100%;height:100%;overflow:visible}
-@keyframes kiki-grass-sway{from{transform:rotate(-1.4deg) skewX(-9deg)}to{transform:rotate(1.6deg) skewX(9deg)}}
+.kiki-grass .kg svg{display:block;width:100%;height:100%;overflow:visible;transform:scaleX(var(--fl,1))}
+/* 摆动幅度/斜度/时长/相位**每簇都不一样**（buildGrass 按一维噪波逐簇写入）。
+   一块草同时在摇、却各摇各的幅度和节奏，才是真草；全簇同一个幅度一眼就假。 */
+@keyframes kiki-grass-sway{from{transform:rotate(var(--g1,-1.4deg)) skewX(var(--g1k,-9deg))}to{transform:rotate(var(--g2,1.6deg)) skewX(var(--g2k,9deg))}}
 @media (prefers-reduced-motion:reduce){.kiki-sky i,.kiki-grass .kg{animation:none}}
 
 /* 藤垫在内容下面：胶囊/链接点击不受影响，也不会盖住文字 */
@@ -528,6 +533,16 @@ details[open]::details-content{height:auto}
     g.setAttribute('aria-hidden', 'true');
     var seed = 778899;
     function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    // 一维 value 噪波：相邻 2~3 簇共用同一段缓慢变化的随机值 —— 草是"一片一片"起伏的，
+    // 每簇完全独立就成了散沙；再用 rnd() 叠一点点各自的小抖动，两样合起来才像风。
+    var NZ = [], q0;
+    for (q0 = 0; q0 < 48; q0++) NZ.push(rnd());
+    function noise1(x) {
+      var a = Math.floor(x), b = a + 1, t = x - a;
+      t = t * t * (3 - 2 * t);
+      var va = NZ[(a % 48 + 48) % 48], vb = NZ[(b % 48 + 48) % 48];
+      return va * (1 - t) + vb * t;
+    }
     // 铺满：一根挨一根。密度按屏宽（每 6~8px 一簇），竖屏约 55 簇、横屏约 110 簇
     var vw = window.innerWidth || 400;
     var n = Math.max(18, Math.min(110, Math.round((vw - 12) / 10)));
@@ -541,8 +556,17 @@ details[open]::details-content{height:auto}
       pct = Math.max(0, Math.min(100, pct));
       d.style.left = pct.toFixed(2) + '%';
       d.style.marginLeft = (-w / 2).toFixed(1) + 'px';
-      d.style.setProperty('--dur', (2.6 + rnd() * 1.6).toFixed(2) + 's');
-      d.style.setProperty('--dl', (rnd() * 2.4).toFixed(2) + 's');
+      d.style.setProperty('--dur', (3.0 + noise1(i / 2.6) * 2.6 + rnd() * 0.9).toFixed(2) + 's');
+      // 摆幅 / 斜度：按噪波取，1~5deg 不等 —— 有几簇几乎只是轻轻点头，有几簇摆得明显
+      var nz = noise1(i / 2.6);
+      var amp = 0.8 + nz * 3.6 + rnd() * 0.8;
+      d.style.setProperty('--g1', (-amp).toFixed(2) + 'deg');
+      d.style.setProperty('--g2', (amp * 0.85 + rnd() * 0.7).toFixed(2) + 'deg');
+      var sk = 3 + nz * 10;
+      d.style.setProperty('--g1k', (-sk).toFixed(1) + 'deg');
+      d.style.setProperty('--g2k', sk.toFixed(1) + 'deg');
+      d.style.setProperty('--dl', (rnd() * 4.2).toFixed(2) + 's');
+      if (rnd() < 0.5) d.style.setProperty('--fl', '-1');   // 一半草簇左右镜像，形状也不一样
       d.style.opacity = (0.55 + rnd() * 0.34).toFixed(2);
       d.innerHTML = GRASS_SVG;
       g.appendChild(d);
@@ -585,32 +609,44 @@ details[open]::details-content{height:auto}
       stem.appendChild(el);
       return el;
     }
-    // 渐细：把一条点序列按长度切成 n 段，每段线宽从 w0 线性收到 w1，端点是圆头、互相重叠 ——
-    // 合起来就是一根"由粗到细"的藤。段长只有 1~3px、相邻宽度差 0.2px，看不出分段。
-    function taper(grp, pts, w0, w1, l0, l1) {
-      var n = grp.length, iEnd = pts.length - 1, gi;
-      for (gi = 0; gi < n; gi++) {
-        var i0 = Math.round(gi * iEnd / n), i1 = Math.round((gi + 1) * iEnd / n);
-        if (i1 <= i0) i1 = i0 + 1;
-        var dd = 'M' + pts[i0].x.toFixed(2) + ' ' + pts[i0].y.toFixed(2), pi;
-        for (pi = i0 + 1; pi <= i1 && pi <= iEnd; pi++) {
-          dd += ' L' + pts[pi].x.toFixed(2) + ' ' + pts[pi].y.toFixed(2);
-        }
-        var u = n > 1 ? gi / (n - 1) : 1;
-        grp[gi].d.style.display = 'block';
-        grp[gi].d.setAttribute('d', dd);
-        grp[gi].d.setAttribute('stroke-width', (w0 + (w1 - w0) * u).toFixed(2));
-        var lv = l0 + (l1 - l0) * u;
-        grp[gi].l.setAttribute('d', dd);
-        grp[gi].l.setAttribute('stroke-width', Math.max(0.2, lv).toFixed(2));
-        grp[gi].l.style.display = lv > 0.3 ? 'block' : 'none';
+    // 渐细：**一条闭合的填充带**（ribbon），不是切成若干段描边。
+    // 分段描边的做法会在每个段界留下一个圆头凸起（4x 特写下就是"竹节"），用户看成了断点。
+    // 这里沿中心线取左右两条边线、合成一个多边形一次 fill：宽度从 w0 线性收到 w1，
+    // 全程连续，没有段界。末端收到 0.1px，就是尖的。
+    function ribbon(pts, w0, w1) {
+      var n = pts.length, L = [], R = [], i;
+      for (i = 0; i < n; i++) {
+        var p = pts[i];
+        var a = pts[i > 0 ? i - 1 : 0], b = pts[i < n - 1 ? i + 1 : n - 1];
+        var dx = b.x - a.x, dy = b.y - a.y, m = Math.sqrt(dx * dx + dy * dy) || 1;
+        var hw = (w0 + (w1 - w0) * (i / Math.max(1, n - 1)) * (i / Math.max(1, n - 1))) / 2;
+        hw = Math.max(0.06, hw);
+        var nx = -dy / m, ny = dx / m;
+        L.push({ x: p.x + nx * hw, y: p.y + ny * hw });
+        R.push({ x: p.x - nx * hw, y: p.y - ny * hw });
       }
+      var d = 'M' + L[0].x.toFixed(2) + ' ' + L[0].y.toFixed(2), j;
+      for (j = 1; j < n; j++) d += ' L' + L[j].x.toFixed(2) + ' ' + L[j].y.toFixed(2);
+      for (j = n - 1; j >= 0; j--) d += ' L' + R[j].x.toFixed(2) + ' ' + R[j].y.toFixed(2);
+      return d + ' Z';
     }
-    function hideTaper(grp) {
-      for (var gi = 0; gi < grp.length; gi++) {
-        grp[gi].d.style.display = 'none';
-        grp[gi].l.style.display = 'none';
-      }
+    function addRibbon(col) {
+      var el = document.createElementNS(NS, 'path');
+      el.setAttribute('fill', col);
+      el.setAttribute('stroke', 'none');
+      el.setAttribute('d', '');
+      stem.appendChild(el);
+      return el;
+    }
+    function drawSprout(g, pts, w0, w1, hw0, hw1) {
+      g.body.style.display = 'block';
+      g.hi.style.display = 'block';
+      g.body.setAttribute('d', ribbon(pts, w0, w1));
+      g.hi.setAttribute('d', ribbon(pts, hw0, hw1));
+    }
+    function hideSprout(g) {
+      g.body.style.display = 'none';
+      g.hi.style.display = 'none';
     }
     function cubicPts(p0, p1, p2, p3, n) {
       var out = [], s;
@@ -657,15 +693,9 @@ details[open]::details-content{height:auto}
     // 侧枝 / 梢头：**一条 stroke 画不出渐细**（SVG 的 stroke-width 是常量），所以按长度切成
     // 若干小段、每段线宽递减、端点圆头互相重叠 —— 合起来就是"由粗到细"的一根，段长只有 1~3px、
     // 线宽差 0.2px，肉眼看不出分段。
-    function mkTaper(n) {
-      var arr = [], i0;
-      for (i0 = 0; i0 < n; i0++) {
-        arr.push({ d: addPath('', 2.0, '#143a10'), l: addPath('', 1.0, '#5aa03a') });
-      }
-      return arr;
-    }
-    var sproutSide = mkTaper(10);   // 第 6/7 片叶之间抽出的侧枝 + 末端弹簧卷须
-    var sproutTip = mkTaper(5);     // 竖屏顶端沿"设置"按钮走完后的细梢
+    // 侧枝 / 梢头：**填充带画法**（见 ribbon）—— 深色带宽 3.1→0.12、亮色芯线 1.5→0.05，两层叠在一起
+    var sproutSide = { body: addRibbon('#143a10'), hi: addRibbon('#5aa03a') };   // 第 6/7 片叶之间的侧枝 + 弹簧卷须
+    var sproutTip = { body: addRibbon('#143a10'), hi: addRibbon('#5aa03a') };    // 竖屏顶端沿"设置"走完之后的细梢
     box.appendChild(stem);          // 忘了这一行 = 叶子像一堆浮在半空的蘑菇（已经踩过一次）
     document.body.appendChild(box);
 
@@ -867,7 +897,7 @@ details[open]::details-content{height:auto}
     function placeVine() {
       var w = box.__w, h = box.__h;
       if (!w || !h) return;
-      hideTaper(sproutTip);        // 竖屏才画梢头，横屏先关掉
+      hideSprout(sproutTip);       // 竖屏才画梢头，横屏先关掉
       // 竖屏：主茎那条 STEM 顶端"往左折"的一小段是留给横屏横臂用的，竖屏留在场上就会和
       // 向右横走的一段反向交叉 —— 用户看到的就是"两条藤"。所以竖屏只画到 yv≈10% 处，
       // 再从那里一路往上推到按钮底；顶部两片叶（b>=78）随之挂到这条竖线上，不会悬空。
@@ -925,12 +955,13 @@ details[open]::details-content{height:auto}
         // 不再和"往左折"那一小段反向交叉；到顶后贴着按钮下沿往右走，右端翻上去、收成细梢。
         var syT = 4;
         var xE = box.__btnR ? Math.max(cutX + 20, Math.min(w - 2, box.__btnR + 2)) : (w - 4);
-        // 上升段带一点左右轻摆，末端切线趋近水平 —— 拐向横走时是圆角，不是 90° 硬角
-        dA += ' C' + (cutX + 2.6).toFixed(1) + ' ' + (cutY - (cutY - syT) * 0.40).toFixed(1) +
-              ' ' + (cutX + 6.5).toFixed(1) + ' ' + (syT + 2.0).toFixed(1) +
-              ' ' + (cutX + 10.0).toFixed(1) + ' ' + (syT + 0.6).toFixed(1);
+        // 上升段往**左**偏：主茎本身一路往左上走，侧枝已经往右伸了，顶段再往右就全挤在右边。
+        // 末端切线趋平再拐向右 —— 圆角，不是 90° 硬角。
+        dA += ' C' + (cutX - 1.2).toFixed(1) + ' ' + (cutY - (cutY - syT) * 0.40).toFixed(1) +
+              ' ' + (cutX - 6.4).toFixed(1) + ' ' + (syT + 1.8).toFixed(1) +
+              ' ' + (cutX - 4.4).toFixed(1) + ' ' + (syT + 0.4).toFixed(1);
         // 沿按钮底往右走：留 0.5px 的极轻起伏，不像一根拉直的杆
-        for (var qx = cutX + 10; qx <= xE - 8; qx += 3) {
+        for (var qx = cutX - 1; qx <= xE - 8; qx += 3) {
           dA += ' L' + qx.toFixed(1) + ' ' + (syT + 0.5 * Math.sin(qx / 6)).toFixed(1);
         }
         // 右端上翘：从按钮底下翻上去一点
@@ -946,7 +977,7 @@ details[open]::details-content{height:auto}
             y: Math.max(0.6, syT - 3.0 + u2 * 2.0 - Math.sin(u2 * Math.PI) * 0.9)
           });
         }
-        taper(sproutTip, tPts, 2.9, 0.45, 1.5, 0.2);
+        drawSprout(sproutTip, tPts, 2.9, 0.1, 1.4, 0.04);
       }
       stemDark.setAttribute('d', dA);
       stemLit.setAttribute('d', dA);
@@ -967,23 +998,33 @@ details[open]::details-content{height:auto}
           ' ' + (bx + 11.6).toFixed(1) + ' ' + (by - 11.6).toFixed(1) +
           ' ' + (bx + 9.4).toFixed(1) + ' ' + (by - 9.6).toFixed(1));
       }
-      // 侧枝：从下往上第 6 片叶（b=30）与第 7 片叶（b=20）之间，取中点 → 主茎上 y=23.5% 处
-      var yvT = 100 - 76.5;
+      // 侧枝：起点落在"第 7 片叶（b=82）的下沿"与"第 6 片叶（b=71）的上沿"的**正中**。
+      // 叶子是从锚点往下画满 w px 的，所以空隙中点比 b 值的中点还要往上让半个叶高 ——
+      // 上一版按 b 值中点取，实际就落在下面那片叶的叶身上了。
+      var loY = (1 - 82 / 100) * h;                 // b=82 叶的锚点 = 它的下沿
+      var hiY = (1 - 71 / 100) * h - 15;            // b=71 叶的顶沿
+      var tyT = (loY + hiY) / 2;
+      var yvT = tyT / h * 100;
       var txT = stemX(yvT) / 100 * w;             // 起点就压在主茎上 —— 不会出现断口
-      var tyT = yvT / 100 * h;
+      // 上升段往**左**偏：主茎本身是往左上走的，侧枝已经往右偏了，
+      // 两条都往右就挤在一边；顶段左倾、侧枝右伸，才一左一右拉开。
       var dxr = Math.min(w - 3 - txT, Math.max(14, w * 0.34));
-      var uy = Math.min(30, Math.max(17, h * 0.09));
+      var uy = Math.min(22, Math.max(10, h * 0.06));
       // 先几乎平着抽出来、后段再扬起 → 有弧度的右斜上，不是一条直冲的斜线
-      var pA = { x: txT, y: tyT };
-      var pB = { x: txT + dxr * 0.40, y: tyT - 1.4 };
+      var pBc = { x: txT + dxr * 0.40, y: tyT - 1.4 };
+      // 起点往茎身里**退 2.2px**（沿反方向）：圆头整个压在茎上、被茎吞掉，
+      // 肉眼就是"从茎里长出分枝"，不会看到一条接入线和一个疙瘩。
+      var back = 2.2 / Math.max(1, Math.sqrt(Math.pow(pBc.x - txT, 2) + Math.pow(pBc.y - tyT, 2)));
+      var pA = { x: txT - (pBc.x - txT) * back, y: tyT - (pBc.y - tyT) * back };
+      var pB = pBc;
       var pC = { x: txT + dxr * 0.85, y: tyT - uy * 0.56 };
       var pD = { x: txT + dxr, y: tyT - uy };
-      var sidePts = cubicPts(pA, pB, pC, pD, 14);
-      // 末端接着**弹簧卷须**：轴向 13px、转 2.6 圈 —— 环与环一前一后交叠着推出去，
-      // 半径 5.0 → 1.0 收尖；屏幕上是"一串被压扁的椭圆环"，像真藤的卷须，不是蜗牛壳也不是小果子
-      var spPts = springPts(pD.x, pD.y, pD.x - pC.x, pD.y - pC.y, 14, 2.2, 6.0, 1.0, 0.42, 40);
-      // 整根一起喂给 taper：2.9px 起、0.5px 收 —— 由粗到细，末端是尖的
-      taper(sproutSide, sidePts.concat(spPts.slice(1)), 2.9, 0.5, 1.5, 0.22);
+      var sidePts = cubicPts(pA, pB, pC, pD, 16);
+      // 末端接着**弹簧卷须**：轴向 9px、转 2.6 圈 —— 螺距(3.5px)比环的轴向尺寸(5.4px)小，
+      // 所以相邻的环在投影上必然交叠、连成一根连续的弹簧，不会变成一串断开的弧。
+      var spPts = springPts(pD.x, pD.y, pD.x - pC.x, pD.y - pC.y, 9, 2.6, 6.0, 0.9, 0.45, 44);
+      // 整根一起喂给 ribbon：深色 3.1px（跟主茎同宽）起、0.12px 收；亮色芯线 1.5→0.05
+      drawSprout(sproutSide, sidePts.concat(spPts.slice(1)), 3.1, 0.12, 1.5, 0.05);
     }
 
     // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
