@@ -428,7 +428,7 @@ JS = """
         // 靠 smootherstep 保证曲线圆 → 频率可以留在 0.5~0.7Hz 这个档，但不会出现"开关"感。
         f1 = nz(el.__x * 13.0 - t * 2.0);
         own = nz(t * 1.5 + el.__ph * 6.2 + 2);
-        s = (f1 * 0.50 + own * 0.36 + el.__b * 0.14 - 0.5) * 3.6;
+        s = (f1 * 0.50 + own * 0.36 + el.__b * 0.14 - 0.5) * 3.85;
         // 软饱和代替硬 clamp：硬 clamp 会把峰值削成平顶，视觉上就是"啪"地撞在两端不动了
         s = s / (1 + Math.abs(s) * 0.45);
         ang = el.__amp * (s * 0.86 + (nz(t * 1.2 + el.__ph * 9 + 30) - 0.5) * 0.24) * gust;
@@ -532,13 +532,21 @@ JS = """
     }
     // 三维弹簧：真正的瓜藤卷须是绕着一根轴**在空间里**转出来的，投影到屏幕上是一串"轴向被压扁的环"，
     // 半径一路收到 0。平面阿基米德螺线是"一圈比一圈大的蜗牛壳"，看着就是藤头上长了个果子 —— 不能用。
+    //
+    // **起点相位必须是 0、轴向用 (1-cos) 而不是 sin**：
+    // 老公式 `along = L*t + rr*squash*sin(ang)`、`a0 = π/2` —— 起点 sin 取到 1，
+    // 于是螺旋的第一圈先"往前冲一个半径"再往回收，视觉上就是**先往后旋、压回到弦的直段上**，
+    // 然后才继续往前。用户连着两轮说"还是先往后旋、跟直的那块重叠了"就是这个。
+    // 现在：`along = L*t + rr*squash*(1-cos(ang))`、`nrm = rr*sin(ang)`、`a0 = 0`
+    //   · 起点 along=0、nrm=0 → 正好接在弦的末端，切线垂直于推进方向，接入平滑
+    //   · (1-cos) 恒 ≥ 0 → **沿推进方向只增不减**，永远不会回头压到直段
     function springPts(ax0, ay0, dx, dy, L, turns, r0, r1, squash, nSeg) {
       var m = Math.sqrt(dx * dx + dy * dy) || 1;
       dx /= m; dy /= m;
-      var nx = -dy, ny = dx, out = [], a0 = Math.PI / 2, s;
+      var nx = -dy, ny = dx, out = [], s;
       for (s = 0; s <= nSeg; s++) {
-        var t = s / nSeg, ang = a0 + t * turns * Math.PI * 2, rr = r0 + (r1 - r0) * t;
-        var along = L * t + rr * squash * Math.sin(ang), nrm = rr * Math.cos(ang);
+        var t = s / nSeg, ang = t * turns * Math.PI * 2, rr = r0 + (r1 - r0) * t;
+        var along = L * t + rr * squash * (1 - Math.cos(ang)), nrm = rr * Math.sin(ang);
         out.push({ x: ax0 + dx * along + nx * nrm, y: ay0 + dy * along + ny * nrm });
       }
       out[0] = { x: ax0, y: ay0 };
@@ -555,13 +563,13 @@ JS = """
     // 两卷卷须：葫芦藤最好认的特征（d 存着归一坐标，布局时再换算成像素，见 pxD()）
     var CURL1 = 'M62 35 C72 33 76 26 71 23 C67 21 64 25 67 28';
     var CURL2 = 'M68 53 C58 51 54 56 58 61 C61 64 65 61 63 58';
-    var curl1 = addPath(CURL1, 1.5, '#5aa03a');
-    var curl2 = addPath(CURL2, 1.5, '#5aa03a');
+    var curl1 = addPath(CURL1, 1.2, '#5aa03a');
+    var curl2 = addPath(CURL2, 1.2, '#5aa03a');
     // 转角处往上探的一小段：从主茎拐弯点(17,6)再往上偏右长一节，末端带个小钩，
     // 收在原生"设置"按钮的正下方 —— 藤不是"到顶就断"，而是拐弯时还抽了个新枝
-    var branch = addPath('', 2.6, '#143a10');
-    var branchLit = addPath('', 1.4, '#5aa03a');
-    var branchCurl = addPath('', 1.4, '#5aa03a');
+    var branch = addPath('', 2.2, '#143a10');
+    var branchLit = addPath('', 1.1, '#5aa03a');
+    var branchCurl = addPath('', 1.1, '#5aa03a');
     // 侧枝 / 梢头：**一条 stroke 画不出渐细**（SVG 的 stroke-width 是常量），所以按长度切成
     // 若干小段、每段线宽递减、端点圆头互相重叠 —— 合起来就是"由粗到细"的一根，段长只有 1~3px、
     // 线宽差 0.2px，肉眼看不出分段。
@@ -857,7 +865,7 @@ JS = """
             y: Math.max(0.6, syT - 3.0 + u2 * 2.0 - Math.sin(u2 * Math.PI) * 0.9)
           });
         }
-        drawSprout(sproutTip, tPts, 2.9, 0.1, 1.4, 0.04);
+        drawSprout(sproutTip, tPts, 2.3, 0.09, 1.1, 0.038);
       }
       stemDark.setAttribute('d', dA);
       stemLit.setAttribute('d', dA);
@@ -908,17 +916,19 @@ JS = """
       // 容器右缘离屏幕还有 12px（leftPx 留的），再往里收 2px 安全边 → 可用到 w+10
       var room = (w + 10) - midP.x;
       var spR = w < 72 ? 5.0 : 6.0;
-      var spL = Math.max(14, Math.min(46, (room - spR * 1.2) / Math.max(0.35, cxs)));
+      // 新 springPts 的轴向是 (1-cos)，峰值会多推出 2*rr*squash —— 算 spL 时要把它先扣掉，
+      // 否则末端会冲出屏幕。sqL 是"净推进"，总视觉推进 ≈ spL + 2*spR*squash。
+      var spQ = 1.18;
+      var spL = Math.max(14, Math.min(46, (room - spR * spQ * 2 - 1) / Math.max(0.35, cxs)));
       // **"一圈 4cm 而不是 2cm"**：圈数由"每圈占多少长度"反推，不写死 turns。
       // 每圈推进 perTurn，则 圈数 = spL / perTurn —— spL 翻倍、圈数跟着翻倍，圈距恒定，
       // 所以簧是被"拉长"的（圈与圈之间距离变大），而不是在原地多绕几圈。
       var perTurn = w < 72 ? 16.0 : 18.0;
       var spT = Math.max(1.3, spL / perTurn);
-      // squash > 1：沿推进方向把圈再抻长一点（=1 是正圆，<1 是横向压扁）
       var spPts = springPts(midP.x, midP.y, tanx, tany,
-                            spL, spT, spR, 0.92, 1.35, 46);
+                            spL, spT, spR, 0.92, spQ, 46);
       // 整根一起喂给 ribbon：深色 3.1px（跟主茎同宽）起、0.12px 收；亮色芯线 1.5→0.05
-      drawSprout(sproutSide, sidePts.slice(0, split).concat(spPts.slice(1)), 3.1, 0.12, 1.5, 0.05);
+      drawSprout(sproutSide, sidePts.slice(0, split).concat(spPts.slice(1)), 2.4, 0.10, 1.15, 0.045);
     }
 
     // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
