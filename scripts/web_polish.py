@@ -540,12 +540,17 @@ JS = """
     // 现在：`along = L*t + rr*squash*(1-cos(ang))`、`nrm = rr*sin(ang)`、`a0 = 0`
     //   · 起点 along=0、nrm=0 → 正好接在弦的末端，切线垂直于推进方向，接入平滑
     //   · (1-cos) 恒 ≥ 0 → **沿推进方向只增不减**，永远不会回头压到直段
+    //
+    // 相位再改用 `t^1.55` 而不是 `t`：起点角速度 = 0，也就是**起点切线就是推进方向**，
+    // 和前面的弦同一方向无缝接上；往后角速度逐渐变大，圈越到尖端越紧 —— 真藤须就是这么卷的。
+    // 老版本相位是线性的，起点切线在推进方向上突然"折"一个 90°，直段与螺旋的交接点就特别生硬。
     function springPts(ax0, ay0, dx, dy, L, turns, r0, r1, squash, nSeg) {
       var m = Math.sqrt(dx * dx + dy * dy) || 1;
       dx /= m; dy /= m;
       var nx = -dy, ny = dx, out = [], s;
       for (s = 0; s <= nSeg; s++) {
-        var t = s / nSeg, ang = t * turns * Math.PI * 2, rr = r0 + (r1 - r0) * t;
+        var t = s / nSeg, ph = Math.pow(t, 1.25), ang = ph * turns * Math.PI * 2,
+            rr = r0 + (r1 - r0) * t;
         var along = L * t + rr * squash * (1 - Math.cos(ang)), nrm = rr * Math.sin(ang);
         out.push({ x: ax0 + dx * along + nx * nrm, y: ay0 + dy * along + ny * nrm });
       }
@@ -904,10 +909,12 @@ JS = """
       var pC = { x: txT + dxr * 0.70, y: tyT - uy * 0.96 };
       var pD = { x: txT + dxr, y: tyT - uy };
       var sidePts = cubicPts(pA, pB, pC, pD, 22);
-      // **卷须从侧枝的 1/6 处就开始卷**，后 5/6 全是螺旋 —— 用户要的是"整根弦从根到尖都长"，
-      // 不能把长度全堆在末端那几个圈上。
-      var split = Math.max(3, Math.round(sidePts.length * 0.16));
-      var midP = sidePts[split - 1], prevP = sidePts[split - 3] || sidePts[0];
+      // **整根从根部就开始旋，不留直段**：用户说"先笔直出去一小段然后再旋，那个交接点特别生硬"。
+      // split 从"弦长的 16%"改成 2 —— 只剩 2px 的过渡，后面全是螺旋；
+      // 配合 springPts 里相位用 t^1.55（起点角速度 0、切线沿推进方向），
+      // 于是"弦"和"螺旋"根本不存在分界：从茎上一出来就是一条曲率连续、越卷越紧的须。
+      var split = 2;
+      var midP = sidePts[1], prevP = sidePts[0];
       // ---- 螺旋长度不再写死，而是**把剩下的横向空间吃干净，一直推到屏幕右缘** ----
       // 上一版 spL 固定 19，弦加到 46 但螺旋只走 19px，"长度几乎没变"就是这里丢的。
       var tanx = midP.x - prevP.x, tany = midP.y - prevP.y;
