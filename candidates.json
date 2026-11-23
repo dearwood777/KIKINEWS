@@ -1,7 +1,19 @@
 {
- "generated_at": "2026-11-22T22:02:42+00:00",
- "count": 57,
+ "generated_at": "2026-11-23T22:06:06+00:00",
+ "count": 80,
  "items": [
+  {
+   "title": "The FIFA World Cup is returning to the U.S. - Deseret News",
+   "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPa1pjcW9rOGt3TTA5SjgxYmRNU3Jvam96TjNhdnF6SEs4MC1KUHNKN2k2bHRpYW9lRHdMeGd2TlA5RjdLSXZVTkZETG5zQ0VnUFp5X0VORHM4VmZXbHBjZ21lUmNYYWpKVWoxSE94OGR5aFFFelNUMzFjbVhvcTNaM0JTeHhndEU0ZFRfYmRodU9kU0YtVXdhYUJyb1U?oc=5",
+   "score": 10.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "CrowdStrike to acquire Zscaler for $44 billion",
+   "url": "https://techcrunch.com/2026/11/23/crowdstrike-to-acquire-zscaler-for-44-billion/",
+   "score": 9.0,
+   "profile": "tech-news"
+  },
   {
    "title": "Democrats win largest House majority since 1992 after flipping North Carolina seat",
    "url": "https://www.bbc.co.uk/news/articles/c6vg29g7dlyno?at_medium=RSS&at_campaign=rss",
@@ -9,340 +21,466 @@
    "profile": "world-news"
   },
   {
-   "title": "Cop31 climate talks break down as key deal rejected",
-   "url": "https://www.theguardian.com/environment/2026/nov/22/cop31-climate-talks-set-to-end-in-deep-division-as-key-deal-rejected",
+   "title": "Cop31 collapses: why did climate talks fall apart? - The Latest",
+   "url": "https://www.theguardian.com/news/audio/2026/nov/23/cop31-collapses-why-did-climate-talks-fall-apart-the-latest",
    "score": 9.0,
    "profile": "world-news"
   },
   {
-   "title": "Two groups verify mathematician’s claim that Claude helped prove mathematics problem",
-   "url": "https://www.theguardian.com/technology/2026/nov/21/anthropic-riemann-hypothesis-solved-claude-ai",
+   "title": "EU sanctions package intended to ‘keep pressure’ on Russia and ‘strike harder’ at its ability to fund Ukraine war – as it happened",
+   "url": "https://www.theguardian.com/world/live/2026/nov/23/russia-ukraine-war-zelenskyy-libya-benghazi-drone-attack-ship-merkury-un-nato-europe-latest-news-updates",
    "score": 9.0,
    "profile": "world-news"
   },
   {
-   "title": "Perplexity and Intelligence",
-   "url": "https://openai.com/index/perplexity-and-intelligence/",
+   "title": "GLM-5.4: Toward generalized coding with our first loop transformer",
+   "url": "https://z.ai/blog/glm-5.4",
    "score": 8.0,
    "profile": "tech-news"
   },
   {
-   "title": "COP31 fails to reach major climate deal as talks expose deep divisions",
-   "url": "https://www.bbc.co.uk/news/articles/cqwy06zrd26lo?at_medium=RSS&at_campaign=rss",
+   "title": "Fed's John Williams indicates higher interest rates likely 'over time' to address inflation",
+   "url": "https://www.cnbc.com/2026/11/23/john-williams-fed-inflation-rate-hikes.html",
    "score": 8.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "What's next after no deal at COP31 climate talks?",
-   "url": "https://www.bbc.co.uk/news/videos/cr1ewge81q4qo?at_medium=RSS&at_campaign=rss",
-   "score": 8.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Russian warship sinks in Benghazi after suspected Ukrainian drone attack",
-   "url": "https://www.theguardian.com/world/2026/nov/22/blast-russian-ship-suspected-drone-attack-benghazi-libya",
-   "score": 8.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "South Korean minister quits after AI cheating scandal engulfs university exams",
-   "url": "https://www.theguardian.com/world/2026/nov/22/south-korea-education-minister-resigns-after-ai-cheating-scandal-engulfs-university-exams",
-   "score": 8.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Democrats capture at least 258 House seats in largest sweep since 1992",
-   "url": "https://www.theguardian.com/us-news/2026/nov/22/house-democrats-historic-sweep",
-   "score": 8.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Analysis-Can Climate Diplomacy Build on the Collapse of COP31? - U.S. News & World Report",
-   "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPbVQxazMzOWtQRm5DS1RqUDg5SWs5RUJheEppdjFTUE5ZQ190WEJzOVN0QVhXZFFzMkdwVVRBWG5DcXExMzdhSEFJOU9xN0cyb3laa1lLc0I5OHZTWTJWWlZObXVpSnB3aGw0NTh5YTU5dGZabS1LZ05LYjQxWVl2RVpsS3VMY1NyeE9QZllPajJ1My0zRk5YYjFfX3hpUEZHaW8xOEhNQWxHRTB4MEctVmt3UEtWUQ?oc=5",
-   "score": 8.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "OpenAI’s chief scientist has thoughts on how to limit AI development",
-   "url": "https://techcrunch.com/2026/11/22/openais-chief-scientist-has-thoughts-on-how-to-limit-ai-development/",
-   "score": 7.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Russia-bound ship towed away after it was attacked in Gulf of Finland",
-   "url": "https://www.bbc.co.uk/news/articles/cj752ddve27ko?at_medium=RSS&at_campaign=rss",
-   "score": 7.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Cop31 failed but in ‘the real world’ the transition away from fossil fuels is inevitable - The Guardian",
-   "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQWFFCYTdZTVA5QV9UT082Mm92cmx3RGJ1UEVYTFZibm1xdnRrV3hSQThZd2xrOXFTcllTMk9UeXRBbGJtTnlSZFVnaGFMVDJkdnZDdmJER0RuUXI3UmZoTXhqZ1NFeU5Mam9OU0R0M1pWNGRZV2tSTUtUYmVnaFR2SlRtdmxFOC01LWVTQlNRQ0NvYXJVRHZ0Y2lwOUlwMXBvRmlVR19fWjQxZmtQQnc?oc=5",
-   "score": 7.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "US Army to detonate tonnes of unstable explosives in Iowa despite court order",
-   "url": "https://www.bbc.co.uk/news/articles/cvglrx764gdxo?at_medium=RSS&at_campaign=rss",
-   "score": 6.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Netanyahu rival condemns ‘Jewish terrorism’ after settler attacks on Palestinian villages",
-   "url": "https://www.theguardian.com/world/2026/nov/22/netanyahu-rival-condemns-settler-arson-attacks-palestinian-villages-west-bank",
-   "score": 6.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Pip review will call for overhaul rather than scrapping benefit for under-25s",
-   "url": "https://www.theguardian.com/society/2026/nov/22/pip-review-overhaul-rather-than-scrapping-benefit-under-25s-timms",
-   "score": 6.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "UK taxpayers held more than £1tn in offshore tax havens, latest HMRC data shows",
-   "url": "https://www.theguardian.com/business/2026/nov/22/uk-taxpayer-funds-held-in-offshore-tax-havens-top-1tn-latest-hmrc-data-shows",
-   "score": 6.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "摩尔线程产品经理：庐山 GPU 显存 64 GB",
-   "url": "https://www.tomshardware.com/pc-components/gpus/moore-threads-next-lushan-gaming-gpu-could-pack-a-record-64gb-of-vram-doubles-the-rtx-5090s-32gb-lofty-claims-of-15x-gaming-and-50x-ray-tracing-over-mtt-s80",
-   "score": 6.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "What Happened to Silicon Valley?",
-   "url": "https://www.oreilly.com/radar/what-happened-to-silicon-valley/",
-   "score": 5.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Show HN: I built a game where you are an LLM's subagent",
-   "url": "https://github.com/gulivan/worker755",
-   "score": 5.0,
-   "profile": "tech-news"
-  },
-  {
-   "title": "Employees at Eric Trump-backed robot startup lose health benefits as company's cash crunch deepens",
-   "url": "https://www.cnbc.com/2026/11/22/foundation-future-industries-health-benefits-payroll-base-group.html",
-   "score": 5.0,
    "profile": "finance-news"
   },
   {
-   "title": "TechCrunch Mobility: A/B testing robots vs. humans",
-   "url": "https://techcrunch.com/2026/11/22/techcrunch-mobility-a-b-testing-robots-vs-humans/",
-   "score": 5.0,
+   "title": "Amazon snaps up Decart’s AI optimization tech for $7.5B as it prepares to sell Trainium chips",
+   "url": "https://techcrunch.com/2026/11/23/amazon-snaps-up-decarts-ai-optimization-tech-for-7-5b-as-it-prepares-to-sell-trainium-chips/",
+   "score": 8.0,
    "profile": "tech-news"
   },
   {
-   "title": "Explosion on Russian ship at Libya port caused by suspected drone attack, officials say",
+   "title": "What failure of COP31 reveals about a divided world",
+   "url": "https://www.bbc.co.uk/news/articles/cky970n83rvjo?at_medium=RSS&at_campaign=rss",
+   "score": 8.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Trump administration deported US citizen to Mexico, DoJ admits in court",
+   "url": "https://www.theguardian.com/us-news/2026/nov/23/trump-administration-deported-citizen-mexico",
+   "score": 8.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Leaked data shows more than 1,000 Russian military suicides during Ukraine war",
+   "url": "https://www.theguardian.com/world/2026/nov/23/leaked-data-shows-more-than-1000-russian-military-suicides-during-ukraine-war",
+   "score": 8.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "US Imposes Sanctions on Dozens Linked to Iran's Shadow Banking Networks - U.S. News & World Report",
+   "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPVFZCbGVlWUNUdWFkYU9Uc2JLM0Y0M1RyMnlfZnZuZDVTNS1aZnhsNDJjUzJBcEhjcG9YRk15QnpBV2xNeG9yZWNERzdrMktNZ2dfanJaa2NxYkczSVF1WHR0Y3lrQjBsaHhtU09XaUpnektuYl8wSWdFdUVPZ01UNkFzRmZuWkZqVnZ1MTNzczVBSFpVd0NaRjRYU0VEcHdIWGptZ05XaG5PTWxzazdUMVYwQ2ZKT3FzTEtuZm1Tb1dJZw?oc=5",
+   "score": 8.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Germany taking seriously reports Russia may be planning to launch nuclear weapons into space - The Guardian",
+   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOOUtWdVJPaUZZOXBmZ0VhUzJTaWNKQVNwUFhzMmVaRWY3MW9ITXVnbWpMd2h0cmdyTEtmaDloN2E1VmNQd056ZTMwSVFPazRtSWtLZ1NXa1NBMUkzQ3VwNjJUajFhZ3B3UXlGNnF3WWhNNUxHelhoZUkzWS1XZERMZ25lSDcxcHVYZHBUbmJlb0FHaGlNSFU1eXF3?oc=5",
+   "score": 8.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Ladybird is now in alpha",
+   "url": "https://ladybird.org/posts/alpha/",
+   "score": 7.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "‘This establishes a bottom’: Jensen Huang’s return seen as likely to stop market sell-off, for now",
+   "url": "https://www.cnbc.com/2026/11/23/nvidia-jensen-huang-ceo-market-rally.html",
+   "score": 7.0,
+   "profile": "finance-news"
+  },
+  {
+   "title": "Jensen Huang isn’t out of the woods yet",
+   "url": "https://techcrunch.com/2026/11/23/jensen-huang-isnt-out-of-the-woods-yet/",
+   "score": 7.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "What strike on Russian ship in Libya says about spread of Ukraine war",
+   "url": "https://www.bbc.co.uk/news/articles/cm894p88jzxpo?at_medium=RSS&at_campaign=rss",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Israeli attacks have turned Gaza into 'toxic wasteland', Oxfam says",
+   "url": "https://www.bbc.co.uk/news/articles/c8r4gzzxvxl3o?at_medium=RSS&at_campaign=rss",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "India pledges $1.6bn to Nepal in reset of ties",
+   "url": "https://www.bbc.co.uk/news/articles/cwx2ervemj4ko?at_medium=RSS&at_campaign=rss",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Ukraine shares video of strikes on Russian ships off Libya",
+   "url": "https://www.bbc.co.uk/news/videos/c6wy93q5wwqvo?at_medium=RSS&at_campaign=rss",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Ukraine confirms it used naval drones to strike two Russian ships off Libya",
+   "url": "https://www.theguardian.com/world/2026/nov/23/ukraine-naval-drones-strike-russian-warship-libya",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Lucy Powell to visit China to promote UK education weeks after MI5 warning",
+   "url": "https://www.theguardian.com/politics/2026/nov/23/uk-visit-china-lucy-powell-education-mi5-universities-warning",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Metropolitan police seize 893kg of cocaine hidden in boxes of oranges",
+   "url": "https://www.theguardian.com/uk-news/2026/nov/23/metropolitan-police-seize-cocaine-hidden-boxes-oranges-new-spitalfields",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "‘Scapegoating’: green groups condemn plan to axe Environment Agency and Natural England",
+   "url": "https://www.theguardian.com/politics/2026/nov/23/natural-england-could-be-abolished-quango-cull-louise-haigh",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Jensen Huang reinstated as Nvidia CEO after Trump intervenes",
+   "url": "https://www.theguardian.com/technology/2026/nov/23/jensen-huang-reinstated-as-nvidia-chief-executive",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Codex2api 疑似遭供应链投毒",
+   "url": "https://github.com/WormW/codex2api-incident-2026-11",
+   "score": 7.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Meta AI 负责人称超级智能将至，控制权堪忧",
+   "url": "https://thenextweb.com/news/metas-ai-chief-says-superintelligence-is-arriving-and-control-is-at-risk",
+   "score": 7.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "黄仁勋回归！",
+   "url": "https://nvidianews.nvidia.com/news/nvidia-board-reinstates-jensen-huang-as-president-ceo-and-board-director",
+   "score": 7.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "U.S. will host the 2031 Women's World Cup, FIFA announces - CBS News",
+   "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxPMVVTRk9yMmM4UG1TTjFFTEZuN3VvWlNHMmhzOVZsRGV2VE4zMEh3WHBsQmR6MnczV1pqWTdhYWJGSW5SMXdFX1A3TFJqOHN4OWktNzFnNW1oNWJoenJDbXRoSWhTcGdBRW9LV3kzSDlVZ0dWU3BKTUxsb09XTTdxRXB3?oc=5",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "PODCAST: Huang reinstated, Ukraine hits Russian ship, Black Friday AI (Updated) - Reuters",
+   "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNajRPZ3A2N2ZWTGl1dVlMQTk4OGpNTHh6dG1YbjRpMktzbUhBYUdFaEpJbnhOSnVSZlJUYUpQNDcyRHJQY0NJQW0tSkdtLWtwTWR6SU15TmNyWlp5Y3FNUENDYTRpa3VYNFhvSG03ZEtYU2lQZkRTazhpdXRrS3VZNzBTZnJoWlJKZHJVQkVKc3hnRDZHbmtIY0lwRnlkc0It?oc=5",
+   "score": 7.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Per Arm's request, this site will be discontinued on 4 December 2026 :(",
+   "url": "https://arm.jonpalmisc.com/",
+   "score": 6.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Dario is hyping the dangers so OSS models are illegal and he stays in control",
+   "url": "https://twitter.com/ylecun/status/2124550037912920090",
+   "score": 6.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Megaspeed, the company at the center of the Jensen Huang scandal, appears headed for a U.S. blacklist",
+   "url": "https://techcrunch.com/2026/11/23/megaspeed-the-company-at-the-center-of-the-jensen-huang-scandal-appears-headed-for-a-u-s-blacklist/",
+   "score": 6.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Russian warship hit by Ukrainian drones in Libya, Zelensky says",
    "url": "https://www.bbc.co.uk/news/articles/cr894gjz0j0yo?at_medium=RSS&at_campaign=rss",
-   "score": 5.0,
+   "score": 6.0,
    "profile": "world-news"
   },
   {
-   "title": "'Danger seems greater all the time': Ukrainians search for missing after Russian strikes",
-   "url": "https://www.bbc.co.uk/news/videos/cre3dvd1k9y1o?at_medium=RSS&at_campaign=rss",
-   "score": 5.0,
+   "title": "Nigeria's president says he is also hit by water and power cuts plaguing country",
+   "url": "https://www.bbc.co.uk/news/articles/cv1j65xjjk65o?at_medium=RSS&at_campaign=rss",
+   "score": 6.0,
    "profile": "world-news"
   },
   {
-   "title": "Three killed and dozens missing after fire at Indonesian factory",
-   "url": "https://www.bbc.co.uk/news/articles/cw8dvg5pgm0eo?at_medium=RSS&at_campaign=rss",
-   "score": 5.0,
+   "title": "Australian politics live: Labor to ‘save more than we spend’ in budget update, Chalmers says; rental affordability plummets to 14-year low",
+   "url": "https://www.theguardian.com/australia-news/live/2026/nov/24/labor-penny-wong-us-china-anthony-albanese-final-sitting-week-ntwnfb",
+   "score": 6.0,
    "profile": "world-news"
   },
   {
-   "title": "Australian politics live: Labor to extend PBS medicine freeze to 2030; Bowen ‘failed’ on Cop, Hume says",
-   "url": "https://www.theguardian.com/australia-news/live/2026/nov/23/anthony-albanese-digital-duty-of-care-labor-greens-coalition-one-nation-angus-taylor-pauline-hanson-penny-wong-ai-ntwnfb",
-   "score": 5.0,
+   "title": "Israel seeks to jail Palestinian student activist without trial after dorm arrest",
+   "url": "https://www.theguardian.com/world/2026/nov/23/student-arrest-racist-campaign-israel-palestine-benjamin-netanyahu",
+   "score": 6.0,
    "profile": "world-news"
   },
   {
-   "title": "Datacentre bosses met Australian state premiers and ministers almost 120 times in three years, analysis finds",
-   "url": "https://www.theguardian.com/australia-news/2026/nov/23/datacentre-bosses-met-australian-state-premiers-and-ministers-almost-120-times-in-three-years-analysis-finds",
-   "score": 5.0,
+   "title": "Huang reinstatement sows Wall Street optimism, expert concern - Northeastern Global News",
+   "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQSVpsWGNBMWxoNDB5S0dPWGEwNHk1THpockNITG9ENDhMUFFraFBGX04zNGpEeUszZ1BwTkx3aGFqZ0RaUnFOYklVWWluZkRVbmxqc3ZRNlpqYlpMbVhqcGRxYU1tZ2kxTWhkanhmSm9EUEw3OHotOGtpVkhaa2Z1UjRn?oc=5",
+   "score": 6.0,
    "profile": "world-news"
   },
   {
-   "title": "Australia urged to wean off imported fossil fuels amid global supply shocks",
-   "url": "https://www.theguardian.com/australia-news/2026/nov/23/australia-urged-to-wean-off-imported-fossil-fuels-amid-global-supply-shocks",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "US intelligence chief says he trusts Trump’s description of Putin as ‘my friend’",
-   "url": "https://www.theguardian.com/us-news/2026/nov/22/intelligence-chief-jay-clayton-trump-putin-my-friend",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "UK-EU food deal hailed by British firms: ‘We’re pretty aligned anyway’",
-   "url": "https://www.theguardian.com/business/2026/nov/22/uk-eu-food-sps-deal-brexit-checks",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "NHS savings drive leaves hospitals in England facing ‘unpalatable’ cuts",
-   "url": "https://www.theguardian.com/society/2026/nov/22/nhs-savings-hospitals-trusts-england-cuts",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Hakeem Jeffries willing to cross political aisle to work on Democrats’ agenda",
-   "url": "https://www.theguardian.com/us-news/2026/nov/22/hakeem-jeffries-democrats-agenda",
-   "score": 5.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "美股科技股遭血洗，亚洲股市严阵以待",
-   "url": "https://news.bjd.com.cn/2026/11/22/12039852.shtml",
+   "title": "‘Outrageous,’ ‘reckless,’ ‘wow’: Here’s what politicians are saying about Jensen Huang’s return to Nvidia",
+   "url": "https://techcrunch.com/2026/11/23/outrageous-reckless-wow-heres-what-politicians-are-saying-about-jensen-huangs-return-to-nvidia/",
    "score": 5.0,
    "profile": "tech-news"
   },
   {
-   "title": "Soccer-Legacy key for 2031 and 2035 Women’s World Cup says sports executive - Taylorville Daily News",
-   "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxOa0txWGx6WW1zYnk2SWVrX2gtWmZLd01XdGtpcFdpYXhVdzFSM3YtTkVGWFZrOVpTSUN3aG1VRXVDSC1LSmxhOXRXZlZvZmpCcDBiWWpEX0tWU3ZySll5Z3plLXpqR2FDRy1Va0UwazkwRFB5TFAxdnlSd3VoT3EtTWJmX3cybHl6SEZkSmh4NWtoVUo5WGdIbFl4czU5LUtUOUh0MHcwclBEU1p1RXBhRU5R?oc=5",
+   "title": "Google Search’s AI Mode can now tap into Drive and Wallet for more personalized responses",
+   "url": "https://techcrunch.com/2026/11/23/google-searchs-ai-mode-can-now-tap-into-drive-and-wallet-for-more-personalized-responses/",
+   "score": 5.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Dutch privacy authority urges consumers not to buy ‘pervert glasses’",
+   "url": "https://techcrunch.com/2026/11/23/dutch-privacy-authority-urges-consumers-not-to-buy-pervert-glasses/",
+   "score": 5.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Trump endorses Jensen Huang’s return to Nvidia, says US has no evidence of wrongdoing",
+   "url": "https://techcrunch.com/2026/11/23/trump-endorses-jensen-huangs-return-to-nvidia-says-us-has-no-evidence-of-wrongdoing/",
+   "score": 5.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Uber now lets you book rides that record the drive by default",
+   "url": "https://techcrunch.com/2026/11/23/uber-now-lets-you-book-rides-that-record-the-drive-by-default/",
+   "score": 5.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "'I want to destroy capitalism, not France': On the streets with the French ultra left",
+   "url": "https://www.bbc.co.uk/news/articles/cw074km48myeo?at_medium=RSS&at_campaign=rss",
    "score": 5.0,
    "profile": "world-news"
   },
   {
-   "title": "Explosion on Russian ship at Libya port caused by suspected drone attack, officials say - BBC",
-   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE5RYTdJa3FLUUotRjRtWmFYcWsyT29UT0FCVDUycVp4MmlCMUkzUVR3cVJUVTJWNDlQX0JLbk01S29SZEtLM0lXZHdzX2U4N2JBVDdhVjN2TEdlczg?oc=5",
+   "title": "Prominent Zimbabwean preacher arrested on sexual assault allegations",
+   "url": "https://www.bbc.co.uk/news/articles/cxyvdmjr893zo?at_medium=RSS&at_campaign=rss",
    "score": 5.0,
    "profile": "world-news"
   },
   {
-   "title": "The collapse of UN climate talks, over fossil fuels, was years in the making - KSAT",
-   "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxObHVIakR5dFdXbHNvSDBiYVRwLXVyVmVwWl9hbmNaMHBNMjMxZVhjUDN0aFZ1RWRzQ0JrRjF5WjlyS0FvYnVkMnY2bDJEb2lwODhQSW91ZGRHb2ZRcXZlU0F5NDFRQUUxOXNtVTZqVjYzNlR3MFBXY1BiX3RVOHhBaXFuWkNuUlZZRTd5NUdnalFWWjR5Z2FvZi1zMWJKa01xaUNVS09CNGJNMXp2Y2tFWU8xekx2NU56MEE?oc=5",
+   "title": "Flights cancelled in Belgium due to cost-of-living strike",
+   "url": "https://www.bbc.co.uk/news/articles/cwdr155e2d05o?at_medium=RSS&at_campaign=rss",
    "score": 5.0,
    "profile": "world-news"
   },
   {
-   "title": "World news today: Trump eyes new Iran strikes, COP31 fails - DNE Africa",
-   "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1KT0gwazZTOEZxeXNLUmZZMnZONm5GTC1GOVF6MExKcUo5cDc2Zm4xSFg0TElta3NMRFZLY3pDUExmRFprcHZwOThiU21kWm8wY1M5bEZtUHM4SWlRcU0xaVlnN3RSZEpWYjBxNWlTZVc?oc=5",
+   "title": "Mexican soldiers attacked in wake of drug lord's arrest",
+   "url": "https://www.bbc.co.uk/news/articles/c5rmgkv2lk73o?at_medium=RSS&at_campaign=rss",
    "score": 5.0,
    "profile": "world-news"
   },
   {
-   "title": "Why data centers are at the center of the Big Tech backlash",
-   "url": "https://techcrunch.com/2026/11/22/why-data-centers-are-at-the-center-of-the-big-tech-backlash/",
+   "title": "The rise and fall and rise again of Jensen Huang",
+   "url": "https://www.bbc.co.uk/news/articles/cmze750zg0jeo?at_medium=RSS&at_campaign=rss",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Barbados town’s three-year deal with Bristol ‘part of the reparative process’",
+   "url": "https://www.theguardian.com/news/2026/nov/23/barbados-minister-speightstown-bristol-deal-slave-trade-reparations",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Plant-based lunches could cut Australia’s emissions by 15m tonnes, new research shows",
+   "url": "https://www.theguardian.com/environment/2026/nov/23/plant-based-lunches-could-cut-australia-emissions-by-15m-tonnes-new-research-shows",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Domestic violence perpetrators are using smart car features to abuse, researchers warn",
+   "url": "https://www.theguardian.com/society/2026/nov/23/smart-car-tracking-control-features-domestic-violence-warning-ntwnfb",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Gisèle Pelicot ‘deeply shocked’ after nude images used to promote book",
+   "url": "https://www.theguardian.com/world/2026/nov/23/gisele-pelicot-deeply-shocked-nude-images-book-france",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "What tactics will Burnham use to sell his EU plans? – podcast",
+   "url": "https://www.theguardian.com/politics/audio/2026/nov/23/what-tactics-will-burnham-use-to-sell-his-eu-plans-podcast",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Burnham says it would be ‘unthinkable’ for the UK to rejoin the EU without a referendum – as it happened",
+   "url": "https://www.theguardian.com/politics/live/2026/nov/23/andy-burnham-brexit-europe-eu-uk-summit-deal-commons-cbi-farage-badenoch-haigh-politics-latest-news-updates",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Only six beds for trans victims of domestic abuse in UK, report finds",
+   "url": "https://www.theguardian.com/society/2026/nov/23/only-six-beds-for-trans-victims-of-domestic-abuse-in-uk-report-finds",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Republican senators criticize Nvidia’s decision to reinstate Jensen Huang",
+   "url": "https://www.theguardian.com/technology/2026/nov/23/trump-jensen-huang-nvidia-reinstated",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Trump defers to appeals court over army plan to detonate bomb-making material in Iowa",
+   "url": "https://www.theguardian.com/us-news/2026/nov/23/iowa-lead-bomb-appeals-court",
+   "score": 5.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Elon Musk and others rejoice as Jensen Huang is reinstated at Nvidia amid scandal",
+   "url": "https://techcrunch.com/2026/11/23/elon-musk-and-others-rejoice-as-jensen-huang-is-reinstated-at-nvidia-amid-scandal/",
    "score": 4.0,
    "profile": "tech-news"
   },
   {
-   "title": "Open Social Web Alliance",
-   "url": "https://osw-alliance.net/en/",
+   "title": "Nvidia reverses course and brings Jensen Huang back as CEO",
+   "url": "https://techcrunch.com/2026/11/23/nvidia-reverses-course-and-brings-jensen-huang-back-as-ceo/",
+   "score": 4.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Iranian authorities flog singer who performed without hijab, lawyers say",
+   "url": "https://www.bbc.co.uk/news/articles/cq1j6585l5g6o?at_medium=RSS&at_campaign=rss",
+   "score": 4.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Search and rescue teams race against time to find survivors after Nigeria boat tragedy",
+   "url": "https://www.bbc.co.uk/news/articles/cq7820xjm49po?at_medium=RSS&at_campaign=rss",
+   "score": 4.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Nvidia Reinstates Jensen Huang as CEO",
+   "url": "https://www.cnbc.com/2026/11/23/nvidia-jensen-huang-ceo.html",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "‘You Can See Everything’ has made more than $100M worldwide",
-   "url": "https://techcrunch.com/2026/11/22/you-can-see-everything-has-made-more-than-100m-worldwide/",
+   "title": "Nvidia employees greet Jensen Huang like a hero as he returns to company’s HQ",
+   "url": "https://techcrunch.com/2026/11/23/nvidia-employees-greet-jensen-huang-like-a-hero-as-he-returns-to-companys-hq/",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "The best apps to make new friends right now",
-   "url": "https://techcrunch.com/2026/11/22/as-people-look-for-ways-to-make-new-friends-here-are-the-apps-promising-to-help/",
+   "title": "Jensen Huang scheduled to testify next week in Senate following reinstatement as Nvidia CEO",
+   "url": "https://techcrunch.com/2026/11/23/jensen-huang-scheduled-to-testify-next-week-in-senate-following-reinstatement-as-nvidia-ceo/",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "Can a TV be too large? An investigation",
-   "url": "https://techcrunch.com/2026/11/22/can-a-tv-be-too-large-an-investigation/",
+   "title": "Meta throws out its net-zero goal — its competitors should be furious",
+   "url": "https://techcrunch.com/2026/11/23/meta-throws-out-its-net-zero-goal-its-competitors-should-be-furious/",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "Miley Cyrus marries Maxx Morando in California ceremony",
-   "url": "https://www.bbc.co.uk/news/articles/cq8e0p87l89lo?at_medium=RSS&at_campaign=rss",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Potty-mouthed MPs ranked as Australian parliament sets new swearing record",
-   "url": "https://www.theguardian.com/news/2026/nov/23/potty-mouthed-mps-ranked-as-australian-parliament-sets-new-swearing-record",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Briton swims length of strait of Hormuz to highlight environmental cost of war",
-   "url": "https://www.theguardian.com/world/2026/nov/22/briton-lewis-pugh-swims-strait-of-hormuz-environment-war",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Theresa May’s blast from the past calls Tories back to their unhappy place | Peter Walker",
-   "url": "https://www.theguardian.com/politics/2026/nov/22/theresa-may-blast-from-the-past-tories-brexit",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "US releases files on suspected Bigfoot sightings in Montana and Oregon",
-   "url": "https://www.theguardian.com/us-news/2026/nov/22/bigfoot-sighting-report-released-montana-oregon-forest-service",
-   "score": 3.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "UU 远程答疑：文件传输等多项功能免费版可用",
-   "url": "https://www.xiaohongshu.com/discovery/item/6affe8f6000000001603d91d",
+   "title": "Trump reportedly called into Nvidia board meeting to advocate for Huang’s return",
+   "url": "https://techcrunch.com/2026/11/23/trump-reportedly-called-into-nvidia-board-meeting-to-advocate-for-huangs-return/",
    "score": 3.0,
    "profile": "tech-news"
   },
   {
-   "title": "Trump to blast ‘hydrocarbon highway’ through ‘world’s longest art gallery’ - Planetizen",
-   "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQQUk5eWg0UzJuMUQ3WlNiMWV4bWFwR3drSGVDRnMtTjhwOGpWS0QwNnAxb1JSbFVsSkk5SVBLeDBicFFnZHZWUWZtM1lRbmxnZ0JyU2hXT01Yd0lySEJZTUJIUW5JeVdvS2lzSG5sZXQ0alBBcHowNE9nUExCaVhmalhseTk5eGRJdHB6ck5xSjExYlF6ZXUyN0EzWmktd21qWE5KNE9PNFE5OEJXdGFHSFdXNA?oc=5",
+   "title": "Sierra doubles valuation to $30B within six months as demand for AI in CX takes off",
+   "url": "https://techcrunch.com/2026/11/23/sierra-doubles-valuation-to-30b-within-six-months-as-demand-for-ai-in-cx-takes-off/",
+   "score": 3.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "Comedian impersonates Trump's dance moves, mocks trade talks at Canada press dinner",
+   "url": "https://www.bbc.co.uk/news/articles/cr930y92dyx4o?at_medium=RSS&at_campaign=rss",
    "score": 3.0,
    "profile": "world-news"
   },
   {
-   "title": "New to MotoGP? Meet Marc Marquez, the 2026 World Champion - motogp.com",
-   "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQdVNKa1FMUWV4Rk96RzBCWDI3V1MxNHRVZWhDSWdvSk1jdHpSZUNwTTRES0VBbHc4X1FRU0tBV0Zicm96OUNtN2dUR3R2M1F2aVczVkZWRTNPVmZGcG9VTXpGTnBDRFc5dERxV0M4Ml9McWlaZDhvMFpmXzJvMi1tdTRQc3l1QllBdlNSQzNvZHZQSmJKeHRuaThFaFJpTVRwOXpoR3JoVFM?oc=5",
+   "title": "‘Pervert glasses’ named word of the year by Macquarie dictionary, ahead of ‘nudify’ and ‘AI;DR’",
+   "url": "https://www.theguardian.com/science/2026/nov/23/pervert-glasses-meta-word-of-the-year-macquarie-dictionary-nudify-aidr",
    "score": 3.0,
    "profile": "world-news"
   },
   {
-   "title": "Yngwie Malmsteen’s worst onstage moment: “I threw my ‘59 Strat up in the air. I didn’t catch it perfectly…” - Guitar World",
-   "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQUHBVa2ZoZVhEMzRCY3hDX1QtSFp5ZzI1U2dzVVFDeUVnak1qajlMY3NDQlZQZEJyR09vSHkzM2Z0NjVSMllFcDB4eUhsZ3lzQWUzbjNTYjZDTFVGQmIwZnVVY05VN1NmeDBtMTFGNnRCd25pa2hnTC1qTi1zV3g5cTJReEpFNGYwX0RzZ3BuVV9wSFN4VWxPNXRHenU2U2M5MkE?oc=5",
+   "title": "Burnham says it would be ‘unthinkable’ to rejoin EU without referendum",
+   "url": "https://www.theguardian.com/politics/2026/nov/23/andy-burnham-brexit-deal-eu",
    "score": 3.0,
    "profile": "world-news"
   },
   {
-   "title": "Russell Brand’s wife vows to abide by prison rules after video controversy",
-   "url": "https://www.theguardian.com/news/2026/nov/22/russell-brand-wife-laura-gallacher-youtube-video",
+   "title": "Iranian singer and four others receive lashes after performance without hijab",
+   "url": "https://www.theguardian.com/world/2026/nov/23/iranian-singer-lashes-performing-without-hijab",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Former prince Andrew was paid £750,000 in hope of helping Turkish woman with passport, high court told",
+   "url": "https://www.theguardian.com/uk-news/2026/nov/23/former-prince-andrew-was-paid-bribe-to-help-turkish-woman-with-passport-high-court-told",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Top Democrats raise corruption concerns after Trump involvement in Jensen Huang’s Nvidia reinstatement – live",
+   "url": "https://www.theguardian.com/us-news/live/2026/nov/23/donald-trump-democrats-republicans-presidential-primary-midterms-house-latest-news-updates",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "Republican sheriff racked up $3m security bill for California taxpayers, including Ritz-Carlton stays and steak",
+   "url": "https://www.theguardian.com/us-news/2026/nov/23/sheriff-chad-bianco-security-spending-california-governor-candidate",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "英伟达董事会据称未咨询高管层，决定让 Jensen Huang 复任 CEO",
+   "url": "https://www.bloomberg.com/news/articles/2026-11-23/nvidia-s-about-face-on-huang-made-without-consulting-leadership",
+   "score": 3.0,
+   "profile": "tech-news"
+  },
+  {
+   "title": "News - Oregon Guard Physician Assistant Adds L-Sit Chin-Up World Record to His Collection - DVIDS",
+   "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPMHUtNjRtRHctNzhmd3hGX0VEM2UzT1Z0dTJ3ckhuYmJzMFNFVGl5SmhWeHV1c2gzRGlBOVY1UGhkcmYzSUFkX0dheGdoTU5uUklqdHJaMFBrQUQxN3FsY2FrOWFMSXl4UENvZndaWXpKb3pTLV9IT2U5SF9OVkswdml1RXFES3hVT2ZhRkVqeTZhZjJXdlBJS25ycDVhUzZRb0FhTkJ4WjZVRXlZLVFubVdXRnZwZ0k?oc=5",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "As U.S. Infrastructure Crumbles, ABC’s ‘World News Tonight’ Posts Highest Week-Long Daily Ratings Since Covid - IMDb",
+   "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE9KSGRNaVE2cTA5TWpPNE0xQnVJZjdRMHJhaG5hZFNoVXFuZUlDUzQwMzMzcnJxQjcyYm42VGMyS1FoQUU5QjNRN3dKSkx2N1BVSDNsTGRtcm45eHBSM0R5MnZR?oc=5",
+   "score": 3.0,
+   "profile": "world-news"
+  },
+  {
+   "title": "上海地铁票价时隔21年首次调整",
+   "url": "https://weibo.com/1699432410/5368461393397183",
    "score": 2.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Week in review: Test your knowledge of notable news - news8000.com",
-   "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxNTmo5eTNsQTZ6a2NkdHlDZDBWR2lnVUxySXQ1V1RzR1Z6OGNfajBMU3NpNnlmNG9kMzVvTVAtM0l1OTFNQWpYSmhGd1FsM3lIYV9ZWE5fQTN4UGczdkZEQ1NUV1F6WEhHazZtd0hwcE5jZWlWTHowMDdJYnBMMFdZcjRKZmRPY0F0Z1ZPSzB2NE5HTWdKbHV6MXRMOWdmLVBSRWMyM2VMbGZQU0tLUkJqSS1vR2FJMW9SdmtLUmtWYzFwSFdZUXBOU3NRRktXb2g1czctc2NfdElVTGJyZ0E?oc=5",
-   "score": 2.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "Jensen Huang’s reported affair was ‘most expensive sex since Helen of Troy’, US senator says",
-   "url": "https://www.theguardian.com/us-news/2026/nov/22/jensen-huang-nvidia-john-kennedy",
-   "score": 1.0,
-   "profile": "world-news"
-  },
-  {
-   "title": "The Birds of GTA 6: A Field Guide to Vice City and Leonida's Wildlife",
-   "url": "https://www.audubon.org/magazine/birds-of-gta-6-field-guide-vice-city-wildlife",
-   "score": 0.0,
    "profile": "tech-news"
   },
   {
-   "title": "超级厄尔尼诺海温破纪录，粮食援助承压",
-   "url": "https://www.wired.com/story/how-this-years-super-el-nino-will-worsen-global-hunger/",
+   "title": "METALS program work - news8000.com",
+   "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxONVdib0JTWjRHWXMwOHVZZTZtV3ZKelJsUTZudWJpUkFxeVhBeEpCZmJWc05ZaXhUZDU0ZTJ1cm1MM3VfNzVCNUJsUnZjN3NmT002bGt2eFNHZDZBV3paUl9sNXZtdEVjXzZ0OUN5R1hjT04zTExYNlZHMi1wSFljblRvOVg1M2E5b0RtUTR6MzJ6MFNZaEFsYVktbzRZUnQ3NTZ4aDNFb0thVjdraE1GN1NB?oc=5",
    "score": 0.0,
-   "profile": "tech-news"
+   "profile": "world-news"
   },
   {
-   "title": "第 63 届金马奖揭晓 刘冠廷袁澧林封帝后",
-   "url": "https://www.cna.com.tw/news/amov/202611225003.aspx",
+   "title": "Holiday Travel Minnesota - Columbia Missourian",
+   "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQOVZoQmJXZHpvOGVrWmdTa1dZVDNhX2xlR0JFVUh0OWR0NmFjREtnbFI3ZE00dmcwcThkdklQMURzb2xsbng2MG9jR2ZURWlNLUZiZ2N1WGlnd2ExMmlpNnJNUFhmdnd3ZWJyc0pybTh3VGxrV1l2NGhVdWY4WHlxeThNVHdEUUlrakZMRDRVazRFX2t5WWxDR3dLVm9PdHRLMlIwbHN2RTlIWFltQTJYd092bkhUaFlOaWRIUjRUSnlycmM?oc=5",
    "score": 0.0,
-   "profile": "tech-news"
+   "profile": "world-news"
   }
  ]
 }

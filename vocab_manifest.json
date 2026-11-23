@@ -1,86 +1,90 @@
 {
- "source": "2026-11-22-summary-en.md",
- "date": "2026-11-23",
+ "source": "2026-11-23-summary-en.md",
+ "date": "2026-11-24",
  "terms": [
   {
-   "id": "w-confectionery",
-   "term": "confectionery"
+   "id": "w-unverified",
+   "term": "unverified"
   },
   {
-   "id": "w-perplexity",
-   "term": "perplexity"
+   "id": "w-endpoint",
+   "term": "endpoint"
   },
   {
-   "id": "w-detonation",
-   "term": "detonation"
-  },
-  {
-   "id": "w-azide",
-   "term": "azide"
+   "id": "w-optimization",
+   "term": "optimization"
   },
   {
    "id": "w-corvette",
    "term": "corvette"
   },
   {
-   "id": "w-exclave",
-   "term": "exclave"
+   "id": "w-keystone",
+   "term": "keystone"
   },
   {
-   "id": "w-mathematic",
-   "term": "mathematic"
+   "id": "w-mistakenly",
+   "term": "mistakenly"
   },
   {
-   "id": "w-oversea",
-   "term": "oversea"
+   "id": "w-pend",
+   "term": "pend"
   },
   {
-   "id": "w-corroborate",
-   "term": "corroborate"
+   "id": "w-undocumented",
+   "term": "undocumented"
+  },
+  {
+   "id": "w-transformer",
+   "term": "transformer"
+  },
+  {
+   "id": "w-wasteland",
+   "term": "wasteland"
+  },
+  {
+   "id": "w-bottleneck",
+   "term": "bottleneck"
+  },
+  {
+   "id": "w-latency",
+   "term": "latency"
   },
   {
    "id": "w-midterm",
    "term": "midterm"
   },
   {
-   "id": "w-politic",
-   "term": "politic"
-  },
-  {
-   "id": "w-arson",
-   "term": "arson"
-  },
-  {
-   "id": "w-overhaul",
-   "term": "overhaul"
+   "id": "w-theoretically",
+   "term": "theoretically"
   },
   {
    "id": "w-benchmark",
    "term": "benchmark"
   },
   {
-   "id": "w-noteworthy",
-   "term": "noteworthy"
+   "id": "w-standoff",
+   "term": "standoff"
   },
   {
-   "id": "w-throttle",
-   "term": "throttle"
+   "id": "w-simulate",
+   "term": "simulate"
   },
   {
-   "id": "w-avoidance",
-   "term": "avoidance"
+   "id": "w-contamination",
+   "term": "contamination"
   },
   {
-   "id": "w-ignite",
-   "term": "ignite"
+   "id": "w-urgency",
+   "term": "urgency"
   },
   {
-   "id": "w-traction",
-   "term": "traction"
+   "id": "w-sanction",
+   "term": "sanction"
   },
   {
-   "id": "w-tow",
-   "term": "tow"
+   "id": "w-hike",
+   "term": "hike"
   }
  ]
 }

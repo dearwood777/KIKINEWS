@@ -1,102 +1,102 @@
 {
- "date": "2026-11-23",
- "updated": "06:02",
+ "date": "2026-11-24",
+ "updated": "06:06",
  "total": 16,
  "items": [
   {
-   "t": "Democrats win largest House majority since 1992 after flipping North Carolina seat",
-   "s": "9.0",
+   "t": "The FIFA World Cup is returning to the U.S. - Deseret News",
+   "s": "10.0",
    "a": "item-world-news-1",
    "sec": "WORLD"
   },
   {
-   "t": "COP31 Talks Collapse After EU Rejects Key Deal",
+   "t": "CrowdStrike to acquire Zscaler for $43.9 billion",
+   "s": "9.0",
+   "a": "item-tech-news-1",
+   "sec": "TECH"
+  },
+  {
+   "t": "Democrats Gain Largest House Majority Since 1992 After NC Seat Flip",
    "s": "9.0",
    "a": "item-world-news-2",
    "sec": "WORLD"
   },
   {
-   "t": "Two groups verify mathematician’s claim that Claude helped prove mathematics problem",
+   "t": "COP31 Climate Summit Collapses After 17 Years of Success",
    "s": "9.0",
    "a": "item-world-news-3",
    "sec": "WORLD"
   },
   {
-   "t": "Perplexity and Intelligence",
-   "s": "8.0",
-   "a": "item-tech-news-1",
-   "sec": "TECH"
-  },
-  {
-   "t": "Russian warship sinks in Benghazi after suspected Ukrainian drone attack",
-   "s": "8.0",
+   "t": "EU launches 22nd sanctions on Russia to curb war financing",
+   "s": "9.0",
    "a": "item-world-news-4",
    "sec": "WORLD"
   },
   {
-   "t": "South Korean minister quits after AI cheating scandal engulfs university exams",
+   "t": "GLM‑5.4: First Loop Transformer Architecture",
+   "s": "8.0",
+   "a": "item-tech-news-2",
+   "sec": "TECH"
+  },
+  {
+   "t": "Amazon snaps up Decart’s AI optimization tech for $7.5B as it prepares to sell Trainium chips",
+   "s": "8.0",
+   "a": "item-tech-news-3",
+   "sec": "TECH"
+  },
+  {
+   "t": "Trump administration deported US citizen to Mexico, DoJ admits in court",
    "s": "8.0",
    "a": "item-world-news-5",
    "sec": "WORLD"
   },
   {
-   "t": "OpenAI Chief Scientist Proposes Perplexity‑Based Limits on AI Development",
-   "s": "7.0",
-   "a": "item-tech-news-2",
-   "sec": "TECH"
-  },
-  {
-   "t": "Russian cargo ship attacked in Gulf of Finland, towed away",
-   "s": "7.0",
+   "t": "Leaked data shows more than 1,000 Russian military suicides during Ukraine war",
+   "s": "8.0",
    "a": "item-world-news-6",
    "sec": "WORLD"
   },
   {
-   "t": "摩尔线程产品经理：庐山 GPU 显存 64 GB",
-   "s": "6.0",
-   "a": "item-tech-news-3",
-   "sec": "TECH"
-  },
-  {
-   "t": "US Army to Detonate 5 Tonnes of Explosives in Iowa Despite Court Order",
-   "s": "6.0",
+   "t": "US Imposes Sanctions on Dozens Linked to Iran&\\#x27;s Shadow Banking Networks - U.S. News &amp; World Report",
+   "s": "8.0",
    "a": "item-world-news-7",
    "sec": "WORLD"
   },
   {
-   "t": "Netanyahu rival condemns settler arson in West Bank villages",
-   "s": "6.0",
+   "t": "Germany Takes Reports of Russia&\\#x27;s Planned Space Nuclear Launch Seriously",
+   "s": "8.0",
    "a": "item-world-news-8",
    "sec": "WORLD"
   },
   {
-   "t": "Pip review will call for overhaul rather than scrapping benefit for under-25s",
-   "s": "6.0",
+   "t": "Fed&\\#x27;s John Williams indicates higher interest rates likely &\\#x27;over time&\\#x27; to address inflation",
+   "s": "8.0",
+   "a": "item-finance-news-1",
+   "sec": "FIN"
+  },
+  {
+   "t": "What strike on Russian ship in Libya says about spread of Ukraine war",
+   "s": "7.0",
    "a": "item-world-news-9",
    "sec": "WORLD"
   },
   {
-   "t": "UK Taxpayers Hold Over £1 Trillion Offshore",
-   "s": "6.0",
+   "t": "Israeli attacks have turned Gaza into &\\#x27;toxic wasteland&\\#x27;, Oxfam says",
+   "s": "7.0",
    "a": "item-world-news-10",
    "sec": "WORLD"
   },
   {
-   "t": "&\\#x27;Danger seems greater all the time&\\#x27;: Ukrainians search for missing after Russian strikes",
-   "s": "5.0",
+   "t": "India pledges $1.6bn to Nepal in reset of ties",
+   "s": "7.0",
    "a": "item-world-news-11",
    "sec": "WORLD"
   },
   {
-   "t": "Three killed and dozens missing after fire at Indonesian factory",
-   "s": "5.0",
+   "t": "Lucy Powell to visit China to promote UK education weeks after MI5 warning",
+   "s": "7.0",
    "a": "item-world-news-12",
-   "sec": "WORLD"
-  },
-  {
-   "t": "Australian politics live: Labor to extend PBS medicine freeze to 2030; Bowen ‘failed’ on Cop, Hume says",
-   "s": "5.0",
-   "a": "item-world-news-13",
    "sec": "WORLD"
   }
  ]
