@@ -246,6 +246,7 @@ footer .dot{opacity:.45;margin:0 6px}
 
 
 
+
 <!-- kiki-polish:start -->
 <link rel="expect" href="#kiki-head" blocking="render">
 <script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
@@ -1036,7 +1037,7 @@ details[open]::details-content{height:auto}
       var midP = sidePts[half - 1], prevP = sidePts[half - 3] || sidePts[0];
       // 竖屏卡片窄（boxW≈68），侧枝总长只有 ~27px，一半 13px 装不下"半径 5 × 2.5 圈"，
       // 硬塞就被压成一个小疙瘩 —— 窄屏改用更小的半径、更少的圈，卷出来才是舒展的螺旋。
-      var spR = w < 80 ? 3.4 : 5.0, spT = w < 80 ? 1.9 : 2.5, spL = w < 80 ? 8.8 : 9.5;
+      var spR = w < 72 ? 3.4 : 5.0, spT = w < 72 ? 1.9 : 2.5, spL = w < 72 ? 8.8 : 9.5;
       var spPts = springPts(midP.x, midP.y, midP.x - prevP.x, midP.y - prevP.y,
                             spL, spT, spR, 0.7, 0.46, 46);
       // 整根一起喂给 ribbon：深色 3.1px（跟主茎同宽）起、0.12px 收；亮色芯线 1.5→0.05
