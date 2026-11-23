@@ -384,7 +384,7 @@ details[open]::details-content{height:auto}
       d.className = 'kg';
       var w = 14 + rnd() * 4;              // 14~18px，比 10px 的间距宽 → 相邻草皮一定叠住，横屏也不会断成一段一段
       d.style.width = w.toFixed(1) + 'px';
-      d.style.height = (5.5 + rnd() * 3.2).toFixed(1) + 'px';   // 5.5~8.7px：抬高一点点，摆幅的位移才够看得见
+      d.style.height = (6.5 + rnd() * 3.5).toFixed(1) + 'px';   // 6.5~10px：位移 = 高度×sin(角度)，太矮了风再大也看不出来
       var pct = (i + 0.5) / n * 100 + (rnd() - 0.5) * (24 / n);
       pct = Math.max(0, Math.min(100, pct));
       d.style.left = pct.toFixed(2) + '%';
@@ -393,8 +393,8 @@ details[open]::details-content{height:auto}
       // 真正每一帧的角度由 startGrassWind() 现算 —— 固定的 --dur/--g1 就是"机械招手"，
       // 用户要的是波扫过来时"深浅不同"，所以这三个数只是上限，实际值是随波变的。
       d.__x = pct / 100;
-      d.__amp = 4.4 + rnd() * 8.2;
-      d.__sk = 9 + rnd() * 14;
+      d.__amp = 6.2 + rnd() * 9.8;
+      d.__sk = 15 + rnd() * 20;
       if (rnd() < 0.5) d.style.setProperty('--fl', '-1');   // 一半草簇左右镜像，形状也不一样
       d.style.opacity = (0.55 + rnd() * 0.34).toFixed(2);
       d.innerHTML = GRASS_SVG;
@@ -432,22 +432,25 @@ details[open]::details-content{height:auto}
       var t = ts / 1000;
       var g = hero.querySelector('.kiki-grass');
       if (!g) return;
-      var kids = g.children, i, el, f1, f2, s, jit, ang, sk;
-      // 阵风包络：0.55~1，慢速起伏 —— 大风来的时候整片都弯，过去了整片都轻
-      var gust = 0.55 + 0.45 * nz(t * 0.45 + 4);
+      var kids = g.children, i, el, f1, f2, s, jit, ang, sk, bias;
+      // 阵风包络：0.42~1 —— 一阵来整片都压弯，一阵过去整片立起来，这是"随风"最明显的那层
+      var gust = 0.62 + 0.38 * nz(t * 0.32 + 4);
+      // 顺风偏置：整片草有一个**共同的**倾倒方向，慢慢来回 —— 真草大部分时候是被压在某一侧、
+      // 在这条基线上起起伏伏；只做左右对称摇摆，看着就是"没人推它却自己抖"。
+      bias = (nz(t * 0.22 + 7) - 0.5) * 2;                 // -1..1，很慢
       for (i = 0; i < kids.length; i++) {
         el = kids[i];
         if (!el.__amp) continue;
-        // 两个尺度的波叠在一起：f1 是"一片片一起倒"的长波（整个草带约 5 个波峰），
-        // f2 是"细碎抖动"的短波（约 12 个波峰）—— 两者不同相，才不会整排同步招手
-        f1 = nz(el.__x * 4.6 - t * 0.45);
-        f2 = nz(el.__x * 11.5 - t * 1.05 + 11);
-        s = (f1 * 0.70 + f2 * 0.30 - 0.5) * 3.6;        // 放大到满幅，否则两个噪波一平均就把起伏抹平了
+        // f1 是主波（整条草带只有约 3 个波峰 → 一大片一起倒），f2 是次波（约 6 个峰，
+        // 只占 16% 的权重：多这一点点起伏，才不至于像一整块板子在翻）
+        f1 = nz(el.__x * 3.0 - t * 0.34);
+        f2 = nz(el.__x * 6.4 - t * 0.80 + 11);
+        s = (f1 * 0.84 + f2 * 0.16 - 0.5) * 3.6;        // 放大到满幅，否则噪波一平均就把起伏抹平
         if (s > 1) s = 1; if (s < -1) s = -1;           // -1..1：这一刻这簇被推到哪边、推多深
-        jit = (nz(t * 1.7 + el.__x * 11 + 30) - 0.5) * 3.0;
+        jit = (nz(t * 1.3 + el.__x * 5 + 30) - 0.5) * 2.4;
         if (jit > 1) jit = 1; if (jit < -1) jit = -1;
-        ang = el.__amp * (s * 0.82 + jit * 0.18) * gust;
-        sk = el.__sk * (0.26 + 0.74 * Math.abs(s)) * gust * (ang >= 0 ? 1 : -1);
+        ang = el.__amp * ((s * 0.74 + bias * 0.26) * gust + jit * 0.14);
+        sk = el.__sk * (0.30 + 0.70 * Math.abs(s)) * gust * (ang >= 0 ? 1 : -1);
         el.style.transform = 'rotate(' + ang.toFixed(2) + 'deg) skewX(' + sk.toFixed(2) + 'deg)';
         wind.frames++;
       }
@@ -899,26 +902,28 @@ details[open]::details-content{height:auto}
       var tyT = (loY + hiY) / 2;
       var yvT = tyT / h * 100;
       var txT = stemX(yvT) / 100 * w;             // 起点就压在主茎上 —— 不会出现断口
-      // 上升段往**左**偏：主茎本身是往左上走的，侧枝已经往右偏了，
-      // 两条都往右就挤在一边；顶段左倾、侧枝右伸，才一左一右拉开。
-      var dxr = Math.min(w - 3 - txT, Math.max(14, w * 0.34));
-      var uy = Math.min(24, Math.max(14, h * 0.095));
-      // 先几乎平着抽出来、后段再扬起 → 有弧度的右斜上，不是一条直冲的斜线
-      var pBc = { x: txT + dxr * 0.40, y: tyT - 1.4 };
+      // 侧枝要"更长、更往右上、与主茎成 60~70°"：原来控制点 pB 与起点同高，
+      // 前半段几乎是水平抽出去的，整条看着就成了一根 90° 的横杆。
+      // 现在起点切线就带仰角（pB 已抬 0.42uy），整条是有弧度的右斜上 ≈ 62°。
+      // 容器右侧只剩几像素（它本来就贴着屏幕右缘），横向能借到的空间就这么多；
+      // 靠"起点就带仰角 + 往右上拉长"把视觉长度做到原来的 1.5 倍左右。
+      // uy 上限 14：再往上 D 点就钻进最顶上那片叶子（b=92 叶占 0~11.6px）。
+      var dxr = Math.min(w + 14 - 3 - txT, Math.max(20, w * 0.60));
+      var uy = Math.min(14, dxr * 0.56);           // ≈65~70°（相对主茎），也就是用户要的右斜上
       var pA = { x: txT, y: tyT };                 // 起点就在茎心线上：分枝从这里长，不是穿过去
-      var pB = pBc;
-      var pC = { x: txT + dxr * 0.85, y: tyT - uy * 0.56 };
+      var pB = { x: txT + dxr * 0.26, y: tyT - uy * 0.42 };
+      var pC = { x: txT + dxr * 0.74, y: tyT - uy * 0.80 };
       var pD = { x: txT + dxr, y: tyT - uy };
-      var sidePts = cubicPts(pA, pB, pC, pD, 16);
-      // **卷须从侧枝的 1/3 处就开始卷**：用户连着两轮说"开始得太晚"，一半还是嫌迟。
-      // 前 1/3 是平滑的分枝，后 2/3 一路螺旋收小到尖 —— 螺旋要占大头才像藤尖在找东西抓。
-      var split = Math.max(3, Math.round(sidePts.length * 0.34));
+      var sidePts = cubicPts(pA, pB, pC, pD, 18);
+      // **卷须从侧枝的 1/5 处就开始卷**：用户第三轮催"再往前"，1/3 也嫌迟。
+      // 剩 4/5 全交给螺旋 —— 一路转着往右上收，才像藤尖在找东西抓。
+      var split = Math.max(3, Math.round(sidePts.length * 0.20));
       var midP = sidePts[split - 1], prevP = sidePts[split - 3] || sidePts[0];
       // 卷须起点提前后留给弹簧的长度更短，半径/圈数得跟着改：与其在小空间里塞 2.5 圈糊成一坨，
-      // 不如少转几圈、每圈半径大一点 —— 屏幕上才看得出"一圈一圈往里收"的螺旋。
-      var spR = w < 72 ? 3.6 : 5.6, spT = w < 72 ? 1.7 : 1.9, spL = w < 72 ? 9.0 : 11.0;
+      // 侧枝加长之后螺旋也得做大：圈大一点、往前走得多一点，整条分支的视觉长度才真的长出来。
+      var spR = w < 72 ? 5.4 : 7.0, spT = w < 72 ? 2.1 : 2.3, spL = w < 72 ? 11.0 : 13.0;
       var spPts = springPts(midP.x, midP.y, midP.x - prevP.x, midP.y - prevP.y,
-                            spL, spT, spR, 0.7, 0.46, 46);
+                            spL, spT, spR, 0.92, 0.72, 46);   // squash 0.72：squash 太小，环与环叠死成一根粗线
       // 整根一起喂给 ribbon：深色 3.1px（跟主茎同宽）起、0.12px 收；亮色芯线 1.5→0.05
       drawSprout(sproutSide, sidePts.slice(0, split).concat(spPts.slice(1)), 3.1, 0.12, 1.5, 0.05);
     }
@@ -2064,6 +2069,14 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
+
+
+
+
+
+
 
 
 
