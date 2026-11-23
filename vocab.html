@@ -302,7 +302,7 @@ details[open]::details-content{height:auto}
   animation:kiki-spark var(--dur,4s) linear infinite;animation-delay:var(--dl,0s);will-change:opacity}
 @keyframes kiki-spark{0%{opacity:0}24%{opacity:0}34%{opacity:var(--o,.85)}46%{opacity:.12}
   58%{opacity:.6}72%{opacity:0}100%{opacity:0}}
-.kiki-grass{position:absolute;left:6px;right:6px;bottom:0;height:7px;pointer-events:none;z-index:1;overflow:hidden}
+.kiki-grass{position:absolute;left:6px;right:6px;bottom:0;height:9px;pointer-events:none;z-index:1;overflow:hidden}
 .kiki-grass .kg{position:absolute;bottom:0;flex:0 0 auto;transform-origin:50% 100%;
   animation:kiki-grass-sway var(--dur,3.2s) ease-in-out infinite alternate;
   animation-delay:var(--dl,0s);will-change:transform}
@@ -386,18 +386,19 @@ details[open]::details-content{height:auto}
       d.className = 'kg';
       var w = 14 + rnd() * 4;              // 14~18px，比 10px 的间距宽 → 相邻草皮一定叠住，横屏也不会断成一段一段
       d.style.width = w.toFixed(1) + 'px';
-      d.style.height = (4.5 + rnd() * 2.5).toFixed(1) + 'px';   // 4.5~7px，约为上一版（11~18）的 1/3
+      d.style.height = (5.5 + rnd() * 3.2).toFixed(1) + 'px';   // 5.5~8.7px：抬高一点点，摆幅的位移才够看得见
       var pct = (i + 0.5) / n * 100 + (rnd() - 0.5) * (24 / n);
       pct = Math.max(0, Math.min(100, pct));
       d.style.left = pct.toFixed(2) + '%';
       d.style.marginLeft = (-w / 2).toFixed(1) + 'px';
       d.style.setProperty('--dur', (3.0 + noise1(i / 2.6) * 2.6 + rnd() * 0.9).toFixed(2) + 's');
-      // 摆幅 / 斜度：按噪波取，1~5deg 不等 —— 有几簇几乎只是轻轻点头，有几簇摆得明显
+      // 摆幅 / 斜度：按噪波取，3~9deg 不等。草只有 7px 高，角度太小（<2deg）顶部位移不到 0.3px，
+      // 实机上根本看不出在动 —— 上一版就是这个毛病。
       var nz = noise1(i / 2.6);
-      var amp = 0.8 + nz * 3.6 + rnd() * 0.8;
+      var amp = 3.2 + nz * 6.8 + rnd() * 1.2;
       d.style.setProperty('--g1', (-amp).toFixed(2) + 'deg');
-      d.style.setProperty('--g2', (amp * 0.85 + rnd() * 0.7).toFixed(2) + 'deg');
-      var sk = 3 + nz * 10;
+      d.style.setProperty('--g2', (amp * 0.85 + rnd() * 1.0).toFixed(2) + 'deg');
+      var sk = 8 + nz * 15;
       d.style.setProperty('--g1k', (-sk).toFixed(1) + 'deg');
       d.style.setProperty('--g2k', sk.toFixed(1) + 'deg');
       d.style.setProperty('--dl', (rnd() * 4.2).toFixed(2) + 's');
@@ -634,7 +635,7 @@ details[open]::details-content{height:auto}
       { b: 60, w: 17, rot: -38, dl: 0.2, dur: 3.1 },
       { b: 71, w: 15, rot: 34, dl: 1.2, dur: 2.7 },
       { b: 82, w: 14, rot: -28, dl: 0.7, dur: 3.3 },
-      { b: 92, w: 14, rot: -10, dl: 1.6, dur: 3.0 }
+      { b: 92, w: 14, rot: -38, dl: 1.6, dur: 3.0 }
     ];
     var items = [];
     function mkItem(wpx, node, anchor, rot, b, dl, dur) {
@@ -736,18 +737,27 @@ details[open]::details-content{height:auto}
       // 竖屏：主茎那条 STEM 顶端"往左折"的一小段是留给横屏横臂用的，竖屏留在场上就会和
       // 向右横走的一段反向交叉 —— 用户看到的就是"两条藤"。所以竖屏只画到 yv≈10% 处，
       // 再从那里一路往上推到按钮底；顶部两片叶（b>=78）随之挂到这条竖线上，不会悬空。
-      var iCut = PTS.length - 1, cutX = 0, cutY = 0;
+      var iCut = PTS.length - 1, cutX = 0, cutY = 0, syT = 4;
       if (armLen <= 12) {
         for (var ci = 0; ci < PTS.length; ci++) if (PTS[ci].y <= 10) { iCut = ci; break; }
         cutX = PTS[iCut].x / 100 * w;
         cutY = PTS[iCut].y / 100 * h;
       }
+      // 竖屏顶段是一条从 (cutX, cutY) 往**左上**走到按钮底下的线；顶部叶子的叶柄必须挂在这条线上，
+      // 所以给它一个按 y 反查 x 的函数（直线近似，和 placeVine 里那段 C 的偏差不到 1px）。
+      var tipX0 = cutX, tipX1 = cutX - 8;
+      function vertXAt(y) {
+        var t = (cutY - y) / Math.max(0.001, cutY - syT);
+        t = Math.max(-0.3, Math.min(1.6, t));
+        return tipX0 + (tipX1 - tipX0) * t;
+      }
       for (var i9 = 0; i9 < items.length; i9++) {
         var o = items[i9];
         var yv = 100 - o.b;                 // viewBox 的 y
-        var xpx = stemX(yv) / 100 * w;      // 茎在那里的 x（像素）
-        if (armLen <= 12 && o.b >= 78) xpx = cutX + (o.b >= 90 ? 3.6 : 1.2);   // 挂到竖线上
         var yTop = (1 - o.b / 100) * h;     // 锚点距容器顶（像素）
+        var xpx = stemX(yv) / 100 * w;      // 茎在那里的 x（像素）
+        // 落在顶段那条线上的叶子（b>=86，即最上面那一片）改成跟着顶段走，不然它会浮在藤外面
+        if (armLen <= 12 && o.b >= 86) xpx = vertXAt(yTop);
         o.el.style.left = (xpx - o.w * 0.5).toFixed(2) + 'px';
         o.el.style.top = (yTop - o.w * o.anchor).toFixed(2) + 'px';
         o.el.style.transform = 'rotate(' + o.rot + 'deg)';   // 绕锚点转，叶柄不会滑走
@@ -787,28 +797,27 @@ details[open]::details-content{height:auto}
         }
       } else {
         // 竖屏：从截断点 (cutX, cutY) 一路往上推到按钮底下 —— 这条线是主茎的**自然延长**，
-        // 不再和"往左折"那一小段反向交叉；到顶后贴着按钮下沿往右走，右端翻上去、收成细梢。
-        var syT = 4;
-        var xE = box.__btnR ? Math.max(cutX + 20, Math.min(w - 2, box.__btnR + 2)) : (w - 4);
-        // 上升段往**左**偏：主茎本身一路往左上走，侧枝已经往右伸了，顶段再往右就全挤在右边。
-        // 末端切线趋平再拐向右 —— 圆角，不是 90° 硬角。
-        dA += ' C' + (cutX - 1.2).toFixed(1) + ' ' + (cutY - (cutY - syT) * 0.40).toFixed(1) +
-              ' ' + (cutX - 6.4).toFixed(1) + ' ' + (syT + 1.8).toFixed(1) +
-              ' ' + (cutX - 4.4).toFixed(1) + ' ' + (syT + 0.4).toFixed(1);
-        // 沿按钮底往右走：留 0.5px 的极轻起伏，不像一根拉直的杆
-        for (var qx = cutX - 1; qx <= xE - 8; qx += 3) {
+        // 不再和"往左折"那一小段反向交叉；到顶后贴着按钮下沿**往左**走，左端翻上去、收成细梢。
+        // 左侧终点 = 按钮左缘往右让 1px（跟右侧的侧枝一左一右拉开，不挤在一头）。
+        var xL = box.__btnL ? Math.min(cutX - 14, Math.max(3, box.__btnL + 1)) : Math.max(3, cutX - 26);
+        // 上升段：从茎上接着往左上走（主茎本身一路往左上），末端切线趋平再拐向左 —— 圆角，不是硬角
+        dA += ' C' + (cutX - 1.4).toFixed(1) + ' ' + (cutY - (cutY - syT) * 0.40).toFixed(1) +
+              ' ' + (cutX - 6.6).toFixed(1) + ' ' + (syT + 1.8).toFixed(1) +
+              ' ' + tipX1.toFixed(1) + ' ' + (syT + 0.5).toFixed(1);
+        // 沿按钮底往左走：留 0.5px 的极轻起伏，不像一根拉直的杆
+        for (var qx = tipX1 - 3; qx >= xL + 4; qx -= 3) {
           dA += ' L' + qx.toFixed(1) + ' ' + (syT + 0.5 * Math.sin(qx / 6)).toFixed(1);
         }
-        // 右端上翘：从按钮底下翻上去一点
-        dA += ' C' + (xE - 3).toFixed(1) + ' ' + (syT - 0.4).toFixed(1) +
-              ' ' + (xE - 0.8).toFixed(1) + ' ' + (syT - 2.2).toFixed(1) +
-              ' ' + xE.toFixed(1) + ' ' + (syT - 3.0).toFixed(1);
-        // 细梢再往左上回一点点，同时越来越细（收在 0.45px）
+        // 左端上翘：从按钮底下翻上去一点
+        dA += ' C' + (xL + 3).toFixed(1) + ' ' + (syT - 0.4).toFixed(1) +
+              ' ' + (xL + 0.8).toFixed(1) + ' ' + (syT - 2.2).toFixed(1) +
+              ' ' + xL.toFixed(1) + ' ' + (syT - 3.0).toFixed(1);
+        // 细梢再往右上回一点点，同时越来越细（收在 0.1px）
         var tPts = [], si2;
         for (si2 = 0; si2 <= 8; si2++) {
           var u2 = si2 / 8;
           tPts.push({
-            x: xE - u2 * 4.6,
+            x: xL + u2 * 4.6,
             y: Math.max(0.6, syT - 3.0 + u2 * 2.0 - Math.sin(u2 * Math.PI) * 0.9)
           });
         }
@@ -844,22 +853,25 @@ details[open]::details-content{height:auto}
       // 上升段往**左**偏：主茎本身是往左上走的，侧枝已经往右偏了，
       // 两条都往右就挤在一边；顶段左倾、侧枝右伸，才一左一右拉开。
       var dxr = Math.min(w - 3 - txT, Math.max(14, w * 0.34));
-      var uy = Math.min(22, Math.max(10, h * 0.06));
+      var uy = Math.min(24, Math.max(14, h * 0.095));
       // 先几乎平着抽出来、后段再扬起 → 有弧度的右斜上，不是一条直冲的斜线
       var pBc = { x: txT + dxr * 0.40, y: tyT - 1.4 };
-      // 起点往茎身里**退 2.2px**（沿反方向）：圆头整个压在茎上、被茎吞掉，
-      // 肉眼就是"从茎里长出分枝"，不会看到一条接入线和一个疙瘩。
-      var back = 2.2 / Math.max(1, Math.sqrt(Math.pow(pBc.x - txT, 2) + Math.pow(pBc.y - tyT, 2)));
-      var pA = { x: txT - (pBc.x - txT) * back, y: tyT - (pBc.y - tyT) * back };
+      var pA = { x: txT, y: tyT };                 // 起点就在茎心线上：分枝从这里长，不是穿过去
       var pB = pBc;
       var pC = { x: txT + dxr * 0.85, y: tyT - uy * 0.56 };
       var pD = { x: txT + dxr, y: tyT - uy };
       var sidePts = cubicPts(pA, pB, pC, pD, 16);
-      // 末端接着**弹簧卷须**：轴向 9px、转 2.6 圈 —— 螺距(3.5px)比环的轴向尺寸(5.4px)小，
-      // 所以相邻的环在投影上必然交叠、连成一根连续的弹簧，不会变成一串断开的弧。
-      var spPts = springPts(pD.x, pD.y, pD.x - pC.x, pD.y - pC.y, 9, 2.6, 6.0, 0.9, 0.45, 44);
+      // **卷须从侧枝的一半就开始**：前一半是平滑的分枝，后一半一路螺旋收小到尖。
+      // 全留到最后 9px 才卷，末梢就簇成一个疙瘩（用户说的"都簇在一块"）。
+      var half = Math.round(sidePts.length / 2);   // 后一半（含中点）给弹簧用
+      var midP = sidePts[half - 1], prevP = sidePts[half - 3] || sidePts[0];
+      // 竖屏卡片窄（boxW≈68），侧枝总长只有 ~27px，一半 13px 装不下"半径 5 × 2.5 圈"，
+      // 硬塞就被压成一个小疙瘩 —— 窄屏改用更小的半径、更少的圈，卷出来才是舒展的螺旋。
+      var spR = w < 80 ? 3.4 : 5.0, spT = w < 80 ? 1.9 : 2.5, spL = w < 80 ? 8.8 : 9.5;
+      var spPts = springPts(midP.x, midP.y, midP.x - prevP.x, midP.y - prevP.y,
+                            spL, spT, spR, 0.7, 0.46, 46);
       // 整根一起喂给 ribbon：深色 3.1px（跟主茎同宽）起、0.12px 收；亮色芯线 1.5→0.05
-      drawSprout(sproutSide, sidePts.concat(spPts.slice(1)), 3.1, 0.12, 1.5, 0.05);
+      drawSprout(sproutSide, sidePts.slice(0, half).concat(spPts.slice(1)), 3.1, 0.12, 1.5, 0.05);
     }
 
     // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
@@ -890,6 +902,7 @@ details[open]::details-content{height:auto}
       var leftPx = Math.min(r.right, vw) - w - 6;      // 往右贴：留 6px
       box.style.left = leftPx + 'px';
       box.__btnR = btnR2 - leftPx;                     // "设置"右缘在容器里的 x（顶段靠它收尾）
+      box.__btnL = ((ns && ns.l > 0) ? ns.l : (vw - 74)) - leftPx;   // 按钮左缘（顶段往左走靠它收）
       box.style.top = topY + 'px';
       box.style.display = (r.bottom < 6 || r.top > vh - 6) ? 'none' : 'block';
       // 横臂长度：竖屏只够一段短的（日期行右边到卡片右缘），横屏往左一大片都是空的
@@ -2002,6 +2015,14 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
+
+
+
+
+
+
 
 
 
