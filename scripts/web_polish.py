@@ -393,9 +393,11 @@ JS = """
     var NZ = [], q0, s0 = 20261;
     function r0() { s0 = (s0 * 1103515245 + 12345) & 0x7fffffff; return s0 / 0x7fffffff; }
     for (q0 = 0; q0 < 96; q0++) NZ.push(r0());
-    function nz(x) {                                     // 1D value noise，三次缓，相邻点平滑过渡
+    function nz(x) {                                     // 1D value noise，smootherstep 缓，格点处一阶二阶导都为 0
       var a = Math.floor(x), b = a + 1, t = x - a;
-      t = t * t * (3 - 2 * t);
+      // 用 smootherstep 而不是 smoothstep：后者的二阶导在格点上是断的，
+      // 一格一格接起来会有"啪"的折点 —— 草从左边斜一下突然翻到右边，看着像拨开关。
+      t = t * t * t * (t * (t * 6 - 15) + 10);
       var va = NZ[(a % 96 + 96) % 96], vb = NZ[(b % 96 + 96) % 96];
       return va * (1 - t) + vb * t;
     }
@@ -422,12 +424,17 @@ JS = """
         //          三簇左右就换一个峰谷，才有"一波接一波推过去"的样子。
         //   own —— **每簇自己的呼吸**，相位按 __ph 随机、与位置无关，负责"各摇各的"
         //   __b —— 每簇固定的个人偏斜，**不随时间变**（去掉了原来那个全局 bias：那是整片同向的元凶）
-        f1 = nz(el.__x * 13.0 - t * 2.6);
-        own = nz(t * 2.2 + el.__ph * 6.2 + 2);
-        s = (f1 * 0.50 + own * 0.36 + el.__b * 0.14 - 0.5) * 4.2;
-        if (s > 1) s = 1; if (s < -1) s = -1;
-        ang = el.__amp * (s * 0.86 + (nz(t * 1.9 + el.__ph * 9 + 30) - 0.5) * 0.28) * gust;
-        sk = el.__sk * (0.30 + 0.70 * Math.abs(s)) * gust * (ang >= 0 ? 1 : -1);
+        // 速度：用户既要"刮风那种高频"，又要"过渡柔、别啪一下翻过去"。
+        // 靠 smootherstep 保证曲线圆 → 频率可以留在 0.5~0.7Hz 这个档，但不会出现"开关"感。
+        f1 = nz(el.__x * 13.0 - t * 2.0);
+        own = nz(t * 1.5 + el.__ph * 6.2 + 2);
+        s = (f1 * 0.50 + own * 0.36 + el.__b * 0.14 - 0.5) * 3.6;
+        // 软饱和代替硬 clamp：硬 clamp 会把峰值削成平顶，视觉上就是"啪"地撞在两端不动了
+        s = s / (1 + Math.abs(s) * 0.45);
+        ang = el.__amp * (s * 0.86 + (nz(t * 1.2 + el.__ph * 9 + 30) - 0.5) * 0.24) * gust;
+        // **skew 必须跟着 s 连续过零**：之前用 `|s| * (ang>=0?1:-1)`，
+        // ang 一过 0 符号就瞬间反转，skew 从 +20° 跳到 -20° —— 这才是"啪"的主犯。
+        sk = el.__sk * s * 0.80 * gust;
         el.style.transform = 'rotate(' + ang.toFixed(2) + 'deg) skewX(' + sk.toFixed(2) + 'deg)';
         wind.frames++;
       }
@@ -879,29 +886,36 @@ JS = """
       var tyT = (loY + hiY) / 2;
       var yvT = tyT / h * 100;
       var txT = stemX(yvT) / 100 * w;             // 起点就压在主茎上 —— 不会出现断口
-      // 侧枝要"更长、更往右上、与主茎成 60~70°"：原来控制点 pB 与起点同高，
-      // 现在容器离右缘留了 28px，横向终于有地方了：dxr 到 0.86w，整条能从 ~28px 拉到 ~58px。
-      // 但纵向还是硬约束 —— 上面就是 b=92 那片叶子（占 0~11.6px），uy 最多 10，
-      // 再高整根分支就会钻进叶子里。所以这条只能"往右伸得很长、抬得不多"。
+      // 侧枝：用户要"往右斜上、一直拉到屏幕边上"，而且**起点别往后折**。
+      // 上一版 pB 只往前 0.18dxr 却抬了 0.72uy，起点切线接近 50°，看着像先竖起来再往回折。
+      // 现在 pB 往前 0.32、抬 0.60uy —— 起点切线 ≈22°（相对水平）= 68°（相对主茎），直的右斜上。
       var dxr = Math.min(w + 8 - 3 - txT, Math.max(22, w * 0.76));
       var uy = Math.min(10, dxr * 0.20);
       var pA = { x: txT, y: tyT };                 // 起点就在茎心线上：分枝从这里长，不是穿过去
-      // **出门就先往上抬**：用户要"往右上 60~70°"，但纵向空间只有 10px（头顶就是顶层叶子）。
-      // 所以让前半段陡、后半段拉平 —— 起点切线 ≈54°（相对主茎），整条看起来是斜上抽出去的弧，
-      // 而不是一根平着的横杆。
-      var pB = { x: txT + dxr * 0.18, y: tyT - uy * 0.72 };
-      var pC = { x: txT + dxr * 0.62, y: tyT - uy * 0.98 };
+      var pB = { x: txT + dxr * 0.32, y: tyT - uy * 0.60 };
+      var pC = { x: txT + dxr * 0.70, y: tyT - uy * 0.96 };
       var pD = { x: txT + dxr, y: tyT - uy };
       var sidePts = cubicPts(pA, pB, pC, pD, 22);
       // **卷须从侧枝的 1/6 处就开始卷**，后 5/6 全是螺旋 —— 用户要的是"整根弦从根到尖都长"，
       // 不能把长度全堆在末端那几个圈上。
       var split = Math.max(3, Math.round(sidePts.length * 0.16));
       var midP = sidePts[split - 1], prevP = sidePts[split - 3] || sidePts[0];
-      // 弹簧要"拉长、圈变扁不圆"：`squash` 是轴向推进相对径向摆幅的倍率 ——
-      // =1 时平面上就是一个正圆，<1 是横向压扁的圈，**>1 才是"把簧拉开"**：
-      // 圈在推进方向上被抻成椭圆，圈距拉开，看起来一路斜着往前推，而不是原地绕一个圆。
-      var spR = w < 72 ? 5.0 : 6.0, spT = w < 72 ? 2.2 : 2.4, spL = w < 72 ? 19.0 : 21.0;
-      var spPts = springPts(midP.x, midP.y, midP.x - prevP.x, midP.y - prevP.y,
+      // ---- 螺旋长度不再写死，而是**把剩下的横向空间吃干净，一直推到屏幕右缘** ----
+      // 上一版 spL 固定 19，弦加到 46 但螺旋只走 19px，"长度几乎没变"就是这里丢的。
+      var tanx = midP.x - prevP.x, tany = midP.y - prevP.y;
+      var tlen = Math.sqrt(tanx * tanx + tany * tany) || 1;
+      var cxs = tanx / tlen;                       // 切线在 x 方向的占比（≈0.94，几乎水平）
+      // 容器右缘离屏幕还有 12px（leftPx 留的），再往里收 2px 安全边 → 可用到 w+10
+      var room = (w + 10) - midP.x;
+      var spR = w < 72 ? 5.0 : 6.0;
+      var spL = Math.max(14, Math.min(46, (room - spR * 1.2) / Math.max(0.35, cxs)));
+      // **"一圈 4cm 而不是 2cm"**：圈数由"每圈占多少长度"反推，不写死 turns。
+      // 每圈推进 perTurn，则 圈数 = spL / perTurn —— spL 翻倍、圈数跟着翻倍，圈距恒定，
+      // 所以簧是被"拉长"的（圈与圈之间距离变大），而不是在原地多绕几圈。
+      var perTurn = w < 72 ? 16.0 : 18.0;
+      var spT = Math.max(1.3, spL / perTurn);
+      // squash > 1：沿推进方向把圈再抻长一点（=1 是正圆，<1 是横向压扁）
+      var spPts = springPts(midP.x, midP.y, tanx, tany,
                             spL, spT, spR, 0.92, 1.35, 46);
       // 整根一起喂给 ribbon：深色 3.1px（跟主茎同宽）起、0.12px 收；亮色芯线 1.5→0.05
       drawSprout(sproutSide, sidePts.slice(0, split).concat(spPts.slice(1)), 3.1, 0.12, 1.5, 0.05);
