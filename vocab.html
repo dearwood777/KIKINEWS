@@ -393,6 +393,8 @@ details[open]::details-content{height:auto}
       // 真正每一帧的角度由 startGrassWind() 现算 —— 固定的 --dur/--g1 就是"机械招手"，
       // 用户要的是波扫过来时"深浅不同"，所以这三个数只是上限，实际值是随波变的。
       d.__x = pct / 100;
+      d.__ph = rnd();                     // 每簇自己的呼吸相位：与位置无关，相邻草也不同相 —— 防"稍息"
+      d.__b = rnd();                      // 每簇固定的个人偏斜（不随时间变）：整片有正有歪，才不像排队
       d.__amp = 6.2 + rnd() * 9.8;
       d.__sk = 15 + rnd() * 20;
       if (rnd() < 0.5) d.style.setProperty('--fl', '-1');   // 一半草簇左右镜像，形状也不一样
@@ -432,24 +434,23 @@ details[open]::details-content{height:auto}
       var t = ts / 1000;
       var g = hero.querySelector('.kiki-grass');
       if (!g) return;
-      var kids = g.children, i, el, f1, f2, s, jit, ang, sk, bias;
-      // 阵风包络：0.42~1 —— 一阵来整片都压弯，一阵过去整片立起来，这是"随风"最明显的那层
+      var kids = g.children, i, el, f1, own, s, ang, sk;
+      // 阵风包络：0.62~1 —— 一阵来整片都弯，一阵过去整片立起来
       var gust = 0.62 + 0.38 * nz(t * 0.32 + 4);
-      // 顺风偏置：整片草有一个**共同的**倾倒方向，慢慢来回 —— 真草大部分时候是被压在某一侧、
-      // 在这条基线上起起伏伏；只做左右对称摇摆，看着就是"没人推它却自己抖"。
-      bias = (nz(t * 0.22 + 7) - 0.5) * 2;                 // -1..1，很慢
       for (i = 0; i < kids.length; i++) {
         el = kids[i];
         if (!el.__amp) continue;
-        // f1 是主波（整条草带只有约 3 个波峰 → 一大片一起倒），f2 是次波（约 6 个峰，
-        // 只占 16% 的权重：多这一点点起伏，才不至于像一整块板子在翻）
-        f1 = nz(el.__x * 3.0 - t * 0.34);
-        f2 = nz(el.__x * 6.4 - t * 0.80 + 11);
-        s = (f1 * 0.84 + f2 * 0.16 - 0.5) * 3.6;        // 放大到满幅，否则噪波一平均就把起伏抹平
-        if (s > 1) s = 1; if (s < -1) s = -1;           // -1..1：这一刻这簇被推到哪边、推多深
-        jit = (nz(t * 1.3 + el.__x * 5 + 30) - 0.5) * 2.4;
-        if (jit > 1) jit = 1; if (jit < -1) jit = -1;
-        ang = el.__amp * ((s * 0.74 + bias * 0.26) * gust + jit * 0.14);
+        // 三个分量，缺一个都会假：
+        //   f1  —— 沿 x 传播的波。**空间频率必须够高**：之前用 x*3.4，整条 47 簇只跨 3.4 个噪波格，
+        //          等于十几簇共享同一个相位，整片同时朝一边倒 = 军队"稍息"。改成 x*13，全宽跨 13 格，
+        //          三簇左右就换一个峰谷，才有"一波接一波推过去"的样子。
+        //   own —— **每簇自己的呼吸**，相位按 __ph 随机、与位置无关，负责"各摇各的"
+        //   __b —— 每簇固定的个人偏斜，**不随时间变**（去掉了原来那个全局 bias：那是整片同向的元凶）
+        f1 = nz(el.__x * 13.0 - t * 2.6);
+        own = nz(t * 2.2 + el.__ph * 6.2 + 2);
+        s = (f1 * 0.50 + own * 0.36 + el.__b * 0.14 - 0.5) * 4.2;
+        if (s > 1) s = 1; if (s < -1) s = -1;
+        ang = el.__amp * (s * 0.86 + (nz(t * 1.9 + el.__ph * 9 + 30) - 0.5) * 0.28) * gust;
         sk = el.__sk * (0.30 + 0.70 * Math.abs(s)) * gust * (ang >= 0 ? 1 : -1);
         el.style.transform = 'rotate(' + ang.toFixed(2) + 'deg) skewX(' + sk.toFixed(2) + 'deg)';
         wind.frames++;
@@ -903,27 +904,29 @@ details[open]::details-content{height:auto}
       var yvT = tyT / h * 100;
       var txT = stemX(yvT) / 100 * w;             // 起点就压在主茎上 —— 不会出现断口
       // 侧枝要"更长、更往右上、与主茎成 60~70°"：原来控制点 pB 与起点同高，
-      // 前半段几乎是水平抽出去的，整条看着就成了一根 90° 的横杆。
-      // 现在起点切线就带仰角（pB 已抬 0.42uy），整条是有弧度的右斜上 ≈ 62°。
-      // 容器右侧只剩几像素（它本来就贴着屏幕右缘），横向能借到的空间就这么多；
-      // 靠"起点就带仰角 + 往右上拉长"把视觉长度做到原来的 1.5 倍左右。
-      // uy 上限 14：再往上 D 点就钻进最顶上那片叶子（b=92 叶占 0~11.6px）。
-      var dxr = Math.min(w + 14 - 3 - txT, Math.max(20, w * 0.60));
-      var uy = Math.min(14, dxr * 0.56);           // ≈65~70°（相对主茎），也就是用户要的右斜上
+      // 现在容器离右缘留了 28px，横向终于有地方了：dxr 到 0.86w，整条能从 ~28px 拉到 ~58px。
+      // 但纵向还是硬约束 —— 上面就是 b=92 那片叶子（占 0~11.6px），uy 最多 10，
+      // 再高整根分支就会钻进叶子里。所以这条只能"往右伸得很长、抬得不多"。
+      var dxr = Math.min(w + 8 - 3 - txT, Math.max(22, w * 0.76));
+      var uy = Math.min(10, dxr * 0.20);
       var pA = { x: txT, y: tyT };                 // 起点就在茎心线上：分枝从这里长，不是穿过去
-      var pB = { x: txT + dxr * 0.26, y: tyT - uy * 0.42 };
-      var pC = { x: txT + dxr * 0.74, y: tyT - uy * 0.80 };
+      // **出门就先往上抬**：用户要"往右上 60~70°"，但纵向空间只有 10px（头顶就是顶层叶子）。
+      // 所以让前半段陡、后半段拉平 —— 起点切线 ≈54°（相对主茎），整条看起来是斜上抽出去的弧，
+      // 而不是一根平着的横杆。
+      var pB = { x: txT + dxr * 0.18, y: tyT - uy * 0.72 };
+      var pC = { x: txT + dxr * 0.62, y: tyT - uy * 0.98 };
       var pD = { x: txT + dxr, y: tyT - uy };
-      var sidePts = cubicPts(pA, pB, pC, pD, 18);
-      // **卷须从侧枝的 1/5 处就开始卷**：用户第三轮催"再往前"，1/3 也嫌迟。
-      // 剩 4/5 全交给螺旋 —— 一路转着往右上收，才像藤尖在找东西抓。
-      var split = Math.max(3, Math.round(sidePts.length * 0.20));
+      var sidePts = cubicPts(pA, pB, pC, pD, 22);
+      // **卷须从侧枝的 1/6 处就开始卷**，后 5/6 全是螺旋 —— 用户要的是"整根弦从根到尖都长"，
+      // 不能把长度全堆在末端那几个圈上。
+      var split = Math.max(3, Math.round(sidePts.length * 0.16));
       var midP = sidePts[split - 1], prevP = sidePts[split - 3] || sidePts[0];
-      // 卷须起点提前后留给弹簧的长度更短，半径/圈数得跟着改：与其在小空间里塞 2.5 圈糊成一坨，
-      // 侧枝加长之后螺旋也得做大：圈大一点、往前走得多一点，整条分支的视觉长度才真的长出来。
-      var spR = w < 72 ? 5.4 : 7.0, spT = w < 72 ? 2.1 : 2.3, spL = w < 72 ? 11.0 : 13.0;
+      // 弹簧要"拉长、圈变扁不圆"：`squash` 是轴向推进相对径向摆幅的倍率 ——
+      // =1 时平面上就是一个正圆，<1 是横向压扁的圈，**>1 才是"把簧拉开"**：
+      // 圈在推进方向上被抻成椭圆，圈距拉开，看起来一路斜着往前推，而不是原地绕一个圆。
+      var spR = w < 72 ? 5.0 : 6.0, spT = w < 72 ? 2.2 : 2.4, spL = w < 72 ? 19.0 : 21.0;
       var spPts = springPts(midP.x, midP.y, midP.x - prevP.x, midP.y - prevP.y,
-                            spL, spT, spR, 0.92, 0.72, 46);   // squash 0.72：squash 太小，环与环叠死成一根粗线
+                            spL, spT, spR, 0.92, 1.35, 46);
       // 整根一起喂给 ribbon：深色 3.1px（跟主茎同宽）起、0.12px 收；亮色芯线 1.5→0.05
       drawSprout(sproutSide, sidePts.slice(0, split).concat(spPts.slice(1)), 3.1, 0.12, 1.5, 0.05);
     }
@@ -953,7 +956,9 @@ details[open]::details-content{height:auto}
       box.__w = w; box.__h = Math.max(0, r.bottom - topY);
       box.style.width = w + 'px';
       box.style.height = box.__h + 'px';
-      var leftPx = Math.min(r.right, vw) - w - 6;      // 往右贴：留 6px
+      // 往右贴，但留 18px：原来只留 6px，右侧一点余量都没有，侧枝想往右伸就被屏幕边卡住。
+      // 留出这一段后，那根分支才有地方真正"长长地伸出去"（用户连着三轮嫌它短）。
+      var leftPx = Math.min(r.right, vw) - w - 12;
       box.style.left = leftPx + 'px';
       box.__btnR = btnR2 - leftPx;                     // "设置"右缘在容器里的 x（顶段靠它收尾）
       box.__btnL = ((ns && ns.l > 0) ? ns.l : (vw - 74)) - leftPx;   // 按钮左缘（顶段往左走靠它收）
@@ -2069,6 +2074,22 @@ details[open]::details-content{height:auto}
 })();
 </script>
 <!-- kiki-polish:end -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
