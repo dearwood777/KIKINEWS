@@ -1,90 +1,66 @@
 {
- "source": "2026-11-23-summary-en.md",
- "date": "2026-11-24",
+ "source": "2026-11-24-summary-en.md",
+ "date": "2026-11-25",
  "terms": [
   {
-   "id": "w-unverified",
-   "term": "unverified"
+   "id": "w-authentication",
+   "term": "authentication"
+  },
+  {
+   "id": "w-generative",
+   "term": "generative"
+  },
+  {
+   "id": "w-incriminating",
+   "term": "incriminating"
   },
   {
    "id": "w-endpoint",
    "term": "endpoint"
   },
   {
-   "id": "w-optimization",
-   "term": "optimization"
+   "id": "w-junta",
+   "term": "junta"
   },
   {
-   "id": "w-corvette",
-   "term": "corvette"
-  },
-  {
-   "id": "w-keystone",
-   "term": "keystone"
-  },
-  {
-   "id": "w-mistakenly",
-   "term": "mistakenly"
-  },
-  {
-   "id": "w-pend",
-   "term": "pend"
-  },
-  {
-   "id": "w-undocumented",
-   "term": "undocumented"
-  },
-  {
-   "id": "w-transformer",
-   "term": "transformer"
-  },
-  {
-   "id": "w-wasteland",
-   "term": "wasteland"
-  },
-  {
-   "id": "w-bottleneck",
-   "term": "bottleneck"
+   "id": "w-racketeer",
+   "term": "racketeer"
   },
   {
    "id": "w-latency",
    "term": "latency"
   },
   {
-   "id": "w-midterm",
-   "term": "midterm"
+   "id": "w-optimize",
+   "term": "optimize"
   },
   {
-   "id": "w-theoretically",
-   "term": "theoretically"
+   "id": "w-retract",
+   "term": "retract"
   },
   {
-   "id": "w-benchmark",
-   "term": "benchmark"
+   "id": "w-coerce",
+   "term": "coerce"
   },
   {
-   "id": "w-standoff",
-   "term": "standoff"
+   "id": "w-compatibility",
+   "term": "compatibility"
   },
   {
-   "id": "w-simulate",
-   "term": "simulate"
+   "id": "w-tally",
+   "term": "tally"
   },
   {
-   "id": "w-contamination",
-   "term": "contamination"
+   "id": "w-conspire",
+   "term": "conspire"
   },
   {
-   "id": "w-urgency",
-   "term": "urgency"
+   "id": "w-procure",
+   "term": "procure"
   },
   {
-   "id": "w-sanction",
-   "term": "sanction"
-  },
-  {
-   "id": "w-hike",
-   "term": "hike"
+   "id": "w-acquit",
+   "term": "acquit"
   }
  ]
 }

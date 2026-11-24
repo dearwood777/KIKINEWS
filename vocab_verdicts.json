@@ -3,7 +3,14 @@
  "curb": "drop",
  "equate": "drop",
  "fugitive": "drop",
+ "insurgent": "drop",
  "reciprocal": "drop",
+ "reiterate": "drop",
  "sanction": "keep",
- "stall": "drop"
+ "slate": "drop",
+ "stall": "drop",
+ "surge": "drop",
+ "validate": "drop",
+ "workload": "drop",
+ "wrongdoing": "drop"
 }
