@@ -100,6 +100,12 @@ class MainActivity : AppCompatActivity() {
         WidgetRefresh.refreshIfStale(this)
     }
 
+    /** 从「安装未知应用」设置页回来时，接着装那个已经下载好的包。 */
+    override fun onResume() {
+        super.onResume()
+        UpdateChecker.resumePendingInstall(this)
+    }
+
     /** 沉浸式全屏：隐藏状态栏和导航栏，滑动边缘可临时唤出，松手后自动收起。 */
     @Suppress("DEPRECATION")
     private fun enterImmersive() {
