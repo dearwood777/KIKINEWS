@@ -1,9 +1,9 @@
 {
- "versionCode": 160010,
- "versionName": "1.6.010",
- "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.010.apk",
- "sha256": "7a90e6c40aca74a89f8d5ea7bc1f9aa7380b0c833fb4bc195b7876525974e468",
- "size": 2555382,
- "notes": "报头藤蔓/葫芦/星空重做；原生设置按钮视觉缩小为 40×16dp（长按 6 秒解锁热区完全不变）",
+ "versionCode": 160011,
+ "versionName": "1.6.011",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.011.apk",
+ "sha256": "2ed44dd0e2f77443a64c7f6018f0c2397263f35c6c0bdcc445dcf5a87fb4e9f2",
+ "size": 2560406,
+ "notes": "修复桌面小组件不更新：JobScheduler 每3小时联网拉取 + 打开App即同步 + 设置页新增「立即联网刷新」按钮（原来的保存按钮只重绘缓存、从不联网）",
  "minSdk": 24
 }
