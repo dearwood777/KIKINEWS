@@ -50,6 +50,7 @@ object SettingsPopup {
 
     private var pw: PopupWindow? = null
     private var hostRef: MainActivity? = null
+    private var measureWidth = 0
 
     fun isShowing(): Boolean = pw?.isShowing == true
 
@@ -67,19 +68,7 @@ object SettingsPopup {
         val content = LayoutInflater.from(ctx).inflate(R.layout.activity_settings, null)
 
         val dm = ctx.resources.displayMetrics
-        val widthPx = min(dp(ctx, 236), (dm.widthPixels * 0.66f).toInt())
-
-        val popup = PopupWindow(content, widthPx, ViewGroup.LayoutParams.WRAP_CONTENT, false).apply {
-            isOutsideTouchable = true
-            isFocusable = true
-            isClippingEnabled = true
-            elevation = dp(ctx, 12).toFloat()
-            // 必须给一个非 null 背景，否则 isOutsideTouchable 不生效（1/255 透明，肉眼看不见）
-            setBackgroundDrawable(ColorDrawable(0x01000000))
-        }
-
-        pw = popup
-        hostRef = host
+        val widthPx = min(dp(ctx, 224), (dm.widthPixels * 0.62f).toInt())
 
         val blur = content.findViewById<ImageView>(R.id.blurBg)
         val tint = content.findViewById<View>(R.id.tintLayer)
@@ -97,8 +86,32 @@ object SettingsPopup {
         }
 
         bindRows(host, content, advanced, chipsBox)
-
         content.findViewById<TextView>(R.id.closeBtn).setOnClickListener { close(ctx, null) }
+
+        /*
+         * 高度必须**显式量出来**再传给 PopupWindow。
+         * 之前传 LayoutParams.WRAP_CONTENT，PopupWindow 会把它当成"可用高度"（整屏），
+         * 结果窗口一路顶到屏幕底、菜单挤在顶部，中间留下十几行的大空白 —— 用户看到的
+         * "整整一竖列到底"就是这个。这里量出内容真实高度，窗口就只有这么大。
+         */
+        content.measure(
+            View.MeasureSpec.makeMeasureSpec(widthPx, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        val heightPx = content.measuredHeight
+
+        val popup = PopupWindow(content, widthPx, heightPx, false).apply {
+            isOutsideTouchable = true
+            isFocusable = true
+            isClippingEnabled = true
+            elevation = dp(ctx, 12).toFloat()
+            // 必须给一个非 null 背景，否则 isOutsideTouchable 不生效（1/255 透明，肉眼看不见）
+            setBackgroundDrawable(ColorDrawable(0x01000000))
+        }
+
+        pw = popup
+        hostRef = host
+        measureWidth = widthPx
 
         // 入场：先把状态压小，显示后再放
         content.scaleX = 0.96f
@@ -224,6 +237,19 @@ object SettingsPopup {
             buildChips(host, root, chipsBox)
             chipsBox.visibility = View.VISIBLE
         }
+        // 展开/收起字号 chip 后窗口高度要跟着重新量，不然会留一块空白
+        root.post { refit(root) }
+    }
+
+    /** 按当前内容重算高度并同步窗口尺寸（字号 chip 展开时用）。 */
+    private fun refit(content: View) {
+        val w = measureWidth
+        if (w <= 0) return
+        content.measure(
+            View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        runCatching { pw?.update(w, content.measuredHeight) }
     }
 
     private fun buildChips(host: MainActivity, root: View, chipsBox: LinearLayout) {
