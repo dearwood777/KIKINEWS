@@ -7,10 +7,6 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
@@ -22,6 +18,22 @@ import java.security.MessageDigest
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
+/** 下载进度事件。phase 见 UpdateChecker 里的 PHASE_* 常量。 */
+data class UpdateProgress(
+    val name: String,
+    val phase: Int,
+    val pct: Int,
+    val done: Long,
+    val total: Long,
+) {
+    val fraction: Float
+        get() = when {
+            pct >= 0 -> pct / 100f
+            total > 0 -> done.toFloat() / total
+            else -> 0f
+        }
+}
+
 /**
  * 应用自更新：只在 GitHub Pages 上放一个 version.json 和对应的 apk，
  * App 启动时（或手动「检查更新」时）拉一次，比 versionCode 决定要不要提示。
@@ -31,15 +43,12 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * —— 2026-11-25 修的两个坑 ——
  * 1) 检查与下载原来共用 `newSingleThreadExecutor()` 一条线程。下载一旦卡在
- *    socket 上（弱网/墙/Pages 慢），后面每一次「检查更新」的任务都排在队列里
- *    永远轮不到执行；配合"提交任务后才发 toast"，用户看到的就是
- *    「闪一下正在检查更新，然后就没了」。现在两条独立线程 + 防重入标志。
- * 2) 下载全程零反馈，失败只有一句 1 秒的 toast，用户分不清"在传"还是"死了"。
- *    现在有确定进度框（百分比 + 已传/总量），失败弹模态对话框写清原因，
- *    并给「重试」「用浏览器下载」两个出口。
- *
- * 另外把「允许安装未知应用」的检查提到下载之前：没有这个权限，包下完也白下，
- * 以前是下完才 toast 一句、接着跳设置页，很多人根本没看见。
+ *    socket 上，后面每一次「检查更新」都排在队列里永远轮不到执行；配合
+ *    "提交任务后才发 toast"，用户看到的就是「闪一下正在检查更新，然后就没了」。
+ *    现在两条独立线程 + 防重入标志。
+ * 2) 下载全程零反馈，失败只有 1 秒 toast。现在进度走 [progressListener]
+ *    交给主界面的底部悬浮条渲染（不遮挡正文、可继续滑动），
+ *    失败仍然是模态对话框（写明 HTTP 码 / 校验原因 / socket 原文）。
  */
 object UpdateChecker {
 
@@ -47,12 +56,25 @@ object UpdateChecker {
     private const val PREF = "horizon"
     private const val KEY_PROMPTED = "update_prompted_code"
 
+    const val PHASE_CONNECTING = 0
+    const val PHASE_DOWNLOADING = 1
+    const val PHASE_OK = 2
+    const val PHASE_FAIL = 3
+
     /** 检查更新与下载各用一条线程，互不排队阻塞。 */
     private val checkPool = Executors.newSingleThreadExecutor()
     private val downloadPool = Executors.newSingleThreadExecutor()
 
     private val checking = AtomicBoolean(false)
     private val downloading = AtomicBoolean(false)
+
+    /** 当前这次下载的取消开关；没有下载时为 null。 */
+    @Volatile
+    private var currentCancel: AtomicBoolean? = null
+
+    /** 进度回调：由 MainActivity 在 onCreate 挂上、onDestroy 摘掉。 */
+    @Volatile
+    var progressListener: ((UpdateProgress) -> Unit)? = null
 
     /** 下载完但因缺少安装权限没装成，等用户从系统设置回来后接着装。 */
     @Volatile
@@ -72,12 +94,10 @@ object UpdateChecker {
 
     fun check(activity: Activity, manual: Boolean = false) {
         if (activity.isFinishing) return
-        // 防重入：连点只提示，不往队列里堆任务
         if (!checking.compareAndSet(false, true)) {
             if (manual) toast(activity, "正在检查更新，请稍候…")
             return
         }
-        // 手动检查先给一个即时反馈，否则用户会觉得"点了没反应"
         if (manual) toast(activity, "正在检查更新…")
         checkPool.execute {
             try {
@@ -114,7 +134,6 @@ object UpdateChecker {
                         return@runOnUiThread
                     }
                     val prefs = activity.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-                    // 同一个版本只自动提醒一次，避免每次打开都弹
                     if (!manual && prefs.getLong(KEY_PROMPTED, 0L) == remote.code) return@runOnUiThread
                     showDialog(activity, remote, prefs)
                 }
@@ -123,6 +142,13 @@ object UpdateChecker {
             }
         }
     }
+
+    /** 取消正在进行的下载（底部进度条上的「取消」）。 */
+    fun cancelDownload() {
+        currentCancel?.set(true)
+    }
+
+    fun isDownloading(): Boolean = downloading.get()
 
     /**
      * 从系统「安装未知应用」设置页回来时调用（MainActivity.onResume）。
@@ -135,7 +161,6 @@ object UpdateChecker {
         activity.runOnUiThread { install(activity, file) }
     }
 
-    /** 明确的模态提示：点一下一定看得到，不会像 toast 那样一闪而过 */
     private fun info(activity: Activity, title: String, message: String) {
         if (activity.isFinishing) return
         AlertDialog.Builder(activity)
@@ -180,62 +205,27 @@ object UpdateChecker {
         }
 
         val cancelled = AtomicBoolean(false)
-        var dialog: AlertDialog? = null
-
-        // 进度框：百分比 + 已传 MB / 总 MB，不可点外部取消
-        val bar = ProgressBar(activity, null, android.R.attr.progressBarStyleHorizontal).apply {
-            max = 100
-            progress = 0
-        }
-        val label = TextView(activity).apply {
-            text = "准备连接…"
-            textSize = 13f
-        }
-        val box = LinearLayout(activity).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(activity, 22), dp(activity, 18), dp(activity, 22), dp(activity, 4))
-            addView(
-                bar,
-                LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
-            addView(label)
-        }
-
-        activity.runOnUiThread {
-            dialog = AlertDialog.Builder(activity)
-                .setTitle("正在下载 ${remote.name}")
-                .setView(box)
-                .setNegativeButton("取消", null)
-                .setCancelable(false)
-                .create()
-            dialog?.show()
-            dialog?.getButton(AlertDialog.BUTTON_NEGATIVE)?.setOnClickListener {
-                cancelled.set(true)
-                dialog?.dismiss()
-            }
-        }
+        currentCancel = cancelled
+        emit(UpdateProgress(remote.name, PHASE_CONNECTING, -1, 0, 0))
 
         downloadPool.execute {
             val outcome = runCatching {
                 fetchApk(activity, remote, cancelled) { pct, done, total ->
-                    activity.runOnUiThread {
-                        if (dialog?.isShowing != true) return@runOnUiThread
-                        if (pct >= 0) bar.progress = pct
-                        label.text = if (total > 0) {
-                            "${if (pct >= 0) pct else 0}% · ${mb(done)} / ${mb(total)} MB"
-                        } else {
-                            "已下载 ${mb(done)} MB"
-                        }
-                    }
+                    emit(UpdateProgress(remote.name, PHASE_DOWNLOADING, pct, done, total))
                 }
             }.getOrElse { Outcome.Fail(it.message ?: it.javaClass.simpleName) }
 
+            downloading.set(false)
+            currentCancel = null
+            emit(
+                UpdateProgress(
+                    remote.name,
+                    if (outcome is Outcome.Ok) PHASE_OK else PHASE_FAIL,
+                    -1, 0, 0
+                )
+            )
+
             activity.runOnUiThread {
-                dialog?.dismiss()
-                downloading.set(false)
                 if (activity.isFinishing) return@runOnUiThread
                 when (outcome) {
                     is Outcome.Ok -> install(activity, outcome.file)
@@ -249,6 +239,10 @@ object UpdateChecker {
                 }
             }
         }
+    }
+
+    private fun emit(event: UpdateProgress) {
+        runCatching { progressListener?.invoke(event) }
     }
 
     private fun showFailDialog(activity: Activity, remote: Remote, reason: String) {
@@ -460,11 +454,6 @@ object UpdateChecker {
         }
         return md.digest().joinToString("") { "%02x".format(it) }
     }
-
-    private fun mb(bytes: Long): String = String.format("%.2f", bytes / 1024.0 / 1024.0)
-
-    private fun dp(ctx: Context, v: Int): Int =
-        (ctx.resources.displayMetrics.density * v).toInt()
 
     private fun toast(activity: Activity, msg: String) {
         activity.runOnUiThread {
