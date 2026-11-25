@@ -1,179 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  设置小浮层：宽 300dp（窄屏自动收窄），从设置胶囊下方弹出，不是全屏。
+  层级：半透明玻璃底 → 背后画面模糊图（可选）→ 冷色薄层 → 内容。
+-->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 遮罩：往下层网页压一层冷色，营造"玻璃浮在内容上"的层次 -->
     <View
         android:id="@+id/scrim"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/panel"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="10dp"
-        android:background="@drawable/bg_settings_panel"
-        android:orientation="vertical">
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:background="@drawable/bg_settings_glass"
+        android:clipToOutline="true">
+
+        <ImageView
+            android:id="@+id/blurBg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/tintLayer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
         <LinearLayout
+            android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="20dp"
-            android:paddingTop="16dp"
-            android:paddingEnd="14dp"
-            android:paddingBottom="4dp">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="设置"
-                    android:textColor="#F2F6FF"
-                    android:textSize="21sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/panelSub"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="#7C879C"
-                    android:textSize="11.5sp" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/closeBtn"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:background="@drawable/bg_round_button"
-                android:gravity="center"
-                android:includeFontPadding="false"
-                android:text="✕"
-                android:textColor="#D5DCEA"
-                android:textSize="15sp" />
-        </LinearLayout>
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:scrollbars="none">
+            android:animateLayoutChanges="true"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingStart="12dp"
-                android:paddingTop="6dp"
-                android:paddingEnd="12dp"
-                android:paddingBottom="20dp">
+                android:layout_height="42dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="15dp"
+                android:paddingEnd="10dp">
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:id="@+id/panelTitle"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:paddingStart="6dp"
-                    android:paddingTop="10dp"
-                    android:paddingBottom="6dp"
-                    android:text="内容"
-                    android:textColor="#6E7A90"
-                    android:textSize="11sp" />
-
-                <include
-                    android:id="@+id/rowReload"
-                    layout="@layout/view_settings_row"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <include
-                    android:id="@+id/rowHard"
-                    layout="@layout/view_settings_row"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp" />
-
-                <include
-                    android:id="@+id/rowTop"
-                    layout="@layout/view_settings_row"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp" />
+                    android:layout_weight="1"
+                    android:text="设置"
+                    android:textColor="#F4F5F8"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="6dp"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="6dp"
-                    android:text="显示"
-                    android:textColor="#6E7A90"
-                    android:textSize="11sp" />
-
-                <include
-                    android:id="@+id/rowZoom"
-                    layout="@layout/view_settings_row"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <LinearLayout
-                    android:id="@+id/zoomChips"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:orientation="horizontal" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="6dp"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="6dp"
-                    android:text="关于"
-                    android:textColor="#6E7A90"
-                    android:textSize="11sp" />
-
-                <include
-                    android:id="@+id/rowUpdate"
-                    layout="@layout/view_settings_row"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/advTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="6dp"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="6dp"
-                    android:text="高级"
-                    android:textColor="#6E7A90"
-                    android:textSize="11sp"
-                    android:visibility="gone" />
-
-                <include
-                    android:id="@+id/rowBrowser"
-                    layout="@layout/view_settings_row"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" />
-
-                <include
-                    android:id="@+id/rowCopy"
-                    layout="@layout/view_settings_row"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:visibility="gone" />
+                    android:id="@+id/closeBtn"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/bg_round_button"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:text="✕"
+                    android:textColor="#B8BCC6"
+                    android:textSize="12.5sp" />
             </LinearLayout>
-        </ScrollView>
-    </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.6dp"
+                android:background="#1FFFFFFF" />
+
+            <include
+                android:id="@+id/rowReload"
+                layout="@layout/view_menu_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/rowHard"
+                layout="@layout/view_menu_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/rowTop"
+                layout="@layout/view_menu_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/rowZoom"
+                layout="@layout/view_menu_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <!-- 字号四档：点「正文字号」这一行才展开，面板高度自己长出来 -->
+            <LinearLayout
+                android:id="@+id/zoomChips"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="12dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="12dp"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/rowUpdate"
+                layout="@layout/view_menu_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:id="@+id/advGap"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:background="#0AFFFFFF"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/rowBrowser"
+                layout="@layout/view_menu_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/rowCopy"
+                layout="@layout/view_menu_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+        </LinearLayout>
+    </FrameLayout>
 </FrameLayout>
