@@ -105,8 +105,7 @@ class MainActivity : AppCompatActivity() {
         WidgetRefresh.schedule(this)
         WidgetRefresh.refreshIfStale(this)
 
-        // 设置面板通过这条直连回来操作 WebView；下载进度走底部悬浮条
-        SettingsBridge.host = this
+        // 下载进度走底部悬浮条；设置浮层是 PopupWindow，直接回调 onSettingsAction
         bindDownloadBar()
     }
 
@@ -269,46 +268,42 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * 打开设置浮层：把胶囊按钮的屏幕矩形带过去，让浮层贴在它下方；
-     * 启动前先把背后网页虚化一份，给毛玻璃当底（低版本机型也才有"玻璃感"）。
+     * 打开设置浮层。
+     * 浮层是 PopupWindow（不是 Activity），挂在胶囊正下方、尺寸由它自己定死一小块；
+     * 弹之前先把背后网页虚化一份，给毛玻璃当底（低版本机型也才有"玻璃感"）。
      */
     private fun openSettings(anchor: View, advanced: Boolean = false) {
+        if (SettingsPopup.isShowing()) {
+            SettingsPopup.dismissNow()
+            return
+        }
         SettingsBackdrop.capture(this, web) {
             if (isFinishing) return@capture
-            val loc = IntArray(2)
-            anchor.getLocationOnScreen(loc)
-            val intent = Intent(this, SettingsActivity::class.java)
-                .putExtra(SettingsActivity.EXTRA_ADVANCED, advanced)
-                .putExtra(SettingsActivity.EXTRA_AX, loc[0].toFloat())
-                .putExtra(SettingsActivity.EXTRA_AY, loc[1].toFloat())
-                .putExtra(SettingsActivity.EXTRA_AW, anchor.width)
-                .putExtra(SettingsActivity.EXTRA_AH, anchor.height)
-            startActivity(intent)
-            overridePendingTransition(0, 0)
+            SettingsPopup.show(this, anchor, advanced)
         }
     }
 
     /** 设置面板点过的操作统一回到这里执行，因为它要动的是这个 Activity 的 WebView。 */
     fun onSettingsAction(action: String, arg: Int = 0) {
         when (action) {
-            SettingsActivity.ACT_RELOAD -> {
+            SettingsPopup.ACT_RELOAD -> {
                 web.clearCache(false)
                 load(digestUrl())
             }
-            SettingsActivity.ACT_HARD_RELOAD -> {
+            SettingsPopup.ACT_HARD_RELOAD -> {
                 web.clearCache(true)
                 load(digestUrl())
             }
-            SettingsActivity.ACT_TOP -> web.scrollTo(0, 0)
-            SettingsActivity.ACT_ZOOM -> {
+            SettingsPopup.ACT_TOP -> web.scrollTo(0, 0)
+            SettingsPopup.ACT_ZOOM -> {
                 web.settings.textZoom = arg
                 prefs.edit().putInt(KEY_ZOOM, arg).apply()
             }
-            SettingsActivity.ACT_UPDATE -> UpdateChecker.check(this, manual = true)
-            SettingsActivity.ACT_BROWSER -> runCatching {
+            SettingsPopup.ACT_UPDATE -> UpdateChecker.check(this, manual = true)
+            SettingsPopup.ACT_BROWSER -> runCatching {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(digestUrl())))
             }
-            SettingsActivity.ACT_COPY -> {
+            SettingsPopup.ACT_COPY -> {
                 val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                 cm.setPrimaryClip(android.content.ClipData.newPlainText("KIKINEWS", digestUrl()))
                 toast("链接已复制")
@@ -375,7 +370,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         holdHandler.removeCallbacksAndMessages(null)
-        if (SettingsBridge.host === this) SettingsBridge.host = null
+        SettingsPopup.dismissNow()
         UpdateChecker.progressListener = null
         super.onDestroy()
     }
