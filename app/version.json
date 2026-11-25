@@ -1,9 +1,9 @@
 {
- "versionCode": 160013,
- "versionName": "1.6.013",
- "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.013.apk",
- "sha256": "6cb535f94f957a04b07e9647944d475ac5e044271b3c1d086f3946d32d4e5640",
- "size": 2583495,
- "notes": "设置改成从胶囊放大展开的毛玻璃面板（12+ 真系统模糊，低版本深色玻璃质感）；正文字号改成四档 chip 就地切换；更新下载进度改成底部悬浮条，不遮挡正文、可继续滑动阅读，可随时取消",
+ "versionCode": 160014,
+ "versionName": "1.6.014",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.014.apk",
+ "sha256": "e595539fcbdc47055c70a657dfb1ae0ac74f842e5c8e2243586e6ea7c9431442",
+ "size": 2588091,
+ "notes": "设置浮层改回小尺寸（300dp 宽、贴胶囊下方，不再全屏），每行右侧补当前值；毛玻璃改成截背后网页做真模糊，低版本机型也有玻璃感",
  "minSdk": 24
 }
