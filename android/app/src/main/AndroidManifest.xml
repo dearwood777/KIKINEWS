@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- 自更新：下载完 apk 后调起系统安装器 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- 小组件周期刷新任务的持久化 + 开机重挂 -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -47,6 +49,21 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- 小组件的联网刷新任务：走 JobScheduler，比 APPWIDGET_UPDATE 广播可靠 -->
+        <service
+            android:name=".WidgetRefreshJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <!-- 开机后重新注册刷新任务（部分 ROM 会清掉持久化任务） -->
+        <receiver
+            android:name=".KikiBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".KikiWidgetProvider4x1"
