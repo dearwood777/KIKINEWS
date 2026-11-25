@@ -1,9 +1,9 @@
 {
- "versionCode": 160016,
- "versionName": "1.6.016",
- "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.016.apk",
- "sha256": "083b4fb7c8a74960b5a372961ec63a64735ca81f40d8e152dea7af9f1c524679",
- "size": 2585167,
- "notes": "设置彻底换成 PopupWindow：宽 min(236dp, 屏宽66%)、高随内容约 230dp，挂在胶囊下方，物理上不可能全屏；毛玻璃按浮层真实位置对齐取样",
+ "versionCode": 160017,
+ "versionName": "1.6.017",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.017.apk",
+ "sha256": "87b337a99ca9aa97cc4e2b3e5834226d49f13bab0b36d4c24fa16536d9ecbcb2",
+ "size": 2585515,
+ "notes": "设置窗口高度按内容实测（约 5 行 = 230dp），不再顶到底；宽度收到 224dp，行高 38dp，标题栏 34dp",
  "minSdk": 24
 }
