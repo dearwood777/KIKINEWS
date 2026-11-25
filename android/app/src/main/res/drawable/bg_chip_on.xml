@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 字号档位 chip：选中（青色描边 + 淡淡底光） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="12dp" />
+    <solid android:color="#264FD1C5" />
+    <stroke android:width="1dp" android:color="#994FD1C5" />
+</shape>
