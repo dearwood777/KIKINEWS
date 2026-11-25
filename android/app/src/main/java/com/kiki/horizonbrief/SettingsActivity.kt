@@ -2,6 +2,7 @@ package com.kiki.horizonbrief
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Bundle
@@ -10,25 +11,33 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import kotlin.math.min
 
 /**
- * 设置面板。
+ * 设置小浮层。
  *
- * 视觉与动效目标（用户 2026-11-25 提的）：
- *   - 不是原生下拉菜单，而是「从右上角那个胶囊原地放大成整块面板」，返回时缩回原处；
- *   - 面板是毛玻璃：Android 12+ 走真正的系统 blur-behind（窗口透明 + FLAG_BLUR_BEHIND），
- *     更低版本退化为「深色半透 + 冷色描边 + 顶部微亮渐变」，靠材质感而不是真模糊。
+ * 形态定位（用户 2026-11-25 纠正过两次）：
+ *   **不是全屏页面**，而是像 iOS 上下文菜单那样的一小块浮层 ——
+ *   300dp 宽、右上角贴着「设置」胶囊往下挂、宽度收窄、每行右侧放当前值把空白填满。
  *
- * 与主界面的关系：所有会动 WebView 的操作（重新加载 / 回顶部 / 字号 / 检查更新）
- * 都通过 [SettingsBridge] 直接回调 MainActivity，面板不会被原生对话框打断。
+ * 毛玻璃：真模糊交给 [SettingsBackdrop]（PixelCopy 截背后网页 → 降采样 → 盒式模糊），
+ * 铺在面板最底层；面板再叠一层很薄的冷色层压住饱和度。
+ * 所以低版本机型（没有系统 blur-behind）看到的也是"背后被虚化"的玻璃，
+ * 不是一块死黑。截图失败时退回半透明深色 + 细描边。
  */
 class SettingsActivity : Activity() {
 
+    private lateinit var root: View
     private lateinit var panel: View
     private lateinit var scrim: View
+    private lateinit var blurBg: ImageView
+    private lateinit var tintLayer: View
+    private lateinit var chipsBox: LinearLayout
+
     private var ax = -1f
     private var ay = -1f
     private var aw = 0
@@ -43,11 +52,14 @@ class SettingsActivity : Activity() {
         super.onCreate(savedInstanceState)
         overridePendingTransition(0, 0)
         setContentView(R.layout.activity_settings)
-
-        // 透明窗口 + 硬件加速：blur-behind 在这两个条件下才生效
         window.setFormat(PixelFormat.TRANSLUCENT)
+
+        root = findViewById(R.id.root)
         panel = findViewById(R.id.panel)
         scrim = findViewById(R.id.scrim)
+        blurBg = findViewById(R.id.blurBg)
+        tintLayer = findViewById(R.id.tintLayer)
+        chipsBox = findViewById(R.id.zoomChips)
 
         advanced = intent?.getBooleanExtra(EXTRA_ADVANCED, false) ?: false
         ax = intent?.getFloatExtra(EXTRA_AX, -1f) ?: -1f
@@ -56,55 +68,77 @@ class SettingsActivity : Activity() {
         ah = intent?.getIntExtra(EXTRA_AH, 0) ?: 0
 
         setupGlass()
+        placePanel()
         bindRows()
         buildZoomChips()
+
         findViewById<TextView>(R.id.closeBtn).setOnClickListener { closePanel() }
         scrim.setOnClickListener { closePanel() }
 
-        panel.scaleX = 0.16f
-        panel.scaleY = 0.16f
+        panel.scaleX = 0.94f
+        panel.scaleY = 0.94f
         panel.alpha = 0f
+        panel.translationY = -dp(this, 10).toFloat()
         scrim.alpha = 0f
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && !closing && panel.scaleX < 1f) playEnter()
+        if (hasFocus && !closing && panel.alpha == 0f) playEnter()
     }
 
-    /** 毛玻璃：31+ 用系统 blur-behind；更早版本靠半透深底 + 描边撑材质感。 */
+    /** 真模糊优先；截不到就退成半透明深玻璃。 */
     private fun setupGlass() {
-        val canBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-        scrim.setBackgroundColor(
-            if (canBlur) 0x8C0B1119.toInt() else 0xE60B1119.toInt()
-        )
-        if (canBlur) {
+        val blurred: Bitmap? = SettingsBackdrop.blurred
+        if (blurred != null) {
+            blurBg.setImageBitmap(blurred)
+            blurBg.visibility = View.VISIBLE
+            tintLayer.setBackgroundColor(0x8C121822.toInt())
+            scrim.setBackgroundColor(0x4D000000)
+        } else {
+            blurBg.visibility = View.GONE
+            tintLayer.setBackgroundColor(0xCC181B22.toInt())
+            scrim.setBackgroundColor(0x73000000)
+        }
+
+        // 12+ 再叠一层系统 blur-behind：窗外的桌面/网页一起虚化，边缘更自然
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
             val attrs = window.attributes
-            attrs.blurBehindRadius = dp(this, 26)
+            attrs.blurBehindRadius = dp(this, 28)
             window.attributes = attrs
         }
     }
 
-    private fun playEnter() {
+    /** 面板挂在胶囊正下方、右边缘与胶囊右边缘对齐；窄屏自动收窄。 */
+    private fun placePanel() {
         panel.post {
-            val loc = IntArray(2)
-            panel.getLocationOnScreen(loc)
-            if (ax >= 0f && ay >= 0f) {
-                // 支点落在设置胶囊中心：放大时看起来就是它自己在撑开
-                panel.pivotX = ax + aw / 2f - loc[0]
-                panel.pivotY = ay + ah / 2f - loc[1]
+            val rootLoc = IntArray(2)
+            root.getLocationOnScreen(rootLoc)
+            val lp = panel.layoutParams as FrameLayout.LayoutParams
+            val screenW = resources.displayMetrics.widthPixels
+            lp.width = min(dp(this, 300), screenW - dp(this, 24))
+            lp.topMargin = if (ay >= 0f) {
+                (ay + ah).toInt() - rootLoc[1] + dp(this, 8)
             } else {
-                panel.pivotX = panel.width.toFloat()
-                panel.pivotY = dp(this, 40).toFloat()
+                dp(this, 52)
             }
-            panel.animate()
-                .scaleX(1f).scaleY(1f).alpha(1f)
-                .setDuration(340)
-                .setInterpolator(DecelerateInterpolator(1.6f))
-                .start()
-            scrim.animate().alpha(1f).setDuration(300).start()
+            lp.rightMargin = if (ax >= 0f) {
+                (root.width - ((ax + aw).toInt() - rootLoc[0])).coerceAtLeast(dp(this, 8))
+            } else {
+                dp(this, 12)
+            }
+            panel.layoutParams = lp
         }
+    }
+
+    private fun playEnter() {
+        panel.animate()
+            .scaleX(1f).scaleY(1f).alpha(1f).translationY(0f)
+            .setDuration(200)
+            .setInterpolator(DecelerateInterpolator(1.6f))
+            .start()
+        scrim.animate().alpha(1f).setDuration(200).start()
     }
 
     private fun closePanel() = closePanel(null)
@@ -113,8 +147,9 @@ class SettingsActivity : Activity() {
         if (closing) return
         closing = true
         panel.animate()
-            .scaleX(0.16f).scaleY(0.16f).alpha(0f)
-            .setDuration(200)
+            .scaleX(0.96f).scaleY(0.96f).alpha(0f)
+            .translationY(-dp(this, 8).toFloat())
+            .setDuration(150)
             .setInterpolator(DecelerateInterpolator(1.4f))
             .withEndAction {
                 then?.invoke()
@@ -122,7 +157,7 @@ class SettingsActivity : Activity() {
                 overridePendingTransition(0, 0)
             }
             .start()
-        scrim.animate().alpha(0f).setDuration(200).start()
+        scrim.animate().alpha(0f).setDuration(150).start()
     }
 
     override fun onBackPressed() {
@@ -135,43 +170,42 @@ class SettingsActivity : Activity() {
         val version = runCatching {
             packageManager.getPackageInfo(packageName, 0).versionName
         }.getOrNull() ?: ""
-        findViewById<TextView>(R.id.panelSub).text =
-            "KIKINEWS · v$version" + if (advanced) "" else "　长按「设置」6 秒解锁高级"
+        findViewById<TextView>(R.id.panelTitle).text = "设置"
 
-        bindRow(R.id.rowReload, "重新加载", "重新请求当前这一期日报", R.drawable.ic_kv_refresh, CYAN, "") {
+        bindRow(R.id.rowReload, "重新加载", R.drawable.ic_kv_refresh, CYAN, "") {
             closePanel { SettingsBridge.act(ACT_RELOAD) }
         }
-        bindRow(R.id.rowHard, "强制刷新", "清掉网页缓存再加载，排版异常时用", R.drawable.ic_kv_clear, MINT, "") {
+        bindRow(R.id.rowHard, "强制刷新", R.drawable.ic_kv_clear, MINT, "清缓存") {
             closePanel { SettingsBridge.act(ACT_HARD_RELOAD) }
         }
-        bindRow(R.id.rowTop, "回到顶部", "跳回报头顶部", R.drawable.ic_kv_top, BLUE, "") {
+        bindRow(R.id.rowTop, "回到顶部", R.drawable.ic_kv_top, BLUE, "") {
             closePanel { SettingsBridge.act(ACT_TOP) }
         }
-        bindRow(R.id.rowZoom, "正文字号", "只影响网页正文，不影响报头装饰", R.drawable.ic_kv_text, CYAN, "") {}
-        bindRow(
-            R.id.rowUpdate, "检查更新",
-            "从 GitHub Pages 拉版本清单",
-            R.drawable.ic_kv_update, AMBER, ""
-        ) {
+        // 右侧直接显示当前档位，"右边空一块"的问题就是在这里补的
+        bindRow(R.id.rowZoom, "正文字号", R.drawable.ic_kv_text, CYAN, "${SettingsBridge.zoom()}%") {
+            toggleZoomChips()
+        }
+        bindRow(R.id.rowUpdate, "检查更新", R.drawable.ic_kv_update, AMBER, "v$version") {
             closePanel { SettingsBridge.act(ACT_UPDATE) }
         }
 
-        val advViews = listOf(R.id.advTitle, R.id.rowBrowser, R.id.rowCopy)
+        val advViews = listOf(R.id.advGap, R.id.rowBrowser, R.id.rowCopy)
         advViews.forEach { findViewById<View>(it).visibility = if (advanced) View.VISIBLE else View.GONE }
         if (advanced) {
-            bindRow(R.id.rowBrowser, "在浏览器中打开", "用系统浏览器看同一期", R.drawable.ic_kv_browser, BLUE, "") {
+            bindRow(R.id.rowBrowser, "在浏览器中打开", R.drawable.ic_kv_browser, BLUE, "") {
                 closePanel { SettingsBridge.act(ACT_BROWSER) }
             }
-            bindRow(R.id.rowCopy, "复制日报链接", "拷到剪贴板，方便发给别人", R.drawable.ic_kv_copy, MUTED, "") {
+            bindRow(R.id.rowCopy, "复制日报链接", R.drawable.ic_kv_copy, MUTED, "") {
                 closePanel { SettingsBridge.act(ACT_COPY) }
             }
+            // 最后一行不画分隔线，免得贴到圆角上
+            findViewById<View>(R.id.rowCopy).findViewById<View>(R.id.row_divider).visibility = View.GONE
         }
     }
 
     private fun bindRow(
         id: Int,
         title: String,
-        sub: String,
         icon: Int,
         tint: Int,
         right: String,
@@ -179,36 +213,37 @@ class SettingsActivity : Activity() {
     ) {
         val root = findViewById<View>(id)
         root.findViewById<TextView>(R.id.row_title).text = title
-        val subView = root.findViewById<TextView>(R.id.row_sub)
-        if (sub.isNullOrBlank()) subView.visibility = View.GONE else {
-            subView.text = sub
-            subView.visibility = View.VISIBLE
-        }
         root.findViewById<ImageView>(R.id.row_icon).apply {
-            if (icon >= 0) {
-                setImageResource(icon)
-                setColorFilter(tint)
-            }
+            setImageResource(icon)
+            setColorFilter(tint)
         }
         val rightView = root.findViewById<TextView>(R.id.row_right)
-        if (right.isNullOrBlank()) rightView.visibility = View.GONE else {
+        if (right.isBlank()) rightView.visibility = View.GONE else {
             rightView.text = right
             rightView.visibility = View.VISIBLE
         }
         root.setOnClickListener { onClick() }
     }
 
-    /** 字号四档做成并排 chip，点一下即时生效，不用再弹一个原生单选对话框。 */
+    private fun toggleZoomChips() {
+        if (chipsBox.visibility == View.VISIBLE) {
+            chipsBox.visibility = View.GONE
+        } else {
+            buildZoomChips()
+            chipsBox.visibility = View.VISIBLE
+        }
+    }
+
+    /** 字号四档做成并排 chip，点一下立刻生效，面板不关。 */
     private fun buildZoomChips() {
-        val box = findViewById<LinearLayout>(R.id.zoomChips)
-        box.removeAllViews()
+        chipsBox.removeAllViews()
         val current = SettingsBridge.zoom()
         zoomValues.forEachIndexed { i, v ->
             val chip = TextView(this)
             chip.text = "${zoomLabels[i]} $v%"
-            chip.textSize = 12f
+            chip.textSize = 11.5f
             chip.gravity = Gravity.CENTER
-            chip.setPadding(dp(this, 4), dp(this, 10), dp(this, 4), dp(this, 10))
+            chip.setPadding(dp(this, 2), dp(this, 8), dp(this, 2), dp(this, 8))
             chip.background = getDrawable(
                 if (v == current) R.drawable.bg_chip_on else R.drawable.bg_chip_off
             )
@@ -220,8 +255,10 @@ class SettingsActivity : Activity() {
             chip.setOnClickListener {
                 SettingsBridge.act(ACT_ZOOM, v)
                 buildZoomChips()
+                // 标题右侧的当前值同步更新
+                findViewById<View>(R.id.rowZoom).findViewById<TextView>(R.id.row_right).text = "$v%"
             }
-            box.addView(chip)
+            chipsBox.addView(chip)
         }
     }
 
@@ -240,11 +277,11 @@ class SettingsActivity : Activity() {
         const val ACT_BROWSER = "browser"
         const val ACT_COPY = "copy"
 
-        private val CYAN = 0xFF4FD1C5.toInt()
-        private val MINT = 0xFF7FD1A8.toInt()
-        private val BLUE = 0xFF7EA8F0.toInt()
-        private val AMBER = 0xFFF0C879.toInt()
-        private val MUTED = 0xFFB0BACB.toInt()
+        private val CYAN = 0xFF66D9CC.toInt()
+        private val MINT = 0xFF8AD9B2.toInt()
+        private val BLUE = 0xFF8FB4F2.toInt()
+        private val AMBER = 0xFFE8C580.toInt()
+        private val MUTED = 0xFFB0B8C6.toInt()
 
         private fun dp(ctx: Context, v: Int): Int =
             (ctx.resources.displayMetrics.density * v).toInt()
@@ -253,10 +290,7 @@ class SettingsActivity : Activity() {
 
 /**
  * 设置面板与 MainActivity 之间的单向桥。
- *
- * 面板是个独立 Activity，但所有操作对象（WebView / prefs）都在 MainActivity 里；
- * 用 startActivityForResult 的话每点一次就得关面板，体验会断。
- * 这里挂一个弱引用式的直连：MainActivity 在 onCreate 时登记、onDestroy 时撤销。
+ * 面板是独立 Activity，要动的 WebView / prefs 都在 MainActivity 里，直接回调最省事。
  */
 object SettingsBridge {
     @Volatile
