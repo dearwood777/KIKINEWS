@@ -33,12 +33,6 @@
             android:label="@string/widget_config_title"
             android:theme="@style/Theme.HorizonBrief" />
 
-        <!-- 设置面板：透明窗口 + 自绘放大/缩回转场，所以用专门的 translucent 主题 -->
-        <activity
-            android:name=".SettingsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.HorizonBrief.Settings" />
-
         <!-- 4×2 的列表数据源：RemoteViewsService，必须带 BIND_REMOTEVIEWS 权限 -->
         <service
             android:name=".WidgetService"
