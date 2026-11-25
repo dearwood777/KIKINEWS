@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -20,20 +19,21 @@ import kotlin.math.min
 /**
  * 设置小浮层。
  *
- * 形态定位（用户 2026-11-25 纠正过两次）：
- *   **不是全屏页面**，而是像 iOS 上下文菜单那样的一小块浮层 ——
- *   300dp 宽、右上角贴着「设置」胶囊往下挂、宽度收窄、每行右侧放当前值把空白填满。
+ * 形态定位（用户 2026-11-25 连续否决三版后定稿）：
+ *   **不是全屏页面**，是 iOS 上下文菜单那样的一小块浮层。
+ *
+ * v1.6.013/014 踩的坑：Activity 窗口是 match_parent 全屏（windowIsFloating=false），
+ * 里面再放一块 300dp 面板 —— 360dp 窄屏上 300dp 就是 83% 屏宽，观感等于全屏。
+ * 现在改成 **窗口本身就是小浮窗**（Dialog 主题 + windowIsFloating=true），
+ * 宽度由 [placeWindow] 的 window.setLayout() 决定，物理上不可能铺满屏幕。
  *
  * 毛玻璃：真模糊交给 [SettingsBackdrop]（PixelCopy 截背后网页 → 降采样 → 盒式模糊），
- * 铺在面板最底层；面板再叠一层很薄的冷色层压住饱和度。
- * 所以低版本机型（没有系统 blur-behind）看到的也是"背后被虚化"的玻璃，
- * 不是一块死黑。截图失败时退回半透明深色 + 细描边。
+ * 铺在浮层最底层；再叠一层很薄的冷色层压住饱和度。低版本没有系统 blur-behind
+ * 也是"背后被虚化"的玻璃，不是死黑。
  */
 class SettingsActivity : Activity() {
 
     private lateinit var root: View
-    private lateinit var panel: View
-    private lateinit var scrim: View
     private lateinit var blurBg: ImageView
     private lateinit var tintLayer: View
     private lateinit var chipsBox: LinearLayout
@@ -44,6 +44,7 @@ class SettingsActivity : Activity() {
     private var ah = 0
     private var advanced = false
     private var closing = false
+    private var entered = false
 
     private val zoomValues = intArrayOf(85, 100, 115, 130)
     private val zoomLabels = arrayOf("小", "标准", "大", "特大")
@@ -55,8 +56,6 @@ class SettingsActivity : Activity() {
         window.setFormat(PixelFormat.TRANSLUCENT)
 
         root = findViewById(R.id.root)
-        panel = findViewById(R.id.panel)
-        scrim = findViewById(R.id.scrim)
         blurBg = findViewById(R.id.blurBg)
         tintLayer = findViewById(R.id.tintLayer)
         chipsBox = findViewById(R.id.zoomChips)
@@ -68,23 +67,22 @@ class SettingsActivity : Activity() {
         ah = intent?.getIntExtra(EXTRA_AH, 0) ?: 0
 
         setupGlass()
-        placePanel()
+        placeWindow()
         bindRows()
         buildZoomChips()
 
         findViewById<TextView>(R.id.closeBtn).setOnClickListener { closePanel() }
-        scrim.setOnClickListener { closePanel() }
+        // 窗口是 floating 的，点外面直接结束——不需要自己补一层全屏暗幕
+        setFinishOnTouchOutside(true)
 
-        panel.scaleX = 0.94f
-        panel.scaleY = 0.94f
-        panel.alpha = 0f
-        panel.translationY = -dp(this, 10).toFloat()
-        scrim.alpha = 0f
-    }
+        root.scaleX = 0.96f
+        root.scaleY = 0.96f
+        root.alpha = 0f
+        root.translationY = -dp(this, 8).toFloat()
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && !closing && panel.alpha == 0f) playEnter()
+        root.post {
+            if (!closing && !entered) playEnter()
+        }
     }
 
     /** 真模糊优先；截不到就退成半透明深玻璃。 */
@@ -93,52 +91,57 @@ class SettingsActivity : Activity() {
         if (blurred != null) {
             blurBg.setImageBitmap(blurred)
             blurBg.visibility = View.VISIBLE
-            tintLayer.setBackgroundColor(0x8C121822.toInt())
-            scrim.setBackgroundColor(0x4D000000)
+            tintLayer.setBackgroundColor(0x7A11161E.toInt())
         } else {
             blurBg.visibility = View.GONE
-            tintLayer.setBackgroundColor(0xCC181B22.toInt())
-            scrim.setBackgroundColor(0x73000000)
+            tintLayer.setBackgroundColor(0xC8181B22.toInt())
         }
 
-        // 12+ 再叠一层系统 blur-behind：窗外的桌面/网页一起虚化，边缘更自然
+        // 12+ 再叠一层系统 blur-behind：窗外的网页一起虚化，边缘更自然
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-            val attrs = window.attributes
-            attrs.blurBehindRadius = dp(this, 28)
-            window.attributes = attrs
+            runCatching {
+                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                val attrs = window.attributes
+                attrs.blurBehindRadius = dp(this, 20)
+                window.attributes = attrs
+            }
         }
     }
 
-    /** 面板挂在胶囊正下方、右边缘与胶囊右边缘对齐；窄屏自动收窄。 */
-    private fun placePanel() {
-        panel.post {
-            val rootLoc = IntArray(2)
-            root.getLocationOnScreen(rootLoc)
-            val lp = panel.layoutParams as FrameLayout.LayoutParams
-            val screenW = resources.displayMetrics.widthPixels
-            lp.width = min(dp(this, 300), screenW - dp(this, 24))
-            lp.topMargin = if (ay >= 0f) {
-                (ay + ah).toInt() - rootLoc[1] + dp(this, 8)
-            } else {
-                dp(this, 52)
-            }
-            lp.rightMargin = if (ax >= 0f) {
-                (root.width - ((ax + aw).toInt() - rootLoc[0])).coerceAtLeast(dp(this, 8))
-            } else {
-                dp(this, 12)
-            }
-            panel.layoutParams = lp
+    /**
+     * 关键：把**窗口本身**定成一块小浮窗。
+     * 宽度 = min(244dp, 屏宽 * 0.62)，高度随内容；贴屏幕右上，向下挂在胶囊下面。
+     */
+    private fun placeWindow() {
+        val dm = resources.displayMetrics
+        val widthPx = min(dp(this, 244), (dm.widthPixels * 0.62f).toInt())
+        window.setLayout(widthPx, ViewGroup.LayoutParams.WRAP_CONTENT)
+        window.setGravity(Gravity.TOP or Gravity.END)
+
+        val margin = dp(this, 10)
+        val lp = window.attributes
+        lp.horizontalMargin = 0f
+        lp.verticalMargin = 0f
+        // gravity 是 END，x 取负值 = 向左缩，即右边距
+        lp.x = -margin
+        lp.y = if (ay >= 0f) (ay + ah).toInt() + dp(this, 7) else dp(this, 58)
+        window.attributes = lp
+
+        // 模糊图必须**对齐**到浮层所在的那块画面，否则就是把整屏压成一张小图，看着像贴了张照片
+        val popupLeft = dm.widthPixels - margin - widthPx
+        val popupTop = lp.y
+        blurBg.imageMatrix = android.graphics.Matrix().apply {
+            setTranslate(-popupLeft.toFloat(), -popupTop.toFloat())
         }
     }
 
     private fun playEnter() {
-        panel.animate()
+        entered = true
+        root.animate()
             .scaleX(1f).scaleY(1f).alpha(1f).translationY(0f)
-            .setDuration(200)
+            .setDuration(190)
             .setInterpolator(DecelerateInterpolator(1.6f))
             .start()
-        scrim.animate().alpha(1f).setDuration(200).start()
     }
 
     private fun closePanel() = closePanel(null)
@@ -146,10 +149,10 @@ class SettingsActivity : Activity() {
     private fun closePanel(then: (() -> Unit)?) {
         if (closing) return
         closing = true
-        panel.animate()
-            .scaleX(0.96f).scaleY(0.96f).alpha(0f)
-            .translationY(-dp(this, 8).toFloat())
-            .setDuration(150)
+        root.animate()
+            .scaleX(0.97f).scaleY(0.97f).alpha(0f)
+            .translationY(-dp(this, 6).toFloat())
+            .setDuration(140)
             .setInterpolator(DecelerateInterpolator(1.4f))
             .withEndAction {
                 then?.invoke()
@@ -157,7 +160,6 @@ class SettingsActivity : Activity() {
                 overridePendingTransition(0, 0)
             }
             .start()
-        scrim.animate().alpha(0f).setDuration(150).start()
     }
 
     override fun onBackPressed() {
@@ -181,7 +183,7 @@ class SettingsActivity : Activity() {
         bindRow(R.id.rowTop, "回到顶部", R.drawable.ic_kv_top, BLUE, "") {
             closePanel { SettingsBridge.act(ACT_TOP) }
         }
-        // 右侧直接显示当前档位，"右边空一块"的问题就是在这里补的
+        // 右侧直接显示当前档位，把"右边空一大块"填住
         bindRow(R.id.rowZoom, "正文字号", R.drawable.ic_kv_text, CYAN, "${SettingsBridge.zoom()}%") {
             toggleZoomChips()
         }
@@ -198,8 +200,10 @@ class SettingsActivity : Activity() {
             bindRow(R.id.rowCopy, "复制日报链接", R.drawable.ic_kv_copy, MUTED, "") {
                 closePanel { SettingsBridge.act(ACT_COPY) }
             }
-            // 最后一行不画分隔线，免得贴到圆角上
             findViewById<View>(R.id.rowCopy).findViewById<View>(R.id.row_divider).visibility = View.GONE
+        } else {
+            // 高级项隐藏时，最后一行也不要顶着圆角画分隔线
+            findViewById<View>(R.id.rowUpdate).findViewById<View>(R.id.row_divider).visibility = View.GONE
         }
     }
 
@@ -211,18 +215,20 @@ class SettingsActivity : Activity() {
         right: String,
         onClick: () -> Unit
     ) {
-        val root = findViewById<View>(id)
-        root.findViewById<TextView>(R.id.row_title).text = title
-        root.findViewById<ImageView>(R.id.row_icon).apply {
+        val row = findViewById<View>(id)
+        row.findViewById<TextView>(R.id.row_title).text = title
+        row.findViewById<ImageView>(R.id.row_icon).apply {
             setImageResource(icon)
             setColorFilter(tint)
         }
-        val rightView = root.findViewById<TextView>(R.id.row_right)
-        if (right.isBlank()) rightView.visibility = View.GONE else {
+        val rightView = row.findViewById<TextView>(R.id.row_right)
+        if (right.isBlank()) {
+            rightView.visibility = View.GONE
+        } else {
             rightView.text = right
             rightView.visibility = View.VISIBLE
         }
-        root.setOnClickListener { onClick() }
+        row.setOnClickListener { onClick() }
     }
 
     private fun toggleZoomChips() {
@@ -234,28 +240,27 @@ class SettingsActivity : Activity() {
         }
     }
 
-    /** 字号四档做成并排 chip，点一下立刻生效，面板不关。 */
+    /** 字号四档做成并排 chip，点一下立刻生效，浮层不关。 */
     private fun buildZoomChips() {
         chipsBox.removeAllViews()
         val current = SettingsBridge.zoom()
         zoomValues.forEachIndexed { i, v ->
             val chip = TextView(this)
-            chip.text = "${zoomLabels[i]} $v%"
-            chip.textSize = 11.5f
+            chip.text = zoomLabels[i]
+            chip.textSize = 11f
             chip.gravity = Gravity.CENTER
-            chip.setPadding(dp(this, 2), dp(this, 8), dp(this, 2), dp(this, 8))
+            chip.setPadding(dp(this, 2), dp(this, 7), dp(this, 2), dp(this, 7))
             chip.background = getDrawable(
                 if (v == current) R.drawable.bg_chip_on else R.drawable.bg_chip_off
             )
             chip.setTextColor(if (v == current) MINT else 0xFFB4C0D4.toInt())
             val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
-            lp.leftMargin = dp(this, 3)
-            lp.rightMargin = dp(this, 3)
+            lp.leftMargin = dp(this, 2)
+            lp.rightMargin = dp(this, 2)
             chip.layoutParams = lp
             chip.setOnClickListener {
                 SettingsBridge.act(ACT_ZOOM, v)
                 buildZoomChips()
-                // 标题右侧的当前值同步更新
                 findViewById<View>(R.id.rowZoom).findViewById<TextView>(R.id.row_right).text = "$v%"
             }
             chipsBox.addView(chip)
@@ -289,8 +294,8 @@ class SettingsActivity : Activity() {
 }
 
 /**
- * 设置面板与 MainActivity 之间的单向桥。
- * 面板是独立 Activity，要动的 WebView / prefs 都在 MainActivity 里，直接回调最省事。
+ * 设置浮层与 MainActivity 之间的单向桥。
+ * 浮层是独立 Activity，要动的 WebView / prefs 都在 MainActivity 里，直接回调最省事。
  */
 object SettingsBridge {
     @Volatile
