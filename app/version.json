@@ -1,9 +1,9 @@
 {
- "versionCode": 160014,
- "versionName": "1.6.014",
- "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.014.apk",
- "sha256": "e595539fcbdc47055c70a657dfb1ae0ac74f842e5c8e2243586e6ea7c9431442",
- "size": 2588091,
- "notes": "设置浮层改回小尺寸（300dp 宽、贴胶囊下方，不再全屏），每行右侧补当前值；毛玻璃改成截背后网页做真模糊，低版本机型也有玻璃感",
+ "versionCode": 160015,
+ "versionName": "1.6.015",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.015.apk",
+ "sha256": "1e87a5de39adb4ad2375d75531f7674d74e9055bbc77923b116eeed2bb657f8e",
+ "size": 2587395,
+ "notes": "设置改成真正的小浮窗：窗口本身就是浮动小窗（不再铺满屏），宽度 min(244dp, 屏宽62%)；毛玻璃改为与浮层位置精确对齐的取样，不再是整屏压成小图",
  "minSdk": 24
 }
