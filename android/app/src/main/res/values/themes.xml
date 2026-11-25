@@ -7,15 +7,24 @@
         <!-- 窗口底色必须跟网页底色一致：WebView 是透明底，跨页瞬间露出来的就是这一层 -->
         <item name="android:windowBackground">#FF0E1320</item>
     </style>
-    <!-- 设置面板：透明窗口 + 无系统转场，进出全靠自己那套「从胶囊放大 / 缩回」动画 -->
-    <style name="Theme.HorizonBrief.Settings" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <!--
+      设置浮层：**窗口本身就是小浮窗**（windowIsFloating + Dialog 主题），
+      尺寸由 Activity 里 setLayout(w, WRAP_CONTENT) 决定，物理上不可能全屏。
+      v1.6.013/014 用的是 DayNight.NoActionBar + windowIsFloating=false，
+      整个窗口铺满屏、只是里面放了一块小面板 —— 这才是"看着还是全屏"的原因。
+      windowMinWidth 归零，否则 Dialog 主题会把窗口撑到最小 65% 屏宽。
+    -->
+    <style name="Theme.HorizonBrief.Settings" parent="Theme.AppCompat.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowMinWidthMajor">0%</item>
+        <item name="android:windowMinWidthMinor">0%</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
