@@ -1,143 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  设置小浮层：宽 300dp（窄屏自动收窄），从设置胶囊下方弹出，不是全屏。
-  层级：半透明玻璃底 → 背后画面模糊图（可选）→ 冷色薄层 → 内容。
+  设置浮层内容。注意：**这个 Activity 的窗口本身就是小浮窗**（floating window），
+  宽度由 SettingsActivity 里的 window.setLayout() 定，这里只是填满那个小窗口，
+  所以不存在"全屏"这回事。
+  层级：玻璃底（圆角 + 描边）→ 背后画面模糊图 → 冷色薄层 → 内容。
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_settings_glass"
+    android:clipToOutline="true">
+
+    <ImageView
+        android:id="@+id/blurBg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="matrix"
+        android:visibility="gone" />
 
     <View
-        android:id="@+id/scrim"
+        android:id="@+id/tintLayer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <FrameLayout
-        android:id="@+id/panel"
-        android:layout_width="300dp"
+    <LinearLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:background="@drawable/bg_settings_glass"
-        android:clipToOutline="true">
-
-        <ImageView
-            android:id="@+id/blurBg"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@null"
-            android:scaleType="centerCrop"
-            android:visibility="gone" />
-
-        <View
-            android:id="@+id/tintLayer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        android:animateLayoutChanges="true"
+        android:orientation="vertical">
 
         <LinearLayout
-            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="38dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="8dp">
+
+            <TextView
+                android:id="@+id/panelTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="设置"
+                android:textColor="#F4F5F8"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/closeBtn"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:background="@drawable/bg_round_button"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="✕"
+                android:textColor="#B8BCC6"
+                android:textSize="11.5sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.6dp"
+            android:background="#1FFFFFFF" />
+
+        <include
+            android:id="@+id/rowReload"
+            layout="@layout/view_menu_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/rowHard"
+            layout="@layout/view_menu_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/rowTop"
+            layout="@layout/view_menu_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/rowZoom"
+            layout="@layout/view_menu_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- 字号四档：点「正文字号」这一行才展开，窗口高度自己长出来 -->
+        <LinearLayout
+            android:id="@+id/zoomChips"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:animateLayoutChanges="true"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="10dp"
+            android:visibility="gone" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingStart="15dp"
-                android:paddingEnd="10dp">
+        <include
+            android:id="@+id/rowUpdate"
+            layout="@layout/view_menu_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-                <TextView
-                    android:id="@+id/panelTitle"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="设置"
-                    android:textColor="#F4F5F8"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+        <View
+            android:id="@+id/advGap"
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:background="#0AFFFFFF"
+            android:visibility="gone" />
 
-                <TextView
-                    android:id="@+id/closeBtn"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:background="@drawable/bg_round_button"
-                    android:gravity="center"
-                    android:includeFontPadding="false"
-                    android:text="✕"
-                    android:textColor="#B8BCC6"
-                    android:textSize="12.5sp" />
-            </LinearLayout>
+        <include
+            android:id="@+id/rowBrowser"
+            layout="@layout/view_menu_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="0.6dp"
-                android:background="#1FFFFFFF" />
-
-            <include
-                android:id="@+id/rowReload"
-                layout="@layout/view_menu_row"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <include
-                android:id="@+id/rowHard"
-                layout="@layout/view_menu_row"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <include
-                android:id="@+id/rowTop"
-                layout="@layout/view_menu_row"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <include
-                android:id="@+id/rowZoom"
-                layout="@layout/view_menu_row"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <!-- 字号四档：点「正文字号」这一行才展开，面板高度自己长出来 -->
-            <LinearLayout
-                android:id="@+id/zoomChips"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingStart="12dp"
-                android:paddingTop="2dp"
-                android:paddingEnd="12dp"
-                android:paddingBottom="12dp"
-                android:visibility="gone" />
-
-            <include
-                android:id="@+id/rowUpdate"
-                layout="@layout/view_menu_row"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <View
-                android:id="@+id/advGap"
-                android:layout_width="match_parent"
-                android:layout_height="6dp"
-                android:background="#0AFFFFFF"
-                android:visibility="gone" />
-
-            <include
-                android:id="@+id/rowBrowser"
-                layout="@layout/view_menu_row"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone" />
-
-            <include
-                android:id="@+id/rowCopy"
-                layout="@layout/view_menu_row"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone" />
-        </LinearLayout>
-    </FrameLayout>
+        <include
+            android:id="@+id/rowCopy"
+            layout="@layout/view_menu_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+    </LinearLayout>
 </FrameLayout>
