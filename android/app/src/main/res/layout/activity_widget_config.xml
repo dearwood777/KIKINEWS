@@ -68,5 +68,25 @@
             android:text="@string/widget_config_save"
             android:textColor="#E2E8F4"
             android:textSize="15sp" />
+
+        <!-- 组件内容是联网取的，这里给一个能真的联网的按钮，
+             免得「看着是旧的却没处点」 -->
+        <TextView
+            android:id="@+id/cfg_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:textColor="#8B93A7"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/cfg_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#2A2F3D"
+            android:text="@string/widget_config_refresh"
+            android:textColor="#E2E8F4"
+            android:textSize="14sp" />
     </LinearLayout>
 </ScrollView>
