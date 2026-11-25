@@ -68,7 +68,6 @@ object SettingsPopup {
         val content = LayoutInflater.from(ctx).inflate(R.layout.activity_settings, null)
 
         val dm = ctx.resources.displayMetrics
-        val widthPx = min(dp(ctx, 224), (dm.widthPixels * 0.62f).toInt())
 
         val blur = content.findViewById<ImageView>(R.id.blurBg)
         val tint = content.findViewById<View>(R.id.tintLayer)
@@ -87,6 +86,15 @@ object SettingsPopup {
 
         bindRows(host, content, advanced, chipsBox)
         content.findViewById<TextView>(R.id.closeBtn).setOnClickListener { close(ctx, null) }
+
+        // 宽度按内容真实需要来定：文字都填好后再空规格量一遍，拿到最宽行的理想宽度
+        content.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        val widthPx = content.measuredWidth
+            .coerceAtLeast(dp(ctx, 154))
+            .coerceAtMost((dm.widthPixels * 0.72f).toInt())
 
         /*
          * 高度必须**显式量出来**再传给 PopupWindow。
