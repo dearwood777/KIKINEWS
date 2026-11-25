@@ -1,3 +1,25 @@
+## v1.6.015 · 2026-11-25 · 设置真的做成"小窗口"（窗口级浮动）+ 毛玻璃位置对齐
+
+- **根因（前两版为什么都被判"还是全屏"）**：v1.6.013/014 的 `SettingsActivity` 主题是
+  `Theme.AppCompat.DayNight.NoActionBar` + `windowIsFloating=false` —— **Activity 窗口本身铺满整屏**，
+  只是往里塞了一块面板。360dp 窄屏上 300dp 面板 = 83% 屏宽，观感就等同于全屏。
+  → 现在主题换成 `Theme.AppCompat.Dialog` +`windowIsFloating=true` + `windowMinWidthMajor/Minor=0%`
+  （不归零的话 Dialog 主题会强制最小 65% 屏宽），并用 `window.setFinishOnTouchOutside(true)` 处理点外关闭。
+- **尺寸改由窗口决定**：`window.setLayout(min(244dp, 屏宽*0.62f), WRAP_CONTENT)` + `gravity = TOP or END`，
+  `x = -10dp`（右边距）、`y = 胶囊下沿 + 7dp`。**244dp 在 360dp 屏上只占 68%**，且高度由内容撑，
+  物理上不可能铺满屏幕，布局层再怎么出意外也不会再"全屏"。
+- **布局结构简化**：去掉 `scrim`（全屏暗幕是"被盖住"的错觉来源之一）和 `panel` 包裹层，
+  `root` 直接就是玻璃面板本身：`bg_settings_glass`（16dp 圆角 + 0.7dp 冷白高光描边）+ `clipToOutline`。
+- **修紧密度**：菜单行 46dp → **42dp**（图标 19→17dp、标题 14.5→13.5sp、右侧 12.5→11.5sp、内边距 15→12dp），
+  标题栏 42→38dp、关闭按钮 30→26dp，分隔线起点 46→40dp、改为 `#17FFFFFF`。标题栏与列表之间那根线也取消了，少一层切割。
+- **毛玻璃原来"效果不对"的真因**：`blurBg` 用 `scaleType=centerCrop` 把**整屏截图等比压进 244dp 的小方块**，
+  等于把全屏画面缩小贴上去，纹理尺度完全不对。
+  → 改成 `scaleType=matrix` + `imageMatrix.setTranslate(-popupLeft, -popupTop)`，
+  **让模糊图与浮层在屏幕上的位置一一对齐**：你看到的就是浮层正下方那块网页被虚化的样子，这才叫玻璃。
+- 冷色层加深到 `#7A11161E`（模糊可用时），12+ 的 `blurBehindRadius` 从 28dp 收到 20dp。
+
+---
+
 ## v1.6.014 · 2026-11-25 · 设置浮层尺寸纠正（不再全屏）+ 毛玻璃换成真模糊
 
 - **v1.6.013 做过头了，这里纠正**：用户原话指的是"把菜单这一小块做精致"，不是把设置变成整页。
