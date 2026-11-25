@@ -58,4 +58,72 @@
         android:text="设置"
         android:textColor="#FFFFFF"
         android:textSize="11sp" />
+
+    <!-- 下载进度条：浮在正文最底部，只占一条窄卡片的高度，
+         正文照样能滑动阅读；出现时从下往上滑入，结束后自动收起。 -->
+    <LinearLayout
+        android:id="@+id/downloadBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_download_bar"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingTop="11dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="11dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/dlIcon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_kv_update"
+            android:tint="#4FD1C5" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/dlText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="#E9EFFB"
+                android:textSize="12sp" />
+
+            <ProgressBar
+                android:id="@+id/dlProgress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginTop="6dp"
+                android:max="100"
+                android:progress="0"
+                android:progressTint="#4FD1C5" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/dlCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp"
+            android:text="取消"
+            android:textColor="#9AA6BB"
+            android:textSize="12sp" />
+    </LinearLayout>
 </FrameLayout>
