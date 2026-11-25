@@ -1,3 +1,27 @@
+## v1.6.013 · 2026-11-25 · 设置面板改成「从胶囊放大展开的毛玻璃」/ 下载进度改成不挡内容的底部悬浮条
+
+- **设置面板重做**：原来是 `PopupMenu`（系统下拉菜单），观感完全默认。
+  新增 `SettingsActivity`，用独立 translucent 窗口 + 自绘转场：
+  把「设置」胶囊的屏幕矩形一起带过去，面板以它为 `pivot`，`scale 0.16 → 1`、
+  `alpha 0 → 1`、`DecelerateInterpolator(1.6f)` 340ms 展开；返回/点遮罩反向 200ms 缩回原处再 `finish()`。
+- **毛玻璃两套实现**：`SDK >= 31` 用真正的系统 blur-behind
+  （`FLAG_BLUR_BEHIND` + `blurBehindRadius = 26dp` + 透明窗口），
+  低版本退化为「80%+ 深色遮罩 + 面板 28dp 圆角 + 1dp 冷白描边 + 顶部微亮到下部渐深」的玻璃质感，
+  不靠真模糊也立得住。（`minSdk 24`，不能用 `RenderEffect` 对整窗生效。）
+- **面板结构**：标题栏（版本号 + 右上圆形 ✕）+ 三个分组（内容 / 显示 / 关于）+
+  6 个自绘矢量图标（刷新、清缓存、回顶部、正文、更新、外链、复制）各自染色。
+  `advanced`（长按 6 秒）那一组仍然按原规则解锁显示。
+- **字号不再是原生单选对话框**：四档做成并排 chip（选中态青色描边 + 底光），
+  点一下即时 `textZoom` 生效并写入 prefs，面板不关，可以直接连着试。
+- **设置与主界面的连接**：新增 `SettingsBridge`（`SettingsActivity` 单向回调 `MainActivity.onSettingsAction`），
+  避免每条操作都要 `startActivityForResult` 关一次面板。
+- **下载进度条搬到内容层**（用户要求"下载时也要能看正文"）：撤掉模态进度框，
+  改成 `activity_main` 底部一张悬浮窄卡片：`22dp` 图标 + `pct% · 已传/总量 MB` + 4dp 细进度条 + 「取消」，
+  从下往上滑入（220ms）、结束滑出（180ms）。因为没有 `setCancelable(false)` 的 Dialog，
+  WebView 全程可滑动。`UpdateChecker` 新增 `progressListener` / `cancelDownload()`；
+  失败仍是模态对话框（那次确实需要占住用户注意力）。
+
+
 ## v1.6.012 · 2026-11-25 · 修自更新：下载没进度、失败无声、连点"检查更新"再也不响应
 
 - **现象**：点「下载并安装」后闪一下就没了，从未下成；之后再点「检查更新」只闪一句提示，
