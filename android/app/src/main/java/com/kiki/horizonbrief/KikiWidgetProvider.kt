@@ -43,6 +43,9 @@ open class KikiWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
+        // 顺手把周期任务挂上：广播本身在国产 ROM 上经常投递不到，JobScheduler 是第二道保险
+        WidgetRefresh.schedule(context)
+
         // 广播只有 10 秒窗口，网络尝试限制为两次、每次 3 秒超时
         val pending = goAsync()
         Thread {
@@ -177,6 +180,10 @@ object WidgetStore {
         "https://fastly.jsdelivr.net/gh/dearwood777/KIKINEWS@gh-pages/widget.json",
         "https://ghfast.top/https://raw.githubusercontent.com/dearwood777/KIKINEWS/gh-pages/widget.json",
     )
+
+    /** 上一次成功联网的时间（毫秒），0 表示从没成功过。 */
+    fun fetchedAt(context: Context): Long =
+        context.getSharedPreferences(PREF, Context.MODE_PRIVATE).getLong(KEY_AT, 0L)
 
     fun cached(context: Context): WidgetFeed? {
         val prefs = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
