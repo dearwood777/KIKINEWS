@@ -1,9 +1,9 @@
 {
- "versionCode": 160011,
- "versionName": "1.6.011",
- "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.011.apk",
- "sha256": "2ed44dd0e2f77443a64c7f6018f0c2397263f35c6c0bdcc445dcf5a87fb4e9f2",
- "size": 2560406,
- "notes": "修复桌面小组件不更新：JobScheduler 每3小时联网拉取 + 打开App即同步 + 设置页新增「立即联网刷新」按钮（原来的保存按钮只重绘缓存、从不联网）",
+ "versionCode": 160012,
+ "versionName": "1.6.012",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.012.apk",
+ "sha256": "11b5db780e0d57dae4656361497efab973e53389168261dd330e773731c678c7",
+ "size": 2566682,
+ "notes": "修自更新：下载改为带百分比进度框、失败弹窗写清原因并可重试或改用浏览器；检查更新与下载拆成两条线程（原来共用一条，下载卡住后连点检查永远排不上队，表现为闪一下就没了）；下载前先要「允许安装未知应用」权限，授权返回后自动接着装",
  "minSdk": 24
 }
