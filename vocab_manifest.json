@@ -1,62 +1,70 @@
 {
- "source": "2026-11-24-summary-en.md",
- "date": "2026-11-25",
+ "source": "2026-11-25-summary-en.md",
+ "date": "2026-11-26",
  "terms": [
   {
-   "id": "w-authentication",
-   "term": "authentication"
+   "id": "w-encyclopedism",
+   "term": "encyclopedism"
   },
   {
-   "id": "w-generative",
-   "term": "generative"
+   "id": "w-fraudulently",
+   "term": "fraudulently"
   },
   {
-   "id": "w-incriminating",
-   "term": "incriminating"
+   "id": "w-radiofrequency",
+   "term": "radiofrequency"
   },
   {
-   "id": "w-endpoint",
-   "term": "endpoint"
+   "id": "w-encrypt",
+   "term": "encrypt"
   },
   {
-   "id": "w-junta",
-   "term": "junta"
+   "id": "w-intermittently",
+   "term": "intermittently"
+  },
+  {
+   "id": "w-mitigation",
+   "term": "mitigation"
+  },
+  {
+   "id": "w-workflow",
+   "term": "workflow"
   },
   {
    "id": "w-racketeer",
    "term": "racketeer"
   },
   {
-   "id": "w-latency",
-   "term": "latency"
+   "id": "w-bribery",
+   "term": "bribery"
   },
   {
-   "id": "w-optimize",
-   "term": "optimize"
+   "id": "w-escalation",
+   "term": "escalation"
   },
   {
-   "id": "w-retract",
-   "term": "retract"
+   "id": "w-importer",
+   "term": "importer"
   },
   {
-   "id": "w-coerce",
-   "term": "coerce"
+   "id": "w-repository",
+   "term": "repository"
   },
   {
-   "id": "w-compatibility",
-   "term": "compatibility"
+   "id": "w-orbital",
+   "term": "orbital"
   },
   {
-   "id": "w-tally",
-   "term": "tally"
+   "id": "w-milestone",
+   "term": "milestone"
   },
   {
-   "id": "w-conspire",
-   "term": "conspire"
+   "id": "w-misuse",
+   "term": "misuse"
   },
   {
-   "id": "w-procure",
-   "term": "procure"
+   "id": "w-theorem",
+   "term": "theorem"
   },
   {
    "id": "w-acquit",

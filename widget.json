@@ -1,102 +1,102 @@
 {
- "date": "2026-11-25",
- "updated": "06:05",
+ "date": "2026-11-26",
+ "updated": "06:06",
  "total": 16,
  "items": [
   {
-   "t": "vCenter 再曝 9.8 分免鉴权漏洞，几天前刚被零日利用",
-   "s": "10.0",
+   "t": "FCC approves SpaceX plan to put AI data centers in space",
+   "s": "9.0",
    "a": "item-tech-news-1",
    "sec": "TECH"
   },
   {
-   "t": "Amazon Acquires Decart to Narrow Silicon Gap with Nvidia",
-   "s": "9.0",
-   "a": "item-tech-news-2",
-   "sec": "TECH"
-  },
-  {
-   "t": "Democrat Victoria Broderick unseats eight-term Republican incumbent in Tennessee to win election",
+   "t": "Russia Reports Nearly 500,000 Soldiers Killed in Ukraine War",
    "s": "9.0",
    "a": "item-world-news-1",
    "sec": "WORLD"
   },
   {
-   "t": "Check Point HFS PRNG flaw enables forged admin session cookies",
+   "t": "1Password Security Incident Exposes Customer Data via Malicious Code Push",
+   "s": "8.0",
+   "a": "item-tech-news-2",
+   "sec": "TECH"
+  },
+  {
+   "t": "I checked Clojure&\\#x27;s core with Lean and found unreported bugs",
    "s": "8.0",
    "a": "item-tech-news-3",
    "sec": "TECH"
   },
   {
-   "t": "Even the best AI agents struggle with everyday life",
+   "t": "Nvidia Faces Questions Over Alleged GPU Smuggling to China",
    "s": "8.0",
    "a": "item-tech-news-4",
    "sec": "TECH"
   },
   {
-   "t": "UK warns AI-driven cyberattacks are exposing years of weak security",
+   "t": "Minecraft 曝高危 RCE 漏洞，Java 版 1.20.5 起全版本受影响",
    "s": "8.0",
    "a": "item-tech-news-5",
    "sec": "TECH"
   },
   {
-   "t": "Uber and Nuro start driverless testing of Lucid robotaxis",
-   "s": "8.0",
-   "a": "item-tech-news-6",
-   "sec": "TECH"
-  },
-  {
-   "t": "Why a Crusoe investor is betting on solar and batteries to power future AI data centers",
-   "s": "8.0",
-   "a": "item-tech-news-7",
-   "sec": "TECH"
-  },
-  {
-   "t": "Huawei found guilty of stealing trade secrets but acquitted of racketeering",
+   "t": "US Announces New Tariffs on China and Other Trading Partners",
    "s": "8.0",
    "a": "item-world-news-2",
    "sec": "WORLD"
   },
   {
-   "t": "Mali Conflict Claims 349 Russian Soldiers Over Three Years",
+   "t": "Israeli judges recommend dropping most serious charges against Netanyahu",
    "s": "8.0",
    "a": "item-world-news-3",
    "sec": "WORLD"
   },
   {
-   "t": "EU to impose cap on Chinese hybrid EV imports next month",
+   "t": "Huawei found guilty of stealing US trade secrets but acquitted of racketeering",
    "s": "8.0",
    "a": "item-world-news-4",
    "sec": "WORLD"
   },
   {
-   "t": "Schumer Accuses Nvidia CEO of Export Violations",
+   "t": "China misusing Interpol to target dissidents, says leading UK lawyer",
    "s": "8.0",
    "a": "item-world-news-5",
    "sec": "WORLD"
   },
   {
-   "t": "Fed President Signals Possible Future Rate Hikes to Reach 2% Inflation Target",
+   "t": "Germany’s Chancellor Warns Russia Wants More Than Ukraine",
    "s": "8.0",
-   "a": "item-finance-news-1",
-   "sec": "FIN"
-  },
-  {
-   "t": "FCC to impose reciprocal restrictions on foreign satellite operators",
-   "s": "7.0",
-   "a": "item-tech-news-8",
-   "sec": "TECH"
-  },
-  {
-   "t": "Sarkozy, Bruni to Stand Trial Over Gaddafi‑Linked Campaign Finance",
-   "s": "7.0",
    "a": "item-world-news-6",
    "sec": "WORLD"
   },
   {
-   "t": "Israeli air strike kills Hamas internal security chief in Gaza",
-   "s": "7.0",
+   "t": "World records six consecutive days 2°C above preindustrial levels",
+   "s": "8.0",
    "a": "item-world-news-7",
+   "sec": "WORLD"
+  },
+  {
+   "t": "China Secures Nvidia AI Chips Despite U.S. Export Controls",
+   "s": "8.0",
+   "a": "item-world-news-8",
+   "sec": "WORLD"
+  },
+  {
+   "t": "DOJ accuses former cyber executive of defrauding ransomware victims by secretly paying hackers",
+   "s": "7.0",
+   "a": "item-tech-news-6",
+   "sec": "TECH"
+  },
+  {
+   "t": "Character.AI’s plan to auction off users’ private chats challenged by state AGs",
+   "s": "7.0",
+   "a": "item-tech-news-7",
+   "sec": "TECH"
+  },
+  {
+   "t": "Images of asteroid targeted to test Earth&\\#x27;s defences reveal stadium-sized crater",
+   "s": "7.0",
+   "a": "item-world-news-9",
    "sec": "WORLD"
   }
  ]
