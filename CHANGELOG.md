@@ -1,3 +1,26 @@
+## v1.6.011 · 2026-11-25 · 修桌面小组件"永远停在安装当天"
+
+- **现象**：11-23 装上组件，到 11-25 一直显示 23 号的新闻；点组件设置里的「保存并刷新组件」也不变。
+- **两个真因，都在代码里，与网络无关**（线上 `widget.json` 实测是当天 `2026-11-25 06:05`）：
+  1. 组件唯一的重数据通路是 `appwidget-provider` 的 `updatePeriodMillis` → `onUpdate` 广播。
+     这条广播在国产 ROM 的后台限制下经常根本投递不到，组件就永远停在第一次添加时那一版。
+     而且 `onUpdate` 里 `goAsync()` 只有 10 秒窗口，两源 × 3 秒超时之外再遇 DNS 抖动就直接超窗，
+     进程被杀 → 连缓存都来不及落。
+  2. **设置页的「保存并刷新组件」只调 `WidgetUpdater.refreshAll()`，而它内部用的是 `WidgetStore.cached()`**
+     —— 纯重绘本地缓存，一个字节的网络都不发。所以用户点它当然永远不变。
+     App 主界面同样从不触发组件刷新，`MainActivity.onCreate` 里没有任何相关调用。
+- **补三条互相独立的刷新通路（任一条成功就够）**：
+  1. `WidgetRefreshJob`（`JobScheduler`，`setRequiredNetworkType` + `setPeriodic(3h)` + `setPersisted`）
+     —— 走系统 JobScheduler，不依赖广播投递，比 `updatePeriodMillis` 稳得多；
+  2. `KikiBootReceiver` 开机重挂任务（部分 ROM 会清掉持久化任务）+ `RECEIVE_BOOT_COMPLETED` 权限；
+  3. **打开 App 就同步**：`MainActivity.onCreate` → `WidgetRefresh.refreshIfStale()`，
+     距上次成功拉取超 15 分钟才发请求，避免每次切前台都打网络。
+- **设置页真正能联网了**：新增「立即联网刷新新闻」按钮，后台线程拉全部 3 个源后重绘，
+  并显示「上次同步：MM-dd HH:mm」——以后"看着是旧的却没处点"这种状态可以直接自查。
+- `WidgetStore.refresh` 的源上限从 2 提到 3（`github.io` → `jsDelivr` → `ghfast` 全试一遍），
+  新增 `WidgetStore.fetchedAt()` 暴露 `KEY_AT` 给 UI 用。
+
+
 ## v38 · 2026-11-23 · 侧枝彻底去掉"直段→螺旋"的分界（从根部就卷、曲率连续）/ 草的实现方法归档到 `scripts/GRASS.md`
 
 - **"先笔直出去一小段，然后开始旋，交接点特别生硬"——两个原因一起修：**
