@@ -1,9 +1,9 @@
 {
- "versionCode": 160012,
- "versionName": "1.6.012",
- "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.012.apk",
- "sha256": "11b5db780e0d57dae4656361497efab973e53389168261dd330e773731c678c7",
- "size": 2566682,
- "notes": "修自更新：下载改为带百分比进度框、失败弹窗写清原因并可重试或改用浏览器；检查更新与下载拆成两条线程（原来共用一条，下载卡住后连点检查永远排不上队，表现为闪一下就没了）；下载前先要「允许安装未知应用」权限，授权返回后自动接着装",
+ "versionCode": 160013,
+ "versionName": "1.6.013",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.013.apk",
+ "sha256": "6cb535f94f957a04b07e9647944d475ac5e044271b3c1d086f3946d32d4e5640",
+ "size": 2583495,
+ "notes": "设置改成从胶囊放大展开的毛玻璃面板（12+ 真系统模糊，低版本深色玻璃质感）；正文字号改成四档 chip 就地切换；更新下载进度改成底部悬浮条，不遮挡正文、可继续滑动阅读，可随时取消",
  "minSdk": 24
 }
