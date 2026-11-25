@@ -20,6 +20,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -37,6 +38,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var errorPanel: View
     private lateinit var errorText: TextView
     private lateinit var prefs: SharedPreferences
+
+    /** 底部下载进度条（更新时出现，不遮挡正文中间区域）。 */
+    private lateinit var downloadBar: View
+    private lateinit var dlText: TextView
+    private lateinit var dlProgress: ProgressBar
 
     /** 长按设置按钮满 6 秒解锁高级项；计时器随手指抬起/取消清掉。 */
     private val holdHandler = Handler(Looper.getMainLooper())
@@ -98,6 +104,10 @@ class MainActivity : AppCompatActivity() {
         // （组件自己那条 updatePeriodMillis 广播在很多 ROM 上会被拦，这里是主通路）
         WidgetRefresh.schedule(this)
         WidgetRefresh.refreshIfStale(this)
+
+        // 设置面板通过这条直连回来操作 WebView；下载进度走底部悬浮条
+        SettingsBridge.host = this
+        bindDownloadBar()
     }
 
     /** 从「安装未知应用」设置页回来时，接着装那个已经下载好的包。 */
@@ -245,7 +255,7 @@ class MainActivity : AppCompatActivity() {
                 val advanced = holdUnlocked || held >= HOLD_UNLOCK_MS
                 holdStartAt = 0L
                 v.performClick()
-                showMenu(v, advanced)
+                openSettings(v, advanced)
                 return true
             }
             MotionEvent.ACTION_CANCEL -> {
@@ -258,70 +268,112 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    /** 从设置按钮位置向下弹出的下拉菜单，不再用居中的对话框挡住正文。 */
-    private fun showMenu(anchor: View, advanced: Boolean = false) {
-        val menu = androidx.appcompat.widget.PopupMenu(this, anchor, Gravity.END)
-        val group = menu.menu
-        val items = mutableListOf("重新加载", "强制刷新（清缓存）", "回到顶部", "调整字号", "检查更新")
-        if (advanced) {
-            items.add("在浏览器中打开")
-            items.add("复制日报链接")
-        }
-        items.forEachIndexed { i, label -> group.add(0, i, i, label) }
-        menu.setOnMenuItemClickListener { item ->
-            val label = item.title.toString()
-            when (label) {
-                "重新加载" -> {
-                    web.clearCache(false)
-                    load(digestUrl())
-                }
-                "强制刷新（清缓存）" -> {
-                    web.clearCache(true)
-                    load(digestUrl())
-                }
-                "回到顶部" -> {
-                    web.scrollTo(0, 0)
-                    toast("已回到顶部")
-                }
-                "调整字号" -> pickTextZoom()
-                "检查更新" -> UpdateChecker.check(this, manual = true)
-                "在浏览器中打开" -> runCatching {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(digestUrl())))
-                }
-                "复制日报链接" -> {
-                    val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                    cm.setPrimaryClip(android.content.ClipData.newPlainText("KIKINEWS", digestUrl()))
-                    toast("链接已复制")
-                }
-            }
-            true
-        }
-        menu.gravity = Gravity.END
-        menu.show()
+    /**
+     * 打开设置面板：把胶囊按钮的屏幕矩形一起带过去，让面板从它那里原地撑开。
+     * 原来是 PopupMenu（原生下拉），现在换成有放大/毛玻璃转场的独立面板。
+     */
+    private fun openSettings(anchor: View, advanced: Boolean = false) {
+        val loc = IntArray(2)
+        anchor.getLocationOnScreen(loc)
+        val intent = Intent(this, SettingsActivity::class.java)
+            .putExtra(SettingsActivity.EXTRA_ADVANCED, advanced)
+            .putExtra(SettingsActivity.EXTRA_AX, loc[0].toFloat())
+            .putExtra(SettingsActivity.EXTRA_AY, loc[1].toFloat())
+            .putExtra(SettingsActivity.EXTRA_AW, anchor.width)
+            .putExtra(SettingsActivity.EXTRA_AH, anchor.height)
+        startActivity(intent)
+        overridePendingTransition(0, 0)
     }
 
-    /** 网页缩放比例，手机上按需调大调小，设置会被记住。 */
-    private fun pickTextZoom() {
-        val steps = arrayOf("小 (85%)", "标准 (100%)", "大 (115%)", "特大 (130%)")
-        val values = intArrayOf(85, 100, 115, 130)
-        val current = prefs.getInt(KEY_ZOOM, 100)
-        val checked = values.indexOf(current).coerceAtLeast(1)
-        AlertDialog.Builder(this)
-            .setTitle("调整字号")
-            .setSingleChoiceItems(steps, checked) { dialog, which ->
-                val zoom = values[which]
-                web.settings.textZoom = zoom
-                prefs.edit().putInt(KEY_ZOOM, zoom).apply()
-                dialog.dismiss()
+    /** 设置面板点过的操作统一回到这里执行，因为它要动的是这个 Activity 的 WebView。 */
+    fun onSettingsAction(action: String, arg: Int = 0) {
+        when (action) {
+            SettingsActivity.ACT_RELOAD -> {
+                web.clearCache(false)
+                load(digestUrl())
             }
-            .setNegativeButton("取消", null)
-            .show()
+            SettingsActivity.ACT_HARD_RELOAD -> {
+                web.clearCache(true)
+                load(digestUrl())
+            }
+            SettingsActivity.ACT_TOP -> web.scrollTo(0, 0)
+            SettingsActivity.ACT_ZOOM -> {
+                web.settings.textZoom = arg
+                prefs.edit().putInt(KEY_ZOOM, arg).apply()
+            }
+            SettingsActivity.ACT_UPDATE -> UpdateChecker.check(this, manual = true)
+            SettingsActivity.ACT_BROWSER -> runCatching {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(digestUrl())))
+            }
+            SettingsActivity.ACT_COPY -> {
+                val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("KIKINEWS", digestUrl()))
+                toast("链接已复制")
+            }
+        }
     }
+
+    /** 面板里画字号 chip 时要显示当前档位。 */
+    fun currentZoom(): Int = prefs.getInt(KEY_ZOOM, 100)
 
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 
+    /**
+     * 下载进度条：底部悬浮一张窄卡片，正文不动、照样能滑。
+     * 更新开始时从下往上滑入，结束（成功或失败）自动收起。
+     */
+    private fun bindDownloadBar() {
+        downloadBar = findViewById(R.id.downloadBar)
+        dlText = findViewById(R.id.dlText)
+        dlProgress = findViewById(R.id.dlProgress)
+        findViewById<View>(R.id.dlCancel).setOnClickListener { UpdateChecker.cancelDownload() }
+        UpdateChecker.progressListener = { ev ->
+            runOnUiThread { renderDownloadBar(ev) }
+        }
+    }
+
+    private fun renderDownloadBar(ev: UpdateProgress) {
+        when (ev.phase) {
+            UpdateChecker.PHASE_CONNECTING -> showBar("正在连接更新服务器…", 0, indeterminate = true)
+            UpdateChecker.PHASE_DOWNLOADING -> {
+                val done = String.format("%.2f", ev.done / 1048576.0)
+                val total = String.format("%.2f", ev.total / 1048576.0)
+                val pct = if (ev.pct >= 0) ev.pct else 0
+                showBar("正在下载 ${ev.name}　$pct% · $done / $total MB", pct, indeterminate = false)
+            }
+            else -> hideBar()
+        }
+    }
+
+    private fun showBar(text: String, pct: Int, indeterminate: Boolean) {
+        if (!::downloadBar.isInitialized) return
+        dlText.text = text
+        dlProgress.isIndeterminate = indeterminate
+        if (!indeterminate) dlProgress.progress = pct.coerceIn(0, 100)
+        if (downloadBar.visibility != View.VISIBLE) {
+            downloadBar.visibility = View.VISIBLE
+            downloadBar.alpha = 0f
+            downloadBar.translationY = px(58).toFloat()
+            downloadBar.animate().alpha(1f).translationY(0f).setDuration(220).start()
+        }
+    }
+
+    private fun hideBar() {
+        if (!::downloadBar.isInitialized || downloadBar.visibility != View.VISIBLE) return
+        downloadBar.animate()
+            .alpha(0f)
+            .translationY(px(58).toFloat())
+            .setDuration(180)
+            .withEndAction { downloadBar.visibility = View.GONE }
+            .start()
+    }
+
+    private fun px(v: Int): Int = (resources.displayMetrics.density * v).toInt()
+
     override fun onDestroy() {
         holdHandler.removeCallbacksAndMessages(null)
+        if (SettingsBridge.host === this) SettingsBridge.host = null
+        UpdateChecker.progressListener = null
         super.onDestroy()
     }
 
