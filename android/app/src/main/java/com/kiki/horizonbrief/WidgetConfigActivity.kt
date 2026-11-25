@@ -7,6 +7,9 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * 小组件透明度设置页。
@@ -72,5 +75,44 @@ class WidgetConfigActivity : Activity() {
             }
             finish()
         }
+
+        // 「保存并刷新组件」只是拿缓存重绘，不联网；组件长期停在旧日期时，
+        // 光点它是不可能变的，所以这里单独给一个真的会发请求的按钮。
+        val status = findViewById<TextView>(R.id.cfg_status)
+        val refreshBtn = findViewById<Button>(R.id.cfg_refresh)
+        status.text = syncText()
+
+        refreshBtn.setOnClickListener {
+            refreshBtn.isEnabled = false
+            status.text = getString(R.string.widget_config_running)
+            Thread {
+                val ok = WidgetRefresh.now(applicationContext)
+                val feed = WidgetStore.cached(applicationContext)
+                runOnUiThread {
+                    refreshBtn.isEnabled = true
+                    status.text = if (ok) {
+                        getString(
+                            R.string.widget_config_ok,
+                            listOf(feed?.date.orEmpty(), feed?.updated.orEmpty())
+                                .filter { s -> s.isNotBlank() }
+                                .joinToString(" ")
+                        )
+                    } else {
+                        getString(R.string.widget_config_fail)
+                    }
+                    setResult(RESULT_OK, Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId))
+                }
+            }.start()
+        }
+
+        WidgetRefresh.schedule(this)
+    }
+
+    /** 「上次同步：MM-dd HH:mm」，从没成功过时给一句白话。 */
+    private fun syncText(): String {
+        val at = WidgetStore.fetchedAt(this)
+        if (at <= 0L) return getString(R.string.widget_config_never)
+        val fmt = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
+        return getString(R.string.widget_config_last, fmt.format(Date(at)))
     }
 }
