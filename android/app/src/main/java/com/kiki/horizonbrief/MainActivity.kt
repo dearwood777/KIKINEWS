@@ -269,20 +269,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * 打开设置面板：把胶囊按钮的屏幕矩形一起带过去，让面板从它那里原地撑开。
-     * 原来是 PopupMenu（原生下拉），现在换成有放大/毛玻璃转场的独立面板。
+     * 打开设置浮层：把胶囊按钮的屏幕矩形带过去，让浮层贴在它下方；
+     * 启动前先把背后网页虚化一份，给毛玻璃当底（低版本机型也才有"玻璃感"）。
      */
     private fun openSettings(anchor: View, advanced: Boolean = false) {
-        val loc = IntArray(2)
-        anchor.getLocationOnScreen(loc)
-        val intent = Intent(this, SettingsActivity::class.java)
-            .putExtra(SettingsActivity.EXTRA_ADVANCED, advanced)
-            .putExtra(SettingsActivity.EXTRA_AX, loc[0].toFloat())
-            .putExtra(SettingsActivity.EXTRA_AY, loc[1].toFloat())
-            .putExtra(SettingsActivity.EXTRA_AW, anchor.width)
-            .putExtra(SettingsActivity.EXTRA_AH, anchor.height)
-        startActivity(intent)
-        overridePendingTransition(0, 0)
+        SettingsBackdrop.capture(this, web) {
+            if (isFinishing) return@capture
+            val loc = IntArray(2)
+            anchor.getLocationOnScreen(loc)
+            val intent = Intent(this, SettingsActivity::class.java)
+                .putExtra(SettingsActivity.EXTRA_ADVANCED, advanced)
+                .putExtra(SettingsActivity.EXTRA_AX, loc[0].toFloat())
+                .putExtra(SettingsActivity.EXTRA_AY, loc[1].toFloat())
+                .putExtra(SettingsActivity.EXTRA_AW, anchor.width)
+                .putExtra(SettingsActivity.EXTRA_AH, anchor.height)
+            startActivity(intent)
+            overridePendingTransition(0, 0)
+        }
     }
 
     /** 设置面板点过的操作统一回到这里执行，因为它要动的是这个 Activity 的 WebView。 */
