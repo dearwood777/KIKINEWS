@@ -1,9 +1,9 @@
 {
- "versionCode": 160017,
- "versionName": "1.6.017",
- "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.017.apk",
- "sha256": "87b337a99ca9aa97cc4e2b3e5834226d49f13bab0b36d4c24fa16536d9ecbcb2",
- "size": 2585515,
- "notes": "设置窗口高度按内容实测（约 5 行 = 230dp），不再顶到底；宽度收到 224dp，行高 38dp，标题栏 34dp",
+ "versionCode": 160018,
+ "versionName": "1.6.018",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.018.apk",
+ "sha256": "8e95b0fafec35d76083aee6531a1d7c099742320768bf0f9e928076f90e71012",
+ "size": 2585615,
+ "notes": "设置行内不再空格：标题去 weight、右侧值紧跟标题（列对齐），面板宽度按最宽行实测（约 165dp），彻底没有大块留白",
  "minSdk": 24
 }
