@@ -93,6 +93,11 @@ class MainActivity : AppCompatActivity() {
 
         // 每次启动静默查一次新版本（同一个版本只自动提示一次）
         UpdateChecker.check(this)
+
+        // 桌面小组件：注册周期任务，并在数据过期时顺手拉一次
+        // （组件自己那条 updatePeriodMillis 广播在很多 ROM 上会被拦，这里是主通路）
+        WidgetRefresh.schedule(this)
+        WidgetRefresh.refreshIfStale(this)
     }
 
     /** 沉浸式全屏：隐藏状态栏和导航栏，滑动边缘可临时唤出，松手后自动收起。 */
