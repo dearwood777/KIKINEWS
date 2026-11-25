@@ -1,9 +1,9 @@
 {
- "versionCode": 160015,
- "versionName": "1.6.015",
- "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.015.apk",
- "sha256": "1e87a5de39adb4ad2375d75531f7674d74e9055bbc77923b116eeed2bb657f8e",
- "size": 2587395,
- "notes": "设置改成真正的小浮窗：窗口本身就是浮动小窗（不再铺满屏），宽度 min(244dp, 屏宽62%)；毛玻璃改为与浮层位置精确对齐的取样，不再是整屏压成小图",
+ "versionCode": 160016,
+ "versionName": "1.6.016",
+ "apk": "https://dearwood777.github.io/KIKINEWS/app/kikinews-1.6.016.apk",
+ "sha256": "083b4fb7c8a74960b5a372961ec63a64735ca81f40d8e152dea7af9f1c524679",
+ "size": 2585167,
+ "notes": "设置彻底换成 PopupWindow：宽 min(236dp, 屏宽66%)、高随内容约 230dp，挂在胶囊下方，物理上不可能全屏；毛玻璃按浮层真实位置对齐取样",
  "minSdk": 24
 }
