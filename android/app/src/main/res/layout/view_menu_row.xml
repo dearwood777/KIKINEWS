@@ -9,27 +9,27 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="42dp"
+        android:layout_height="38dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp">
+        android:paddingStart="11dp"
+        android:paddingEnd="11dp">
 
         <ImageView
             android:id="@+id/row_icon"
-            android:layout_width="17dp"
-            android:layout_height="17dp"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
             android:contentDescription="@null" />
 
         <TextView
             android:id="@+id/row_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="11dp"
+            android:layout_marginStart="10dp"
             android:layout_weight="1"
             android:includeFontPadding="false"
             android:textColor="#EDEEF2"
-            android:textSize="13.5sp" />
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/row_right"
@@ -38,13 +38,13 @@
             android:layout_marginStart="8dp"
             android:includeFontPadding="false"
             android:textColor="#84878F"
-            android:textSize="11.5sp" />
+            android:textSize="11sp" />
     </LinearLayout>
 
     <View
         android:id="@+id/row_divider"
         android:layout_width="match_parent"
         android:layout_height="0.6dp"
-        android:layout_marginStart="40dp"
+        android:layout_marginStart="37dp"
         android:background="#17FFFFFF" />
 </LinearLayout>
