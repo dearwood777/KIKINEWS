@@ -238,10 +238,2038 @@ footer .dot{opacity:.45;margin:0 6px}
 }
 .top.show{display:flex}
 </style>
+<!-- kiki-polish:start -->
+<link rel="expect" href="#kiki-head" blocking="render">
+<script type="speculationrules">{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}]}</script>
+<style id="kiki-polish-css">
+/* ——— KIKI 视觉增强 ——— */
+*{-webkit-tap-highlight-color:transparent}
+
+/* 1. 过渡类型（目标页静态声明方向） */
+@view-transition{navigation:auto; types: previous}
+@media (prefers-reduced-motion: reduce){
+  @view-transition{navigation:none}
+}
+
+/* 2. 画布兜底色：页面本身、过渡层、根分组全部铺满底色，任何一帧都不会露出 WebView 的白 */
+html{background-color:#0e1320}
+::view-transition{background-color:#0e1320}
+::view-transition-group(root),
+::view-transition-image-pair(root),
+::view-transition-old(root),
+::view-transition-new(root){background-color:#0e1320}
+
+/* 3. 共享元素胶囊：跨页飞过去 */
+.back,.pill-link{view-transition-name:kiki-pill}
+::view-transition-group(kiki-pill){
+  animation-duration:620ms;
+  animation-timing-function:cubic-bezier(.22,1,.36,1);
+}
+
+/* 4. 关键：旧页原地不动，只有新页整幅覆盖进来。
+   旧页一平移就会在边缘露出底下画布（白闪的根源），不移动就永远不会露出。 */
+@media (prefers-reduced-motion: no-preference){
+  :active-view-transition-type(forward)::view-transition-old(root),
+  :active-view-transition-type(previous)::view-transition-old(root){animation:none}
+  :active-view-transition-type(forward)::view-transition-new(root){
+    animation:kiki-cover-r 620ms cubic-bezier(.32,.86,.3,1) both}
+  :active-view-transition-type(previous)::view-transition-new(root){
+    animation:kiki-cover-l 620ms cubic-bezier(.32,.86,.3,1) both}
+  /* 无类型的同站链接：极短淡入，快照全程不透明 */
+  ::view-transition-old(root){animation:none}
+  ::view-transition-new(root){animation:kiki-fade-in 200ms ease both}
+}
+@keyframes kiki-cover-r{from{transform:translateX(100%)}to{transform:none}}
+@keyframes kiki-cover-l{from{transform:translateX(-100%)}to{transform:none}}
+@keyframes kiki-fade-in{from{opacity:0}to{opacity:1}}
+
+/* 5. 卡片水波纹：和发音键**完全同一套**——几圈细线同时往外荡，最外圈先到边、里圈依次接上，
+   最后一起淡掉。卡片自己的子元素会被 overflow:hidden 裁掉，所以环挂在卡片外面（.cards 里），
+   按卡片的实际位置摆好，随页面一起滚动。线宽恒定 1.5px，外扩总量 9px（小于 10px 卡片间距）。 */
+@keyframes kiki-cring-rip{
+  0%{opacity:.82;transform:scale(1)}
+  55%{opacity:.42}
+  100%{opacity:0;transform:scale(var(--kx,1.06),var(--ky,1.06))}
+}
+.kiki-cring{position:absolute;pointer-events:none;opacity:0;
+  border:1px solid rgba(127,184,255,.7);
+  animation:kiki-cring-rip 2000ms cubic-bezier(.3,.4,.4,1) forwards;will-change:transform,opacity}
+.cards{position:relative}
+@keyframes kiki-wash{0%{opacity:0}30%{opacity:.75}100%{opacity:0}}
+.kiki-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  background:linear-gradient(158deg,rgba(127,184,255,.16),rgba(127,184,255,0) 60%);
+  animation:kiki-wash 1150ms ease forwards}
+
+/* 5c. 边缘流光（Border Beam）：**一条**光沿胶囊描边绕行一圈。
+   演进过三版，前两版都废了，别回头：
+   ① conic-gradient 旋转 —— 胶囊是又扁又长的"体育场"形，锥形渐变转同一角度，落点在直边和
+      两端圆弧上走的距离差好几倍，几何上不可能匀速（"慢慢走、唰一下冲过弧"）。
+   ② offset-path 沿路径 —— 实机 WebView 里整条光渲染不出来，直接消失。
+   ③ 线性渐变横扫 —— 匀速了，但上下两条边同时亮，是"两束光"而不是"一道光溜边"。
+   定版：SVG 描边 + stroke-dashoffset。路径按胶囊实际宽高生成，一段短亮线沿轮廓匀速走完，
+   拖一条暗尾；几何上天然匀速，只可能出现一条光。 */
+.cbtn{position:relative}
+.kiki-beam{position:absolute;top:-1px;left:-1px;pointer-events:none;overflow:visible}
+/* 路径本身不动，靠每层自己的 animation-delay 决定它在亮头后面多远（延迟由 JS 按路径长度算） */
+.kiki-beam path{animation:kiki-beam-run 6000ms linear infinite both}
+@keyframes kiki-beam-run{from{stroke-dashoffset:0}to{stroke-dashoffset:calc(-1 * var(--len))}}
+
+/* 5d. 卡片入场淡入已下掉：`animation ... both` 会让卡片先被按到 opacity 0 再淡上来，
+   快速滑到中途触发时反而是"整张卡消失一下又回来"，看着比不动更闪。 */
+
+/* 5e. 数字递增用的数字容器：等宽数字 + 预留 2 位宽度，
+   这样从 7 数到 12 时不会把右边的内容（比如「难点词汇 ›」）顶出去 */
+.kiki-num{display:inline-block;font-variant-numeric:tabular-nums;text-align:center;vertical-align:baseline}
+
+/* 5b. 背景星尘视差：极淡光点，随滚动反向慢移 */
+@keyframes kiki-drift{to{transform:translateY(-96px)}}
+
+/* 5d. 顶部阅读进度光条 */
+@keyframes kiki-progress{to{transform:scaleX(1)}}
+.kiki-progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:9997;pointer-events:none;
+  transform-origin:0 50%;transform:scaleX(0);opacity:0;
+  background:linear-gradient(90deg,rgba(90,166,255,.55),rgba(127,184,255,.95),rgba(210,235,255,.9));
+  box-shadow:0 0 12px rgba(127,184,255,.45)}
+/* 日报卡：入场由 CSS 的 3D 归正 + JS 的水波纹脉冲负责，这里只需要定位上下文 */
+.cards>.card{position:relative}
+
+/* 6. 跳转到某张卡：等滚动真的停下来之后再发水波纹（之前一改 hash 就开始播，
+   等滚到位时动画已经只剩最后一帧了，等于白播） */
+
+/* 6b. 滚动驱动 / 时间驱动的高级特效（Chrome 115+ 支持滚动时间线，不支持就完全不出现） */
+@supports (animation-timeline: scroll()){
+  @media (prefers-reduced-motion: no-preference){
+    /* 背景星尘：负 z-index 让它压在本页背景之上、内容之下 */
+    body::before{content:"";position:fixed;inset:-20% -10%;z-index:-1;pointer-events:none;opacity:.55;
+      background:
+        radial-gradient(1px 1px at 18% 26%,rgba(150,195,255,.55),transparent 60%),
+        radial-gradient(1px 1px at 72% 62%,rgba(150,195,255,.45),transparent 60%),
+        radial-gradient(1.6px 1.6px at 42% 84%,rgba(120,170,255,.34),transparent 60%),
+        radial-gradient(1px 1px at 88% 18%,rgba(185,215,255,.42),transparent 60%),
+        radial-gradient(1px 1px at 56% 44%,rgba(140,180,255,.28),transparent 60%);
+      background-size:460px 460px;
+      animation:kiki-drift linear both;animation-timeline:scroll(root)}
+    .kiki-progress{opacity:1;animation:kiki-progress linear both;animation-timeline:scroll(root)}
+  }
+}
+/* 滚动驱动的 3D 归正已下掉：它的进度跟着手指走，快速滑动时会在中途"停住再弹回"，很尬。 */
+
+/* 7. 展开/收起平滑：Chrome 131+ 的 ::details-content 高度动画，老浏览器直接瞬开 */
+:root{interpolate-size:allow-keywords}
+details::details-content{height:0;overflow:hidden;
+  transition:height 300ms cubic-bezier(.2,.9,.2,1),content-visibility 300ms;transition-behavior:allow-discrete}
+details[open]::details-content{height:auto}
+
+/* 8. 按钮与链接微交互 */
+.pill,.back,.say,.vw,.cbtn,.cands summary,.toc a{transition:transform 150ms cubic-bezier(.2,.8,.2,1),
+  box-shadow 220ms ease,border-color 220ms ease,color 150ms ease,background-color 150ms ease}
+/* <summary> 本身没有圆角，点按高亮会画成方块；补上跟 .cbtn 一致的圆角 */
+.cands summary{border-radius:999px}
+@media (hover: hover){
+  .pill:hover,.back:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,.28)}
+  .vw:hover{color:#8fc4ff;background:rgba(90,166,255,.12);border-radius:5px}
+  .cbtn:hover{border-color:var(--accent)}
+}
+.pill:active,.back:active{transform:translateY(0) scale(.97)}
+.cbtn:active{transform:scale(.98);background:var(--chip)}
+.vw{border-radius:5px}
+/* 焦点描边只加 outline，不改元素自己的圆角（否则胶囊会瞬间变方） */
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* 9. 发音键水波纹：一条**极细**的空心圆环一圈圈往外扩（由内联 JS 生成 ring 元素）
+   线宽 1.5px 且不随缩放变粗多少，保持精致感 */
+.kiki-ring{position:absolute;inset:0;border-radius:999px;pointer-events:none;
+  border:1.5px solid rgba(127,184,255,.75);opacity:0;
+  animation:kiki-rip 860ms cubic-bezier(.2,.6,.3,1) forwards}
+@keyframes kiki-rip{
+  0%{opacity:.85;transform:scale(.72)}
+  55%{opacity:.38}
+  100%{opacity:0;transform:scale(2.02)}
+}
+
+/* 10. 同页锚点跳转平滑 */
+@media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}
+
+/* 11. 报头小人骨架
+   报头字体换成为此专门打包的子集（Noto Sans SC 700，只含"科技·财经国际速递"这几个字，2.6KB，
+   OFL 授权可自由分发）。换字体的意义是：字形轮廓由我们自己掌握，隐藏层里画的轮廓
+   和屏幕上真正渲染的轮廓来自同一份数据，才会"脚踩在笔画上"。不换字体就只能拿字框近似。 */
+@font-face{font-family:'KikiHead';src:url('fonts/kiki-head-700.woff2') format('woff2');
+  font-weight:700;font-style:normal;font-display:swap}
+.hero h1{font-family:'KikiHead',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',
+  'Hiragino Sans GB','Microsoft YaHei',sans-serif;position:relative}
+/* 逐字拆成 inline-block 只为能单独颤一下那个间隔点；字距仍由 h1 的 letter-spacing 控制。
+   white-space:pre 是关键：否则只含一个空格的 span 会把空格折叠掉，"科技·财经"两侧的
+   间隙就消失，整行比原来窄 28px（实测 331→303）。 */
+.hero h1 .kch{display:inline-block;white-space:pre;transform-origin:50% 100%;will-change:transform}
+.hero h1 .kch.kiki-dot-hit{animation:kiki-dot 300ms cubic-bezier(.3,.7,.4,1)}
+@keyframes kiki-dot{
+  0%{transform:translateY(0) scaleY(1)}
+  28%{transform:translateY(1.2px) scaleY(.86)}
+  62%{transform:translateY(-.8px) scaleY(1.05)}
+  100%{transform:translateY(0) scaleY(1)}
+}
+/* 小人层：绝对定位盖在报头上，不吃点击，只动 transform（不触发重排） */
+.kiki-walker{position:fixed;left:0;top:0;width:1px;height:1px;pointer-events:none;z-index:2147483000;
+  will-change:transform;transition:opacity .35s ease}
+.kiki-walker svg{display:block;overflow:visible}
+/* 绳子层：垫在小人下面。只在"技↔财""经↔国"这种跨间隔点的大空隙里出现，
+   两端挂在两个字的字底下沿，是回程攀爬的抓手，不是给人踩的桥 */
+.kw-ropes{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.kw-ropes .kw-rope-gap{stroke:#a99878;stroke-width:.75;stroke-linecap:round;opacity:.55}
+/* 小人：两套剪纸（走姿侧身 / 攀爬正面），切件各自绕枢轴转，origin 放在脚底 */
+.kw-art{display:block;position:absolute;left:0;top:0;overflow:visible;user-select:none}
+.kw-art-hang{display:none}
+.kiki-spr{position:absolute;left:0;top:0;overflow:hidden;contain:paint;pointer-events:none}
+.kw-art [stroke]{vector-effect:none}
+/* 12. 报头卡右边缘的葫芦藤
+   只用右侧那块留白：从卡片底部往上长，到顶端往左拐一点。纯 SVG + CSS transform 摇摆，
+   不做位图、不做滤镜，安卓 WebView 上没有成本。叶子的 transform-origin 挂在叶柄接点，
+   相位各错开，看起来才是"被同一阵风吹"而不是整排同步抽动。 */
+/* 定位说明：.hero 是通栏卡（margin:0 -16px），它的右边缘常常在屏幕外十几个像素；
+   而网页正文一旦有 nowrap 内容把文档撑宽，卡片的右边缘会离屏幕更远 —— 写 right:5px 的
+   第一版整条藤都被顶到屏幕外，截图里一片空白。所以这里用 fixed 层 + 每帧跟随
+   "卡片可见右边缘 min(hero.right, 视口宽)"，跟报头小人用的是同一套思路。 */
+.kiki-vine{position:fixed;left:0;top:0;width:54px;height:180px;
+  pointer-events:none;z-index:2147482000;overflow:visible;
+  transform-origin:72% 100%;animation:kv-wind 5.4s ease-in-out infinite alternate}
+/* 风摆挂在**整个层**上，而不是只挂在主茎 SVG 上：横臂上的葫芦和叶子是兄弟元素，
+   让它们绕同一个原点、同一个相位一起摆，藤上下走的时候葫芦才会跟着走，
+   否则藤动了、葫芦不动，葫芦就会压在藤上（v25 的老毛病） */
+.kiki-vine .kv-stem{position:absolute;inset:0;width:100%;height:100%}
+.kiki-vine .kv-item{position:absolute;transform-origin:50% 100%}
+/* 顶部横臂：线条本身已并进主茎同一条 SVG（见 buildVine 的 armPaths）；
+   这里只留一个空容器，用来给横臂上的葫芦和叶子定位 */
+.kiki-vine .kv-arm{position:absolute;left:0;top:0;height:34px;width:0;overflow:visible}
+.kiki-vine .kv-swing{display:block;transform-origin:50% 100%;
+  animation:kv-sway var(--dur,2.8s) ease-in-out infinite alternate;
+  animation-delay:var(--dl,0s)}
+.kiki-vine svg{display:block;overflow:visible}
+/* 主茎的 d 是像素坐标、viewBox 也是像素尺寸（1:1），线宽就是真实 px，不需要 non-scaling-stroke */@keyframes kv-sway{from{transform:rotate(-4.6deg)}to{transform:rotate(5deg)}}
+@keyframes kv-wind{from{transform:rotate(-1.1deg)}to{transform:rotate(.7deg)}}
+@media (prefers-reduced-motion:reduce){.kiki-vine,.kiki-vine .kv-swing{animation:none}}
+
+/* 13. 报头卡：上半部的微光星空 + 底边一排随风摆的小草
+   两者都挂在 .hero 内部（不给 fixed，卡片滚走就跟着滚走），纯 DOM + CSS，不吃点击。
+   星空用 mask 往下渐隐，只染上半部，避免和正文卡抢视线；小草高度对齐"每日速递"那一行。 */
+.hero{position:relative}
+.hero .brand,.hero .day{position:relative;z-index:1}
+/* 星星只铺在"北京时间 06:01"那一行上方（报头卡顶部 30%），一颗颗此起彼伏地闪，
+   而不是整片常亮 —— 常亮的小点会和日期、冒号混成噪点。 */
+.kiki-sky{position:absolute;left:0;top:0;width:100%;height:30%;pointer-events:none;z-index:0;
+  -webkit-mask-image:linear-gradient(180deg,#000 0,#000 72%,transparent 100%);
+  mask-image:linear-gradient(180deg,#000 0,#000 72%,transparent 100%)}
+.kiki-sky i{position:absolute;display:block;border-radius:50%;background:#dfeaff;opacity:0;
+  animation:kiki-spark var(--dur,4s) linear infinite;animation-delay:var(--dl,0s);will-change:opacity}
+@keyframes kiki-spark{0%{opacity:0}24%{opacity:0}34%{opacity:var(--o,.85)}46%{opacity:.12}
+  58%{opacity:.6}72%{opacity:0}100%{opacity:0}}
+.kiki-grass{position:absolute;left:6px;right:6px;bottom:0;height:9px;pointer-events:none;z-index:1;overflow:hidden}
+.kiki-grass .kg{position:absolute;bottom:0;flex:0 0 auto;transform-origin:50% 100%;will-change:transform}
+.kiki-grass .kg svg{display:block;width:100%;height:100%;overflow:visible;transform:scaleX(var(--fl,1))}
+/* 草的摆动**不用 CSS 关键帧**：固定周期 + 固定幅度 = 一个人在原地招手，一看看出假。
+   改由 startGrassWind() 每帧从"沿 x 传播的一维噪波段"取值算角度 —— 每簇的幅度、方向、
+   节奏都跟着波走的深浅变，再加一层整片一起"来一阵歇一阵"的阵风包络。 */
+@media (prefers-reduced-motion:reduce){.kiki-sky i{animation:none}}
+
+/* 藤垫在内容下面：胶囊/链接点击不受影响，也不会盖住文字 */
+.hero .pillrow{position:relative;z-index:2}
+</style>
+<script id="kiki-polish-js">
+(function () {
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // 报头字形骨架：{"upm":1000,"d":{字:路径,...},"adv":{...}}，由 build_head_glyphs.py 生成
+  var KIKI_G = {"upm":1000,"ascent":1160,"descent":-288,"d":{"际":"M66 809H318V702H181V-88H66ZM291 809H313L331 814L418 769Q396 706 371.5 635.5Q347 565 324 507Q372 447 387.0 394.5Q402 342 402 297Q402 249 391.0 216.0Q380 183 353 165Q340 156 324.5 151.0Q309 146 291 143Q277 141 258.5 140.5Q240 140 221 141Q221 162 213.5 192.0Q206 222 192 244Q206 243 218.0 242.5Q230 242 239 243Q257 243 268 250Q277 257 281.5 273.0Q286 289 286 311Q286 347 272.5 394.0Q259 441 212 494Q224 527 235.0 566.5Q246 606 257.0 645.0Q268 684 277.0 718.5Q286 753 291 776ZM466 788H907V676H466ZM420 549H963V437H420ZM616 493H738V48Q738 4 729.5 -23.5Q721 -51 692 -66Q664 -81 626.5 -84.5Q589 -88 538 -88Q535 -62 525.0 -26.5Q515 9 504 36Q534 35 561.5 35.0Q589 35 599 35Q609 35 612.5 38.0Q616 41 616 50ZM771 315 871 349Q894 299 914.5 241.5Q935 184 951.0 130.5Q967 77 973 35L865 -4Q860 38 846.0 92.5Q832 147 813.0 205.5Q794 264 771 315ZM464 345 571 320Q557 261 536.0 203.0Q515 145 491.0 93.0Q467 41 441 1Q430 10 413.0 22.0Q396 34 378.0 45.0Q360 56 347 63Q385 115 415.5 191.0Q446 267 464 345Z","·":"M500 508Q536 508 564.5 490.5Q593 473 610.5 444.5Q628 416 628 380Q628 345 610.5 316.0Q593 287 564.5 269.5Q536 252 500 252Q465 252 436.0 269.5Q407 287 389.5 316.0Q372 345 372 380Q372 416 389.5 444.5Q407 473 436.0 490.5Q465 508 500 508Z","科":"M185 756H301V-89H185ZM33 568H433V457H33ZM191 523 261 493Q247 439 227.0 381.0Q207 323 183.0 266.5Q159 210 132.0 160.0Q105 110 76 73Q67 99 50.5 131.5Q34 164 20 187Q46 217 71.5 257.5Q97 298 120.0 344.0Q143 390 161.0 436.0Q179 482 191 523ZM363 841 430 743Q378 724 317.5 709.0Q257 694 194.0 683.5Q131 673 72 666Q69 686 59.0 712.5Q49 739 40 759Q98 768 156.0 780.5Q214 793 268.0 808.5Q322 824 363 841ZM298 451Q308 442 326.5 422.0Q345 402 366.5 377.5Q388 353 406.0 332.5Q424 312 431 302L362 208Q353 228 338.5 254.5Q324 281 307.0 309.0Q290 337 274.0 362.0Q258 387 246 403ZM738 851H857V-88H738ZM416 205 956 298 975 185 435 91ZM481 722 559 789Q587 769 616.5 744.0Q646 719 672.5 693.0Q699 667 714 645L630 570Q617 592 592.0 619.0Q567 646 538.0 673.0Q509 700 481 722ZM444 458 521 527Q550 507 582.0 481.5Q614 456 641.5 429.5Q669 403 686 382L604 304Q589 327 562.0 354.5Q535 382 504.0 409.0Q473 436 444 458Z","递":"M397 413H869V319H397ZM841 413H945Q945 413 944.5 399.0Q944 385 943 375Q940 284 932.5 237.5Q925 191 909 173Q895 157 880.0 150.5Q865 144 844 141Q826 139 798.0 138.5Q770 138 739 139Q737 163 728.5 190.0Q720 217 709 236Q736 234 758.0 233.0Q780 232 791 232Q811 232 820 242Q829 250 833.0 285.5Q837 321 841 400ZM329 728H903V473H425V569H802V631H329ZM364 569H472Q467 527 459.0 481.5Q451 436 443.5 393.5Q436 351 429 319H325Q333 353 340.0 395.5Q347 438 353.5 483.5Q360 529 364 569ZM409 818 506 858Q526 834 545.0 802.0Q564 770 572 746L468 701Q462 724 444.5 757.0Q427 790 409 818ZM736 853 854 824Q828 784 801.5 747.0Q775 710 752 683L653 712Q668 731 683.5 755.5Q699 780 713.0 805.5Q727 831 736 853ZM549 370 647 337Q599 261 524.5 202.0Q450 143 364 104Q357 116 343.5 131.0Q330 146 316.5 160.5Q303 175 291 184Q372 216 441.5 265.5Q511 315 549 370ZM565 684H684V77H565ZM60 764 165 813Q187 784 210.5 748.5Q234 713 254.5 679.5Q275 646 286 619L174 562Q164 589 145.5 624.0Q127 659 104.5 696.0Q82 733 60 764ZM271 478V89H155V361H40V478ZM209 148Q235 148 260.0 130.5Q285 113 329 90Q380 61 449.5 53.0Q519 45 604 45Q643 45 692.0 47.0Q741 49 792.5 52.0Q844 55 892.5 59.5Q941 64 979 70Q973 53 964.5 29.5Q956 6 950.5 -17.5Q945 -41 943 -59Q916 -61 874.0 -63.0Q832 -65 783.5 -66.5Q735 -68 686.5 -69.0Q638 -70 599 -70Q503 -70 435.0 -59.0Q367 -48 310 -19Q276 -1 249.5 18.0Q223 37 206 37Q193 37 176.0 17.5Q159 -2 142.0 -30.5Q125 -59 110 -88L28 33Q76 86 125.0 117.0Q174 148 209 148Z","国":"M248 646H742V542H248ZM275 447H720V346H275ZM238 227H759V129H238ZM439 613H550V175H439ZM582 314 658 353Q680 332 704.0 304.5Q728 277 740 256L660 211Q648 232 625.5 261.0Q603 290 582 314ZM76 810H921V-88H793V700H198V-88H76ZM143 72H852V-39H143Z"," ":"","财":"M207 670H307V371Q307 312 299.5 248.5Q292 185 270.0 124.0Q248 63 206.0 9.0Q164 -45 94 -87Q83 -70 63.0 -47.0Q43 -24 25 -11Q87 23 123.5 68.5Q160 114 178.0 166.5Q196 219 201.5 272.0Q207 325 207 372ZM258 116 333 175Q358 149 384.0 117.0Q410 85 433.0 55.0Q456 25 470 1L389 -67Q376 -43 354.5 -11.0Q333 21 307.5 54.5Q282 88 258 116ZM70 811H444V182H347V716H163V178H70ZM475 652H961V538H475ZM740 849H864V52Q864 5 853.5 -21.5Q843 -48 814 -63Q786 -78 744.5 -82.0Q703 -86 646 -86Q644 -70 637.0 -48.5Q630 -27 621.5 -5.5Q613 16 605 32Q641 31 674.0 30.5Q707 30 719 31Q731 32 735.5 36.0Q740 40 740 53ZM722 602 821 546Q798 479 766.0 409.0Q734 339 695.0 273.0Q656 207 612.0 150.0Q568 93 522 50Q507 74 481.5 102.0Q456 130 432 148Q477 184 520.5 235.0Q564 286 602.0 347.0Q640 408 670.5 473.5Q701 539 722 602Z","经":"M64 169Q62 181 55.0 201.5Q48 222 40.5 243.5Q33 265 25 281Q46 286 65.5 302.0Q85 318 109 344Q123 357 148.0 387.0Q173 417 204.0 459.0Q235 501 266.5 549.5Q298 598 325 648L428 580Q368 484 293.0 391.5Q218 299 143 230V227Q143 227 131.0 221.0Q119 215 103.5 206.0Q88 197 76.0 187.0Q64 177 64 169ZM64 169 56 267 109 304 386 350Q383 326 382.0 295.0Q381 264 382 245Q289 227 231.0 215.0Q173 203 140.5 195.0Q108 187 91.0 181.0Q74 175 64 169ZM57 413Q54 425 47.5 445.0Q41 465 33.0 487.5Q25 510 18 525Q33 529 47.5 544.0Q62 559 78 584Q87 595 102.5 622.5Q118 650 137.0 687.5Q156 725 174.5 768.0Q193 811 206 854L319 801Q294 743 261.5 684.0Q229 625 193.0 571.0Q157 517 121 474V471Q121 471 111.5 465.0Q102 459 89.0 450.0Q76 441 66.5 431.0Q57 421 57 413ZM57 413 54 500 105 533 293 548Q288 525 284.5 496.5Q281 468 280 449Q217 443 177.0 438.0Q137 433 113.0 428.5Q89 424 77.0 420.5Q65 417 57 413ZM30 76Q74 84 129.5 96.5Q185 109 247.0 124.0Q309 139 372 154L386 50Q300 25 212.5 1.0Q125 -23 53 -43ZM423 800H823V692H423ZM793 800H817L838 805L924 761Q889 685 837.0 621.5Q785 558 720.0 507.0Q655 456 580.5 417.0Q506 378 428 350Q420 366 408.0 385.0Q396 404 382.5 422.0Q369 440 357 453Q427 474 494.5 506.5Q562 539 620.0 581.5Q678 624 723.0 674.5Q768 725 793 781ZM372 44H969V-67H372ZM613 266H733V10H613ZM432 337H918V228H432ZM622 499 687 583Q734 566 789.5 541.0Q845 516 896.5 490.5Q948 465 981 443L910 346Q880 368 830.5 395.5Q781 423 725.5 450.5Q670 478 622 499Z","速":"M279 491V82H164V380H38V491ZM46 752 136 817Q164 793 194.5 764.0Q225 735 252.5 706.5Q280 678 297 654L200 580Q186 604 160.0 634.0Q134 664 104.0 695.0Q74 726 46 752ZM232 131Q259 131 285.0 113.5Q311 96 355 75Q406 50 474.0 42.5Q542 35 621 35Q672 35 735.5 38.0Q799 41 862.0 45.5Q925 50 973 57Q967 42 960.0 20.5Q953 -1 947.5 -22.5Q942 -44 941 -60Q916 -62 876.5 -64.0Q837 -66 791.0 -67.5Q745 -69 699.5 -70.0Q654 -71 617 -71Q527 -71 459.5 -60.5Q392 -50 335 -22Q300 -5 275.0 11.5Q250 28 230 28Q213 28 190.5 11.0Q168 -6 144.5 -32.5Q121 -59 98 -87L25 16Q78 66 133.5 98.5Q189 131 232 131ZM459 516V430H797V516ZM349 608H914V339H349ZM321 763H947V663H321ZM569 849H685V71H569ZM539 369 626 338Q598 287 558.0 239.5Q518 192 470.5 152.5Q423 113 372 88Q364 102 350.5 119.0Q337 136 323.0 152.0Q309 168 296 179Q344 198 390.0 228.0Q436 258 475.0 294.5Q514 331 539 369ZM600 300 667 371Q715 347 767.5 314.5Q820 282 867.5 248.0Q915 214 945 185L872 103Q845 132 799.0 167.5Q753 203 700.5 238.0Q648 273 600 300Z","技":"M386 707H945V596H386ZM403 476H831V368H403ZM601 850H720V417H601ZM533 390Q588 251 701.0 152.5Q814 54 984 13Q971 0 956.0 -18.0Q941 -36 928.5 -55.5Q916 -75 907 -91Q727 -38 610.5 76.0Q494 190 425 359ZM818 476H841L861 480L938 449Q908 338 856.5 251.0Q805 164 734.5 99.0Q664 34 577.5 -12.0Q491 -58 392 -87Q386 -72 375.0 -51.5Q364 -31 351.5 -11.5Q339 8 328 21Q418 42 497.5 80.0Q577 118 641.0 173.0Q705 228 750.5 299.5Q796 371 818 457ZM27 342Q71 351 127.0 363.5Q183 376 244.5 391.5Q306 407 366 422L381 312Q299 289 213.5 266.5Q128 244 58 227ZM40 659H373V548H40ZM156 850H274V43Q274 0 264.5 -24.5Q255 -49 229 -63Q204 -76 167.0 -80.0Q130 -84 76 -84Q73 -61 63.0 -29.5Q53 2 42 25Q72 24 99.5 24.0Q127 24 137 24Q156 24 156 44Z"},"adv":{"际":1000,"·":1000,"科":1000,"递":1000,"国":1000," ":227,"财":1000,"经":1000,"速":1000,"技":1000}};
+  window.KIKI_G = KIKI_G;   // 便于线上调试/校验（渲染时也读这份）
+
+  // 12a) 报头卡的两层氛围件：上半部星空微光 + 底边一排小草地
+  //      都挂在 .hero 里（不 fixed，卡片滚走就跟着滚走），尺寸按 CSS px 写死，
+  //      靠 CSS 变量错开相位，不做 JS 逐帧 —— 安卓 WebView 上也只是一堆合成层。
+  function buildStars(hero) {
+    var sky = document.createElement('div');
+    sky.className = 'kiki-sky';
+    sky.setAttribute('aria-hidden', 'true');
+    // 固定种子的伪随机：每次加载星位一致，不会刷新一次换一个天
+    var seed = 20261122;
+    function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    // 星星压得很轻：小、暗、数量少。报头那行时间和标题是主信息，星点一旦亮就会
+    // 和"06:01"的冒号、字缝混成一片噪点 —— 这里只留"夜里远处有星星"的暗示。
+    for (var i = 0; i < 52; i++) {
+      var s = document.createElement('i');
+      var sz = rnd() < 0.85 ? 1 : 1.5;
+      s.style.left = (rnd() * 100).toFixed(2) + '%';
+      s.style.top = (Math.pow(rnd(), 1.3) * 96).toFixed(2) + '%';   // 星层本身只占卡片顶部 30%
+      s.style.width = sz + 'px';
+      s.style.height = sz + 'px';
+      s.style.setProperty('--dur', (3.2 + rnd() * 3).toFixed(2) + 's');
+      s.style.setProperty('--dl', (-rnd() * 6).toFixed(2) + 's');    // 负延迟 = 一开始就错开相位
+      s.style.setProperty('--o', (0.55 + rnd() * 0.45).toFixed(2));
+      sky.appendChild(s);
+    }
+    hero.insertBefore(sky, hero.firstChild);
+  }
+
+  // 一簇草 = 底部一条连着的草皮 + 7 根长短不一的细叶（三档绿深浅交替），
+  // 叶尖从草皮里长出来、各自弯一点 —— 参考的是园林剪影那种草皮边缘，不是三根针。
+  var GRASS_SVG = '<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'
+    + '<rect x="0" y="84" width="100" height="16" fill="#2e6423"/>'
+    + '<path d="M6 100 C4 76 2 48 -2 22 C6 46 8 76 11 100 Z" fill="#3d7a2b"/>'
+    + '<path d="M19 100 C19 68 19 38 17 10 C26 46 26 78 25 100 Z" fill="#52963c"/>'
+    + '<path d="M32 100 C30 72 28 44 24 18 C34 50 34 78 37 100 Z" fill="#356b26"/>'
+    + '<path d="M46 100 C48 66 50 34 50 2 C57 44 55 76 53 100 Z" fill="#63a845"/>'
+    + '<path d="M60 100 C60 72 63 46 61 20 C69 52 67 80 66 100 Z" fill="#3d7a2b"/>'
+    + '<path d="M74 100 C76 70 80 42 82 14 C89 50 85 78 81 100 Z" fill="#52963c"/>'
+    + '<path d="M88 100 C90 78 95 54 100 32 C102 60 96 84 95 100 Z" fill="#356b26"/>'
+    + '</svg>';
+
+  function buildGrass(hero) {
+    var g = document.createElement('div');
+    g.className = 'kiki-grass';
+    g.setAttribute('aria-hidden', 'true');
+    var seed = 778899;
+    function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    // 一维 value 噪波：相邻 2~3 簇共用同一段缓慢变化的随机值 —— 草是"一片一片"起伏的，
+    // 每簇完全独立就成了散沙；再用 rnd() 叠一点点各自的小抖动，两样合起来才像风。
+    var NZ = [], q0;
+    for (q0 = 0; q0 < 48; q0++) NZ.push(rnd());
+    function noise1(x) {
+      var a = Math.floor(x), b = a + 1, t = x - a;
+      t = t * t * (3 - 2 * t);
+      var va = NZ[(a % 48 + 48) % 48], vb = NZ[(b % 48 + 48) % 48];
+      return va * (1 - t) + vb * t;
+    }
+    // 铺满：一根挨一根。密度按屏宽（每 6~8px 一簇），竖屏约 55 簇、横屏约 110 簇
+    var vw = window.innerWidth || 400;
+    var n = Math.max(18, Math.min(110, Math.round((vw - 12) / 10)));
+    for (var i = 0; i < n; i++) {
+      var d = document.createElement('div');
+      d.className = 'kg';
+      var w = 14 + rnd() * 4;              // 14~18px，比 10px 的间距宽 → 相邻草皮一定叠住，横屏也不会断成一段一段
+      d.style.width = w.toFixed(1) + 'px';
+      d.style.height = (6.5 + rnd() * 3.5).toFixed(1) + 'px';   // 6.5~10px：位移 = 高度×sin(角度)，太矮了风再大也看不出来
+      var pct = (i + 0.5) / n * 100 + (rnd() - 0.5) * (24 / n);
+      pct = Math.max(0, Math.min(100, pct));
+      d.style.left = pct.toFixed(2) + '%';
+      d.style.marginLeft = (-w / 2).toFixed(1) + 'px';
+      // 每簇只存自己的"底子"：横向位置（决定波的相位）、最大摆幅、最大斜度、微小随机相。
+      // 真正每一帧的角度由 startGrassWind() 现算 —— 固定的 --dur/--g1 就是"机械招手"，
+      // 用户要的是波扫过来时"深浅不同"，所以这三个数只是上限，实际值是随波变的。
+      d.__x = pct / 100;
+      d.__ph = rnd();                     // 每簇自己的呼吸相位：与位置无关，相邻草也不同相 —— 防"稍息"
+      d.__b = rnd();                      // 每簇固定的个人偏斜（不随时间变）：整片有正有歪，才不像排队
+      d.__amp = 6.2 + rnd() * 9.8;
+      d.__sk = 15 + rnd() * 20;
+      if (rnd() < 0.5) d.style.setProperty('--fl', '-1');   // 一半草簇左右镜像，形状也不一样
+      d.style.opacity = (0.55 + rnd() * 0.34).toFixed(2);
+      d.innerHTML = GRASS_SVG;
+      g.appendChild(d);
+    }
+    g.__vw = vw;                       // 记下生成时的视口宽：旋转屏幕后按新宽度重铺，否则草簇会被拉散
+    hero.appendChild(g);
+    startGrassWind(hero);
+  }
+
+  // 草的风：不做 CSS 关键帧（固定周期 + 固定幅度，一眼看出是一个人在原地招手）。
+  // 真实游戏里的做法是**沿风方向传播的一维噪波场** —— 草在场上取到的是"这一刻波到了什么深浅"，
+  // 深浅决定摆动幅度与方向，波往右扫过去，同一簇下一 frame 又取到另一个深度，所以永远不重复。
+  // 再叠一层整片一起"来一阵、歇一阵"的阵风包络，就有了"风一阵一阵吹过来"的真实感。
+  function startGrassWind(hero) {
+    if (window.__kwGrass) return;                       // 已经有一份在跑（换屏重建时不必再起一循环）
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var NZ = [], q0, s0 = 20261;
+    function r0() { s0 = (s0 * 1103515245 + 12345) & 0x7fffffff; return s0 / 0x7fffffff; }
+    for (q0 = 0; q0 < 96; q0++) NZ.push(r0());
+    function nz(x) {                                     // 1D value noise，smootherstep 缓，格点处一阶二阶导都为 0
+      var a = Math.floor(x), b = a + 1, t = x - a;
+      // 用 smootherstep 而不是 smoothstep：后者的二阶导在格点上是断的，
+      // 一格一格接起来会有"啪"的折点 —— 草从左边斜一下突然翻到右边，看着像拨开关。
+      t = t * t * t * (t * (t * 6 - 15) + 10);
+      var va = NZ[(a % 96 + 96) % 96], vb = NZ[(b % 96 + 96) % 96];
+      return va * (1 - t) + vb * t;
+    }
+    var last = 0;
+    var wind = { raf: 0, dead: false, frames: 0 };
+    window.__kwGrass = wind;
+    function tick(ts) {
+      if (wind.dead) return;
+      wind.raf = requestAnimationFrame(tick);
+      if (ts - last < 20) return;                        // ~50fps 就够，省电也够顺
+      last = ts;
+      var t = ts / 1000;
+      var g = hero.querySelector('.kiki-grass');
+      if (!g) return;
+      var kids = g.children, i, el, f1, own, s, ang, sk;
+      // 阵风包络：0.62~1 —— 一阵来整片都弯，一阵过去整片立起来
+      var gust = 0.62 + 0.38 * nz(t * 0.32 + 4);
+      for (i = 0; i < kids.length; i++) {
+        el = kids[i];
+        if (!el.__amp) continue;
+        // 三个分量，缺一个都会假：
+        //   f1  —— 沿 x 传播的波。**空间频率必须够高**：之前用 x*3.4，整条 47 簇只跨 3.4 个噪波格，
+        //          等于十几簇共享同一个相位，整片同时朝一边倒 = 军队"稍息"。改成 x*13，全宽跨 13 格，
+        //          三簇左右就换一个峰谷，才有"一波接一波推过去"的样子。
+        //   own —— **每簇自己的呼吸**，相位按 __ph 随机、与位置无关，负责"各摇各的"
+        //   __b —— 每簇固定的个人偏斜，**不随时间变**（去掉了原来那个全局 bias：那是整片同向的元凶）
+        // 速度：用户既要"刮风那种高频"，又要"过渡柔、别啪一下翻过去"。
+        // 靠 smootherstep 保证曲线圆 → 频率可以留在 0.5~0.7Hz 这个档，但不会出现"开关"感。
+        f1 = nz(el.__x * 13.0 - t * 2.0);
+        own = nz(t * 1.5 + el.__ph * 6.2 + 2);
+        s = (f1 * 0.50 + own * 0.36 + el.__b * 0.14 - 0.5) * 3.85;
+        // 软饱和代替硬 clamp：硬 clamp 会把峰值削成平顶，视觉上就是"啪"地撞在两端不动了
+        s = s / (1 + Math.abs(s) * 0.45);
+        ang = el.__amp * (s * 0.86 + (nz(t * 1.2 + el.__ph * 9 + 30) - 0.5) * 0.24) * gust;
+        // **skew 必须跟着 s 连续过零**：之前用 `|s| * (ang>=0?1:-1)`，
+        // ang 一过 0 符号就瞬间反转，skew 从 +20° 跳到 -20° —— 这才是"啪"的主犯。
+        sk = el.__sk * s * 0.80 * gust;
+        el.style.transform = 'rotate(' + ang.toFixed(2) + 'deg) skewX(' + sk.toFixed(2) + 'deg)';
+        wind.frames++;
+      }
+    }
+    wind.raf = requestAnimationFrame(tick);
+    // 页面不可见时停掉，回来再接上 —— 手机后台不白烧 CPU
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { cancelAnimationFrame(wind.raf); }
+      else if (!wind.dead) { last = 0; wind.raf = requestAnimationFrame(tick); }
+    });
+  }
+
+  // 12) 报头卡右边缘的葫芦藤（装饰层，纯矢量 + CSS 摇摆；不吃点击、不影响布局）
+  //     叶子按"葫芦叶"的真形状画：宽心形、基部有凹口、5 条掌状脉、叶缘浅波齿；
+  //     叶柄点不是拍脑袋写百分比，而是"沿主茎采样"算出来的 —— 换屏宽、卡片高度变化都不会脱茎。
+  function buildVine() {
+    var hero = document.querySelector('.hero');
+    if (!hero || document.querySelector('.kiki-vine')) return;
+    if (!document.querySelector('.kiki-sky')) buildStars(hero);
+    if (!document.querySelector('.kiki-grass')) buildGrass(hero);
+    var NS = 'http://www.w3.org/2000/svg';
+    var box = document.createElement('div');
+    box.className = 'kiki-vine';
+    box.setAttribute('aria-hidden', 'true');
+
+    // 主茎：从卡片底部往上，顶端往左拐一点。坐标是 0~100 的相对值 + preserveAspectRatio=none，
+    // 所以它跟着卡片高度一起伸缩（斜率被压扁是故意的：藤本来就该顺卡片长），线宽由 vector-effect 守住。
+    // 线宽 1:1 像素。**不再用 preserveAspectRatio=none 硬拉 + non-scaling-stroke**：
+    // 非等比放大时 Chrome/WebView 对 non-scaling-stroke 的绘制会出现整段细线甚至漏段
+    // （用户看到的"藤断开"就是这个，几何上其实一直是连着的，isPointInStroke 逐列扫也没有空列）。
+    // 现在每次布局都把 viewBox 改成真实像素尺寸，d 也用像素坐标重建 —— 1:1，渲染器和几何一模一样。
+    var stem = document.createElementNS(NS, 'svg');
+    stem.setAttribute('class', 'kv-stem');
+    stem.setAttribute('viewBox', '0 0 100 100');
+    stem.setAttribute('preserveAspectRatio', 'none');
+    function addPath(d, w, col) {
+      var el = document.createElementNS(NS, 'path');
+      el.setAttribute('d', d);
+      el.setAttribute('fill', 'none');
+      el.setAttribute('stroke', col);
+      el.setAttribute('stroke-width', w);
+      el.setAttribute('stroke-linecap', 'round');
+      el.setAttribute('stroke-linejoin', 'round');
+      stem.appendChild(el);
+      return el;
+    }
+    // 渐细：**一条闭合的填充带**（ribbon），不是切成若干段描边。
+    // 分段描边的做法会在每个段界留下一个圆头凸起（4x 特写下就是"竹节"），用户看成了断点。
+    // 这里沿中心线取左右两条边线、合成一个多边形一次 fill：宽度从 w0 线性收到 w1，
+    // 全程连续，没有段界。末端收到 0.1px，就是尖的。
+    function ribbon(pts, w0, w1) {
+      var n = pts.length, L = [], R = [], i;
+      for (i = 0; i < n; i++) {
+        var p = pts[i];
+        var a = pts[i > 0 ? i - 1 : 0], b = pts[i < n - 1 ? i + 1 : n - 1];
+        var dx = b.x - a.x, dy = b.y - a.y, m = Math.sqrt(dx * dx + dy * dy) || 1;
+        var hw = (w0 + (w1 - w0) * (i / Math.max(1, n - 1)) * (i / Math.max(1, n - 1))) / 2;
+        hw = Math.max(0.06, hw);
+        var nx = -dy / m, ny = dx / m;
+        L.push({ x: p.x + nx * hw, y: p.y + ny * hw });
+        R.push({ x: p.x - nx * hw, y: p.y - ny * hw });
+      }
+      var d = 'M' + L[0].x.toFixed(2) + ' ' + L[0].y.toFixed(2), j;
+      for (j = 1; j < n; j++) d += ' L' + L[j].x.toFixed(2) + ' ' + L[j].y.toFixed(2);
+      for (j = n - 1; j >= 0; j--) d += ' L' + R[j].x.toFixed(2) + ' ' + R[j].y.toFixed(2);
+      return d + ' Z';
+    }
+    function addRibbon(col) {
+      var el = document.createElementNS(NS, 'path');
+      el.setAttribute('fill', col);
+      el.setAttribute('stroke', 'none');
+      el.setAttribute('d', '');
+      stem.appendChild(el);
+      return el;
+    }
+    function drawSprout(g, pts, w0, w1, hw0, hw1) {
+      g.body.style.display = 'block';
+      g.hi.style.display = 'block';
+      g.body.setAttribute('d', ribbon(pts, w0, w1));
+      g.hi.setAttribute('d', ribbon(pts, hw0, hw1));
+    }
+    function hideSprout(g) {
+      g.body.style.display = 'none';
+      g.hi.style.display = 'none';
+    }
+    function cubicPts(p0, p1, p2, p3, n) {
+      var out = [], s;
+      for (s = 0; s <= n; s++) {
+        var t = s / n, mt = 1 - t;
+        var a = mt * mt * mt, b = 3 * mt * mt * t, c = 3 * mt * t * t, e = t * t * t;
+        out.push({ x: a * p0.x + b * p1.x + c * p2.x + e * p3.x,
+                   y: a * p0.y + b * p1.y + c * p2.y + e * p3.y });
+      }
+      return out;
+    }
+    // 三维弹簧：真正的瓜藤卷须是绕着一根轴**在空间里**转出来的，投影到屏幕上是一串"轴向被压扁的环"，
+    // 半径一路收到 0。平面阿基米德螺线是"一圈比一圈大的蜗牛壳"，看着就是藤头上长了个果子 —— 不能用。
+    //
+    // **起点相位必须是 0、轴向用 (1-cos) 而不是 sin**：
+    // 老公式 `along = L*t + rr*squash*sin(ang)`、`a0 = π/2` —— 起点 sin 取到 1，
+    // 于是螺旋的第一圈先"往前冲一个半径"再往回收，视觉上就是**先往后旋、压回到弦的直段上**，
+    // 然后才继续往前。用户连着两轮说"还是先往后旋、跟直的那块重叠了"就是这个。
+    // 现在：`along = L*t + rr*squash*(1-cos(ang))`、`nrm = rr*sin(ang)`、`a0 = 0`
+    //   · 起点 along=0、nrm=0 → 正好接在弦的末端，切线垂直于推进方向，接入平滑
+    //   · (1-cos) 恒 ≥ 0 → **沿推进方向只增不减**，永远不会回头压到直段
+    //
+    // 相位再改用 `t^1.55` 而不是 `t`：起点角速度 = 0，也就是**起点切线就是推进方向**，
+    // 和前面的弦同一方向无缝接上；往后角速度逐渐变大，圈越到尖端越紧 —— 真藤须就是这么卷的。
+    // 老版本相位是线性的，起点切线在推进方向上突然"折"一个 90°，直段与螺旋的交接点就特别生硬。
+    function springPts(ax0, ay0, dx, dy, L, turns, r0, r1, squash, nSeg) {
+      var m = Math.sqrt(dx * dx + dy * dy) || 1;
+      dx /= m; dy /= m;
+      var nx = -dy, ny = dx, out = [], s;
+      for (s = 0; s <= nSeg; s++) {
+        var t = s / nSeg, ph = Math.pow(t, 1.25), ang = ph * turns * Math.PI * 2,
+            rr = r0 + (r1 - r0) * t;
+        var along = L * t + rr * squash * (1 - Math.cos(ang)), nrm = rr * Math.sin(ang);
+        out.push({ x: ax0 + dx * along + nx * nrm, y: ay0 + dy * along + ny * nrm });
+      }
+      out[0] = { x: ax0, y: ay0 };
+      return out;
+    }
+    // 主干：底部粗一点、往上收，顶端往左勾。勾的末端 (17,6) 的切线是**水平**的，
+    // 而且顶端比上一版高了 2 个单位（8 → 6）—— 横臂整体往卡片顶上提，不压"北京时间"那行。
+    // 横臂稍后会被拼到这条 d 的末尾（placeVine 里的 dA），所以它俩是**同一条描边**。
+    var STEM_TOP = 6;
+    var STEM = 'M80 101 C78 90 74 82 71 74 C68 66 66 60 68 53 C70 46 66 41 62 35' +
+               ' C56 27 49 17 44 10 C40 6.4 30 6 17 6';
+    var stemDark = addPath(STEM, 3.0, '#143a10');   // 藤身（深）
+    var stemLit = addPath(STEM, 1.6, '#5aa03a');    // 高光芯线，深色卡面上才立得住
+    // 两卷卷须：葫芦藤最好认的特征（d 存着归一坐标，布局时再换算成像素，见 pxD()）
+    var CURL1 = 'M62 35 C72 33 76 26 71 23 C67 21 64 25 67 28';
+    var CURL2 = 'M68 53 C58 51 54 56 58 61 C61 64 65 61 63 58';
+    var curl1 = addPath(CURL1, 1.2, '#5aa03a');
+    var curl2 = addPath(CURL2, 1.2, '#5aa03a');
+    // 转角处往上探的一小段：从主茎拐弯点(17,6)再往上偏右长一节，末端带个小钩，
+    // 收在原生"设置"按钮的正下方 —— 藤不是"到顶就断"，而是拐弯时还抽了个新枝
+    var branch = addPath('', 2.2, '#143a10');
+    var branchLit = addPath('', 1.1, '#5aa03a');
+    var branchCurl = addPath('', 1.1, '#5aa03a');
+    // 侧枝 / 梢头：**一条 stroke 画不出渐细**（SVG 的 stroke-width 是常量），所以按长度切成
+    // 若干小段、每段线宽递减、端点圆头互相重叠 —— 合起来就是"由粗到细"的一根，段长只有 1~3px、
+    // 线宽差 0.2px，肉眼看不出分段。
+    // 侧枝 / 梢头：**填充带画法**（见 ribbon）—— 深色带宽 3.1→0.12、亮色芯线 1.5→0.05，两层叠在一起
+    var sproutSide = { body: addRibbon('#143a10'), hi: addRibbon('#5aa03a') };   // 第 6/7 片叶之间的侧枝 + 弹簧卷须
+    var sproutTip = { body: addRibbon('#143a10'), hi: addRibbon('#5aa03a') };    // 竖屏顶端沿"设置"走完之后的细梢
+    box.appendChild(stem);          // 忘了这一行 = 叶子像一堆浮在半空的蘑菇（已经踩过一次）
+    document.body.appendChild(box);
+
+    // 主茎采样 → stemX(y)：给一个 viewBox 的 y（0=顶、100=底），返回茎在那里的 x。
+    // 之前叶子用固定 left% 摆，卡片高度一变（或横屏变宽）叶子就飘离主茎 —— 这个坑用采样一次性解决。
+    var PTS = [], stemPath = stem.querySelector('path');
+    if (stemPath && stemPath.getTotalLength) {
+      var TL = stemPath.getTotalLength();
+      for (var s9 = 0; s9 <= 240; s9++) PTS.push(stemPath.getPointAtLength(TL * s9 / 240));
+    }
+    // 归一化 d 换算成像素 d：M/L/C 后的数字按 x 走宽、y 走高，交替缩放
+    function pxD(dstr) {
+      var w = box.__w, h = box.__h;
+      var parts = dstr.split(/([MLCZmlcz]|-?\d+(?:\.\d+)?)/).filter(function (t) { return t && t.trim(); });
+      var out = '', isX = true;
+      for (var k = 0; k < parts.length; k++) {
+        var t = parts[k];
+        if (/^[MLCZmlcz]$/.test(t)) { out += t + ' '; isX = true; continue; }
+        var v = parseFloat(t);
+        out += (isX ? v * w / 100 : v * h / 100).toFixed(1) + ' ';
+        isX = !isX;
+      }
+      return out;
+    }
+    function stemX(yv) {
+      if (!PTS.length) return 78 - yv * 0.45;            // 极老内核兜底：线性近似
+      if (yv > PTS[0].y) return PTS[0].x;
+      for (var a = 1; a < PTS.length; a++) {
+        var p1 = PTS[a - 1], p2 = PTS[a];
+        if (yv <= p1.y && yv >= p2.y) {
+          var u = (p1.y - yv) / Math.max(0.0001, p1.y - p2.y);
+          return p1.x + (p2.x - p1.x) * u;
+        }
+      }
+      return PTS[PTS.length - 1].x;
+    }
+
+    // 一片葫芦叶：宽心形（bracteate cordate），基部凹口在 (50,82)，
+    // 柄从凹口往下伸到 (50,100) —— 这就是锚点，叶柄一定压在茎上。
+    var LEAF = 'M50 2 C57 8 64 14 70 22 C82 31 96 43 96 55 C96 66 86 76 72 80' +
+               ' C64 84 54 83 50 68 C46 83 36 84 28 80 C14 76 4 66 4 55' +
+               ' C4 43 18 31 30 22 C36 14 43 8 50 2 Z';
+    function leafSVG(wpx) {
+      var svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 100 100');
+      svg.setAttribute('width', wpx.toFixed(1));
+      svg.setAttribute('height', wpx.toFixed(1));
+      function el(tag, attrs) {
+        var e = document.createElementNS(NS, tag);
+        for (var k in attrs) e.setAttribute(k, attrs[k]);
+        svg.appendChild(e);
+        return e;
+      }
+      el('path', { d: 'M50 68 L50 100', fill: 'none', stroke: '#40822c', 'stroke-width': 3.0 });
+      el('path', { d: LEAF, fill: '#4aa62f', stroke: '#143a10', 'stroke-width': 2.2 });
+      el('path', { d: LEAF, fill: 'none', stroke: '#7ecb5e', 'stroke-width': 1.0,
+                   transform: 'translate(50 50) scale(0.9) translate(-50 -50)' });
+      // 5 条掌状主脉，全部从基部凹口射出（这是葫芦叶最像的细节）
+      el('path', { d: 'M50 67 L50 8 M50 66 L34 29 M50 66 L66 29 M50 64 L17 56 M50 64 L83 56',
+                   fill: 'none', stroke: '#2e6b1f', 'stroke-width': 1.9, 'stroke-linecap': 'round' });
+      return svg;
+    }
+    // 葫芦的"一体轮廓"：最上面那个**小嘴**（收窄的短颈）→ 上瓣小球（细）→ 腰内凹 → 下瓣大球（粗），
+    // 四段是一条闭合路径连着长出来的，不是几个圆拼。上瓣最宽 30、腰 12~20、下瓣最宽 54。
+    var GOURD_OUT = 'M50 0 C56 0 58 3 57 7 C56 10 58 12 59 13'
+      + ' C64 17 65 22 65 27 C65 33 64 37 60 40 C60 41 60 42 61 43'
+      + ' C73 45 78 56 78 68 C78 82 66 94 50 94 C34 94 22 82 22 68'
+      + ' C22 56 27 45 39 43 C40 42 40 41 40 40 C36 37 35 33 35 27'
+      + ' C35 22 36 17 41 13 C42 12 44 10 43 7 C42 3 45 0 50 0 Z';
+    // 小葫芦：一条闭合轮廓画出"上小下大、腰部收缩、两瓣互相重叠"的真葫芦形，
+    // 而不是两个独立椭圆拼起来（那样中间会有一道横线，看着像两只气球）。
+    // 蒂从葫芦顶一路向上探出画布，长度正好补齐 dy —— 所以每个葫芦都真的挂在藤上。
+    // col/hi 是"葫芦娃"那七个配色：红橙黄绿青蓝紫，高光是同色系提亮一档
+    function gourdSVG(wpx, col, hi, dy) {
+      col = col || '#4aa62f'; hi = hi || '#7ecb5e';
+      var svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 100 100');
+      svg.setAttribute('width', wpx.toFixed(1));
+      svg.setAttribute('height', wpx.toFixed(1));
+      function el(tag, attrs) {
+        var e = document.createElementNS(NS, tag);
+        for (var k in attrs) e.setAttribute(k, attrs[k]);
+        svg.appendChild(e);
+        return e;
+      }
+      // 蒂：从葫芦嘴的顶点往上，一路探到画布外，长度正好补齐下垂深度 —— 小嘴是露出来的
+      var tipY = -((dy || 0) * 100 / Math.max(1, wpx));
+      el('path', { d: 'M50 0 L50 ' + tipY.toFixed(2), stroke: '#40822c', 'stroke-width': 2.6, fill: 'none', 'stroke-linecap': 'round' });
+      el('path', { d: GOURD_OUT, fill: col, stroke: '#143a10', 'stroke-width': 3, 'stroke-linejoin': 'round' });
+      el('path', { d: 'M33 66 C37 58 43 55 49 55', stroke: hi, 'stroke-width': 1.8, fill: 'none', 'stroke-linecap': 'round' });
+      return svg;
+    }
+
+    // 叶子站点：b = 距容器底部的百分比（藤从地往上长），w = 叶宽 px，rot = 静态朝向（左右交替）。
+    // 40% 那一带刻意留空 —— 小葫芦就挂在那儿，不会被叶子压住。
+    var SITES = [
+      { b: 8, w: 20, rot: -44, dl: 0.0, dur: 3.2 },
+      { b: 19, w: 16, rot: 40, dl: 1.0, dur: 2.9 },
+      { b: 30, w: 19, rot: -40, dl: 0.4, dur: 3.4 },
+      { b: 48, w: 15, rot: 38, dl: 1.4, dur: 2.8 },
+      { b: 60, w: 17, rot: -38, dl: 0.2, dur: 3.1 },
+      { b: 71, w: 15, rot: 34, dl: 1.2, dur: 2.7 },
+      { b: 82, w: 14, rot: -28, dl: 0.7, dur: 3.3 },
+      { b: 92, w: 14, rot: -38, dl: 1.6, dur: 3.0 }
+    ];
+    var items = [];
+    function mkItem(wpx, node, anchor, rot, b, dl, dur) {
+      var it = document.createElement('div');
+      it.className = 'kv-item';
+      it.style.width = wpx + 'px';
+      it.style.height = wpx + 'px';
+      it.style.transformOrigin = '50% ' + (anchor * 100).toFixed(1) + '%';
+      var sw = document.createElement('div');
+      sw.className = 'kv-swing';
+      sw.style.transformOrigin = '50% ' + (anchor * 100).toFixed(1) + '%';
+      sw.style.setProperty('--dl', dl + 's');
+      sw.style.setProperty('--dur', dur + 's');
+      sw.appendChild(node);
+      it.appendChild(sw);
+      box.appendChild(it);
+      items.push({ el: it, w: wpx, anchor: anchor, rot: rot, b: b });
+      return it;
+    }
+    // outer 负责静态朝向，inner 负责摇摆：动画只动 inner，两个 transform 不打架
+    SITES.forEach(function (c) {
+      mkItem(c.w, leafSVG(c.w), 1, c.rot, c.b, c.dl, c.dur);
+    });
+    // 小葫芦只挂"难点词汇"那一页（主页报头右边空着，不塞它，也免了和叶子抢位置）
+    var SHOW_GOURD = /vocab/.test(location.pathname) || !!document.querySelector('[id^="w-"]');
+    if (SHOW_GOURD) {
+      mkItem(16, gourdSVG(16), 0.06, 9, 38, 1.8, 4.4);
+    }
+
+    // ── 顶部横臂：竖着爬到卡片顶就往左横一段 ─────────────────────────
+    // 竖屏只有窄窄一条空档（日期行右边到卡片右缘），横屏右侧空出一大片 ——
+    // 所以长度按视口宽算，够长（>=160px）时沿臂挂 7 个小葫芦，像葫芦娃排队浮出来。
+    var armLen = 0;
+    var arm = document.createElement('div');
+    arm.className = 'kv-arm';
+    // 横臂**就是主茎那条 path 的延长线**：placeVine 里把横臂的取样点拼到 STEM 的 d 末尾，
+    // 一条 path 一次描边，粗细、颜色、连接点全都连续 —— 之前两条 path 端点重合还能看出断口，
+    // 是因为两个元素的抗锯齿/圆头各画各的，交界处会露出一道缝。
+    // armY 是"屏幕像素"偏置：y 基线 = 主茎顶端的 y，往左再抬 1.5px（横臂稍稍往上走）。
+    var ARM_BASE = STEM_TOP;
+    function armY(xu) {
+      return ARM_BASE - 1.5 * (1 - xu / 1000) + 4.2 * Math.sin((xu - 1000) / 300 * Math.PI * 2);
+    }
+    box.appendChild(arm);        // 空容器，只用来给葫芦/叶子定位
+    var armItems = [];
+    function armItem(wpx, node, anchorPct, rot, xu, kind, dy) {
+      var it = document.createElement('div');
+      it.className = 'kv-item';
+      it.style.width = wpx + 'px';
+      it.style.height = wpx + 'px';
+      it.style.transformOrigin = '50% ' + (anchorPct * 100).toFixed(1) + '%';
+      var sw = document.createElement('div');
+      sw.className = 'kv-swing';
+      sw.style.transformOrigin = '50% ' + (anchorPct * 100).toFixed(1) + '%';
+      sw.style.setProperty('--dl', ((xu / 1000) * 2.6).toFixed(2) + 's');
+      sw.style.setProperty('--dur', (2.7 + (xu % 7) * 0.09).toFixed(2) + 's');
+      sw.appendChild(node);
+      it.appendChild(sw);
+      arm.appendChild(it);
+      armItems.push({ el: it, w: wpx, anchor: anchorPct, rot: rot, xu: xu, kind: kind, dy: dy || 0 });
+    }
+    // 臂上叶：朝上的几片（叶柄压着臂线、叶身往上斜）+ 葫芦缝里朝下垂的几片（整片转 180°）。
+    // 尺寸比主茎上的叶小 1/4（17~19 → 13~14），葫芦串才不至于头重脚轻。
+    [90, 300, 520, 740, 950].forEach(function (xu, i9) {
+      var lw = 13 + (i9 % 2) * 1;
+      armItem(lw, leafSVG(lw), 1, i9 % 2 ? 24 : -28, xu, 'leaf');
+    });
+    [282, 538, 794].forEach(function (xu, i9) {
+      var lw = 13 + ((i9 + 1) % 2);
+      armItem(lw, leafSVG(lw), 1, 180 + (i9 % 2 ? 18 : -16), xu, 'leaf');
+    });
+    // 七个小葫芦：红橙黄绿青蓝紫，按原著那条老藤的挂法 —— 不是齐刷刷一排，
+    // 每个的下垂深度、尺寸、倾斜角都错开一点，像七个葫芦娃各自探着脑袋
+    var GCOL = [
+      ['#d8443c', '#f0766a'],   // 红
+      ['#e08a2e', '#f4b468'],   // 橙
+      ['#e6c334', '#f7e27b'],   // 黄
+      ['#4aa62f', '#7ecb5e'],   // 绿
+      ['#39a9a3', '#7fd4cd'],   // 青
+      ['#4a7fd0', '#8fb3ec'],   // 蓝
+      ['#8b5cc4', '#b596e2']    // 紫
+    ];
+    // 下垂深度都 >=7px：藤线是上下起伏的，蒂短了葫芦的嘴就会贴到线上、看着像压着藤
+    var GDROP = [7, 12, 8, 14, 10, 13, 9];
+    var GOURDS = 7;
+    var gourdXs = [];
+    for (var g9 = 0; g9 < GOURDS; g9++) gourdXs.push(90 + g9 * 128);
+    gourdXs.forEach(function (xu, i9) {
+      var gw = 26 + (i9 % 3) * 2;
+      var cc = GCOL[i9 % GCOL.length];
+      armItem(gw, gourdSVG(gw, cc[0], cc[1], GDROP[i9]), 0, (i9 % 2 ? 8 : -7), xu, 'g', GDROP[i9]);
+    });
+
+    // 摆位：宽/高每次都要重算，因为茎的 x 随卡片高度伸缩、叶子锚点又必须压在茎上
+    function placeVine() {
+      var w = box.__w, h = box.__h;
+      if (!w || !h) return;
+      hideSprout(sproutTip);       // 竖屏才画梢头，横屏先关掉
+      // 竖屏：主茎那条 STEM 顶端"往左折"的一小段是留给横屏横臂用的，竖屏留在场上就会和
+      // 向右横走的一段反向交叉 —— 用户看到的就是"两条藤"。所以竖屏只画到 yv≈10% 处，
+      // 再从那里一路往上推到按钮底；顶部两片叶（b>=78）随之挂到这条竖线上，不会悬空。
+      var iCut = PTS.length - 1, cutX = 0, cutY = 0, syT = 4;
+      if (armLen <= 12) {
+        for (var ci = 0; ci < PTS.length; ci++) if (PTS[ci].y <= 10) { iCut = ci; break; }
+        cutX = PTS[iCut].x / 100 * w;
+        cutY = PTS[iCut].y / 100 * h;
+      }
+      // 竖屏顶段是一条从 (cutX, cutY) 往**左上**走到按钮底下的线；顶部叶子的叶柄必须挂在这条线上，
+      // 所以给它一个按 y 反查 x 的函数（直线近似，和 placeVine 里那段 C 的偏差不到 1px）。
+      var tipX0 = cutX, tipX1 = cutX - 8;
+      function vertXAt(y) {
+        var t = (cutY - y) / Math.max(0.001, cutY - syT);
+        t = Math.max(-0.3, Math.min(1.6, t));
+        return tipX0 + (tipX1 - tipX0) * t;
+      }
+      for (var i9 = 0; i9 < items.length; i9++) {
+        var o = items[i9];
+        var yv = 100 - o.b;                 // viewBox 的 y
+        var yTop = (1 - o.b / 100) * h;     // 锚点距容器顶（像素）
+        var xpx = stemX(yv) / 100 * w;      // 茎在那里的 x（像素）
+        // 落在顶段那条线上的叶子（b>=86，即最上面那一片）改成跟着顶段走，不然它会浮在藤外面
+        if (armLen <= 12 && o.b >= 86) xpx = vertXAt(yTop);
+        o.el.style.left = (xpx - o.w * 0.5).toFixed(2) + 'px';
+        o.el.style.top = (yTop - o.w * o.anchor).toFixed(2) + 'px';
+        o.el.style.transform = 'rotate(' + o.rot + 'deg)';   // 绕锚点转，叶柄不会滑走
+      }
+      // 先把 SVG 的坐标系改成真实像素尺寸（1:1），再把主茎按采样点重建成像素折线
+      stem.setAttribute('viewBox', '0 0 ' + w.toFixed(1) + ' ' + h.toFixed(1));
+      var baseY = h * (ARM_BASE / 100);      // 茎顶（= 横臂基线）在容器里的像素 y
+      var dA = 'M' + (PTS[0].x / 100 * w).toFixed(1) + ' ' + (PTS[0].y / 100 * h).toFixed(1);
+      var pEnd = (armLen <= 12) ? iCut : PTS.length - 1;
+      for (var p9 = 1; p9 <= pEnd; p9++) {
+        dA += ' L' + (PTS[p9].x / 100 * w).toFixed(1) + ' ' + (PTS[p9].y / 100 * h).toFixed(1);
+      }
+      // 横臂：把取样点直接接在主茎那条 d 的末尾 —— 一条 path、一次描边，接缝不可能出现
+      arm.style.display = armLen > 12 ? 'block' : 'none';
+      if (armLen > 12) {
+        arm.style.width = armLen + 'px';
+        arm.style.left = (w * 0.17 - armLen) + 'px';        // 容器只负责给葫芦/叶子定位
+        arm.style.top = (baseY - ARM_BASE).toFixed(2) + 'px';
+        for (var pp = armLen - 2; pp >= 0; pp -= 2) {
+          var xu9 = pp / armLen * 1000;
+          var ax = w * 0.17 - (armLen - pp);                 // 像素 x：从茎顶往左
+          var ay = baseY + (armY(xu9) - ARM_BASE);           // 像素 y：跟随起伏，往左略抬
+          dA += ' L' + ax.toFixed(1) + ' ' + ay.toFixed(1);
+        }
+        for (var a9 = 0; a9 < armItems.length; a9++) {
+          var q9 = armItems[a9];
+          // 竖屏（armLen=0）整条臂都不存在，臂上的叶/葫芦一律不显示，恢复 v21 的"掐尖"收尾
+          var wide = armLen >= 160;
+          var on = (armLen > 12) && (q9.kind === 'g' ? wide : (wide || q9.xu === 430));
+          q9.el.style.display = on ? 'block' : 'none';
+          if (!on) continue;
+          var axp = q9.xu / 1000 * armLen;
+          var ayp = armY(q9.xu);
+          q9.el.style.left = (axp - q9.w * 0.5).toFixed(2) + 'px';
+          q9.el.style.top = (ayp + q9.dy - q9.w * q9.anchor).toFixed(2) + 'px';
+          q9.el.style.transform = 'rotate(' + q9.rot + 'deg)';
+        }
+      } else {
+        // 竖屏：从截断点 (cutX, cutY) 一路往上推到按钮底下 —— 这条线是主茎的**自然延长**，
+        // 不再和"往左折"那一小段反向交叉；到顶后贴着按钮下沿**往左**走，左端翻上去、收成细梢。
+        // 左侧终点 = 按钮左缘往右让 1px（跟右侧的侧枝一左一右拉开，不挤在一头）。
+        var xL = box.__btnL ? Math.min(cutX - 14, Math.max(3, box.__btnL + 1)) : Math.max(3, cutX - 26);
+        // 上升段：从茎上接着往左上走（主茎本身一路往左上），末端切线趋平再拐向左 —— 圆角，不是硬角
+        dA += ' C' + (cutX - 1.4).toFixed(1) + ' ' + (cutY - (cutY - syT) * 0.40).toFixed(1) +
+              ' ' + (cutX - 6.6).toFixed(1) + ' ' + (syT + 1.8).toFixed(1) +
+              ' ' + tipX1.toFixed(1) + ' ' + (syT + 0.5).toFixed(1);
+        // 沿按钮底往左走：留 0.5px 的极轻起伏，不像一根拉直的杆
+        for (var qx = tipX1 - 3; qx >= xL + 4; qx -= 3) {
+          dA += ' L' + qx.toFixed(1) + ' ' + (syT + 0.5 * Math.sin(qx / 6)).toFixed(1);
+        }
+        // 左端上翘：从按钮底下翻上去一点
+        dA += ' C' + (xL + 3).toFixed(1) + ' ' + (syT - 0.4).toFixed(1) +
+              ' ' + (xL + 0.8).toFixed(1) + ' ' + (syT - 2.2).toFixed(1) +
+              ' ' + xL.toFixed(1) + ' ' + (syT - 3.0).toFixed(1);
+        // 细梢再往右上回一点点，同时越来越细（收在 0.1px）
+        var tPts = [], si2;
+        for (si2 = 0; si2 <= 8; si2++) {
+          var u2 = si2 / 8;
+          tPts.push({
+            x: xL + u2 * 4.6,
+            y: Math.max(0.6, syT - 3.0 + u2 * 2.0 - Math.sin(u2 * Math.PI) * 0.9)
+          });
+        }
+        drawSprout(sproutTip, tPts, 2.3, 0.09, 1.1, 0.038);
+      }
+      stemDark.setAttribute('d', dA);
+      stemLit.setAttribute('d', dA);
+      curl1.setAttribute('d', pxD(CURL1));
+      curl2.setAttribute('d', pxD(CURL2));
+      // 转角处的新枝：从拐点往上偏右长 12px，末端往回收个小钩 —— 正好收在"设置"按钮下沿
+      var showBranch = armLen > 12;
+      branch.style.display = branchLit.style.display = branchCurl.style.display = showBranch ? 'block' : 'none';
+      if (showBranch) {
+        var bx = w * 0.17, by = baseY;
+        branch.setAttribute('d', 'M' + bx.toFixed(1) + ' ' + by.toFixed(1) +
+          ' C' + (bx + 0.8).toFixed(1) + ' ' + (by - 4.5).toFixed(1) +
+          ' ' + (bx + 3.2).toFixed(1) + ' ' + (by - 8.4).toFixed(1) +
+          ' ' + (bx + 6.4).toFixed(1) + ' ' + (by - 12).toFixed(1));
+        branchLit.setAttribute('d', branch.getAttribute('d'));
+        branchCurl.setAttribute('d', 'M' + (bx + 6.4).toFixed(1) + ' ' + (by - 12).toFixed(1) +
+          ' C' + (bx + 9.6).toFixed(1) + ' ' + (by - 14.6).toFixed(1) +
+          ' ' + (bx + 11.6).toFixed(1) + ' ' + (by - 11.6).toFixed(1) +
+          ' ' + (bx + 9.4).toFixed(1) + ' ' + (by - 9.6).toFixed(1));
+      }
+      // 侧枝：起点落在"第 7 片叶（b=82）的下沿"与"第 6 片叶（b=71）的上沿"的**正中**。
+      // 叶子是从锚点往下画满 w px 的，所以空隙中点比 b 值的中点还要往上让半个叶高 ——
+      // 上一版按 b 值中点取，实际就落在下面那片叶的叶身上了。
+      var loY = (1 - 82 / 100) * h;                 // b=82 叶的锚点 = 它的下沿
+      var hiY = (1 - 71 / 100) * h - 15;            // b=71 叶的顶沿
+      var tyT = (loY + hiY) / 2;
+      var yvT = tyT / h * 100;
+      var txT = stemX(yvT) / 100 * w;             // 起点就压在主茎上 —— 不会出现断口
+      // 侧枝：用户要"往右斜上、一直拉到屏幕边上"，而且**起点别往后折**。
+      // 上一版 pB 只往前 0.18dxr 却抬了 0.72uy，起点切线接近 50°，看着像先竖起来再往回折。
+      // 现在 pB 往前 0.32、抬 0.60uy —— 起点切线 ≈22°（相对水平）= 68°（相对主茎），直的右斜上。
+      var dxr = Math.min(w + 8 - 3 - txT, Math.max(22, w * 0.76));
+      var uy = Math.min(10, dxr * 0.20);
+      var pA = { x: txT, y: tyT };                 // 起点就在茎心线上：分枝从这里长，不是穿过去
+      var pB = { x: txT + dxr * 0.32, y: tyT - uy * 0.60 };
+      var pC = { x: txT + dxr * 0.70, y: tyT - uy * 0.96 };
+      var pD = { x: txT + dxr, y: tyT - uy };
+      var sidePts = cubicPts(pA, pB, pC, pD, 22);
+      // **整根从根部就开始旋，不留直段**：用户说"先笔直出去一小段然后再旋，那个交接点特别生硬"。
+      // split 从"弦长的 16%"改成 2 —— 只剩 2px 的过渡，后面全是螺旋；
+      // 配合 springPts 里相位用 t^1.55（起点角速度 0、切线沿推进方向），
+      // 于是"弦"和"螺旋"根本不存在分界：从茎上一出来就是一条曲率连续、越卷越紧的须。
+      var split = 2;
+      var midP = sidePts[1], prevP = sidePts[0];
+      // ---- 螺旋长度不再写死，而是**把剩下的横向空间吃干净，一直推到屏幕右缘** ----
+      // 上一版 spL 固定 19，弦加到 46 但螺旋只走 19px，"长度几乎没变"就是这里丢的。
+      var tanx = midP.x - prevP.x, tany = midP.y - prevP.y;
+      var tlen = Math.sqrt(tanx * tanx + tany * tany) || 1;
+      var cxs = tanx / tlen;                       // 切线在 x 方向的占比（≈0.94，几乎水平）
+      // 容器右缘离屏幕还有 12px（leftPx 留的），再往里收 2px 安全边 → 可用到 w+10
+      var room = (w + 10) - midP.x;
+      var spR = w < 72 ? 5.0 : 6.0;
+      // 新 springPts 的轴向是 (1-cos)，峰值会多推出 2*rr*squash —— 算 spL 时要把它先扣掉，
+      // 否则末端会冲出屏幕。sqL 是"净推进"，总视觉推进 ≈ spL + 2*spR*squash。
+      var spQ = 1.18;
+      var spL = Math.max(14, Math.min(46, (room - spR * spQ * 2 - 1) / Math.max(0.35, cxs)));
+      // **"一圈 4cm 而不是 2cm"**：圈数由"每圈占多少长度"反推，不写死 turns。
+      // 每圈推进 perTurn，则 圈数 = spL / perTurn —— spL 翻倍、圈数跟着翻倍，圈距恒定，
+      // 所以簧是被"拉长"的（圈与圈之间距离变大），而不是在原地多绕几圈。
+      var perTurn = w < 72 ? 16.0 : 18.0;
+      var spT = Math.max(1.3, spL / perTurn);
+      var spPts = springPts(midP.x, midP.y, tanx, tany,
+                            spL, spT, spR, 0.92, spQ, 46);
+      // 整根一起喂给 ribbon：深色 3.1px（跟主茎同宽）起、0.12px 收；亮色芯线 1.5→0.05
+      drawSprout(sproutSide, sidePts.slice(0, split).concat(spPts.slice(1)), 2.4, 0.10, 1.15, 0.045);
+    }
+
+    // 每帧只需要"卡片可见的那条右边在哪"：hero 是通栏卡（比视口宽），文档一溢出它的右边就更远，
+    // 所以不能用 CSS 的 right —— 一律量矩形再摆（跟 .kiki-walker 同一套做法）。滚出屏幕就收起来。
+    function layoutVine() {
+      var r = hero.getBoundingClientRect();
+      var vw = window.innerWidth || document.documentElement.clientWidth;
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      // 横屏/竖屏切换后：草是按旧宽度铺的，百分比一拉伸就出现一段一段的空隙 → 按新宽度重铺
+      var gr = hero.querySelector('.kiki-grass');
+      if (gr && Math.abs((gr.__vw || 0) - vw) > 40) {
+        gr.parentNode && gr.parentNode.removeChild(gr);
+        buildGrass(hero);
+      }
+      var w = Math.min(74, Math.max(44, Math.round(vw * 0.14)));
+      // 顶部安全区：原生层"设置"胶囊压在报头卡右上角。v29 起藤的顶段要**贴着它的下沿**走，
+      // 所以这里必须知道按钮的真实底边：优先用原生层给的 settingsRect，
+      // 拿不到就退回本机实测值（62×26 CSS、距屏顶 12、距屏右 12 → 底边 38）。
+      var ns = window.KikiShell && window.KikiShell.settingsRect;
+      var btnB = (ns && ns.b > 0) ? ns.b : 38;
+      var btnR2 = (ns && ns.r > 0) ? ns.r : (vw - 12);
+      var VSAFE = Math.max(0, btnB - 2);       // 容器顶落在按钮底下 2px：横走段 y=4 → 屏幕正好贴齐
+      var topY = r.top + VSAFE;
+      if (topY > r.bottom - 46) topY = r.top;          // 卡片太矮就别留白了
+      box.__w = w; box.__h = Math.max(0, r.bottom - topY);
+      box.style.width = w + 'px';
+      box.style.height = box.__h + 'px';
+      // 往右贴，但留 18px：原来只留 6px，右侧一点余量都没有，侧枝想往右伸就被屏幕边卡住。
+      // 留出这一段后，那根分支才有地方真正"长长地伸出去"（用户连着三轮嫌它短）。
+      var leftPx = Math.min(r.right, vw) - w - 12;
+      box.style.left = leftPx + 'px';
+      box.__btnR = btnR2 - leftPx;                     // "设置"右缘在容器里的 x（顶段靠它收尾）
+      box.__btnL = ((ns && ns.l > 0) ? ns.l : (vw - 74)) - leftPx;   // 按钮左缘（顶段往左走靠它收）
+      box.style.top = topY + 'px';
+      box.style.display = (r.bottom < 6 || r.top > vh - 6) ? 'none' : 'block';
+      // 横臂长度：竖屏只够一段短的（日期行右边到卡片右缘），横屏往左一大片都是空的
+      // 竖屏（armLen=0）不横长：卡片宽度不够，往左伸会横穿标题，反而乱
+      armLen = vw >= 620 ? Math.min(330, Math.round(vw * 0.4)) : 0;
+      placeVine();
+    }
+    layoutVine();
+    window.addEventListener('scroll', layoutVine, { passive: true });
+    window.addEventListener('resize', layoutVine);
+    setTimeout(layoutVine, 320);
+    window.__kwVine = box;           // 便于线上核对（量 rect 用，不参与逻辑）
+    window.__kwVineLayout = layoutVine;
+    window.__kwStemX = stemX;        // 采样函数，自检时用来核对"叶柄是否压在茎上"
+    window.__kwVineItems = items;
+  }
+
+
+  // 1) 发音键水波纹：点一次发两圈，先后 140ms
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.say') : null;
+    if (!btn) return;
+    [0, 140].forEach(function (delay) {
+      var ring = document.createElement('span');
+      ring.className = 'kiki-ring';
+      ring.style.animationDelay = delay + 'ms';
+      btn.appendChild(ring);
+      setTimeout(function () { ring.remove(); }, 1000 + delay);
+    });
+  }, true);
+
+  // 2) 连续点击去抖：700ms 内只允许发起一次跨页跳转。
+  var last = 0;
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a) return;
+    if (a.target === '_blank' || a.hasAttribute('download')) return;
+    var href = a.getAttribute('href') || '';
+    if (href.charAt(0) === '#' || href.indexOf('javascript:') === 0) return;
+    var now = Date.now();
+    if (now - last < 700) { e.preventDefault(); e.stopPropagation(); return; }
+    last = now;
+  }, true);
+
+  if (reduce) return;
+
+  // 3) 卡片水波纹：和发音键**完全同一套**——几圈细线同时往外荡，最外圈先到边，
+  //    里圈依次接上，最后一起淡掉。卡片自己的子元素会被 overflow:hidden 裁掉，
+  //    所以环挂在卡片外面（挂在 .cards 里），按卡片位置摆好，跟着页面一起滚。
+  function pop(card, delay) {
+    setTimeout(function () {
+      var glow = document.createElement('span');
+      glow.className = 'kiki-glow';
+      card.insertBefore(glow, card.firstChild);
+      setTimeout(function () { glow.remove(); }, 1400);
+
+      var host = card.parentNode;
+      if (!host) return;
+      if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+
+      var cr = card.getBoundingClientRect(), pr = host.getBoundingClientRect();
+      if (!cr.width) return;
+      var kx = (cr.width + 18) / cr.width;     // 总共外扩 18px（每边 9px，小于 10px 卡片间距）
+      var ky = (cr.height + 18) / cr.height;
+      var radius = getComputedStyle(card).borderTopLeftRadius;
+
+      // 三圈细线：起跑间隔 320ms（肉眼能看出先后），收束时长递减 → 最后几乎同时淡掉
+      [[0, 2050], [320, 1850], [640, 1680]].forEach(function (p) {
+        var ring = document.createElement('span');
+        ring.className = 'kiki-cring';
+        ring.style.left = (cr.left - pr.left) + 'px';
+        ring.style.top = (cr.top - pr.top) + 'px';
+        ring.style.width = cr.width + 'px';
+        ring.style.height = cr.height + 'px';
+        ring.style.borderRadius = radius;
+        ring.style.setProperty('--kx', kx);
+        ring.style.setProperty('--ky', ky);
+        ring.style.animationDelay = p[0] + 'ms';
+        ring.style.animationDuration = p[1] + 'ms';
+        host.appendChild(ring);
+        setTimeout(function () { ring.remove(); }, p[0] + p[1] + 60);
+      });
+    }, delay || 0);
+  }
+
+  // 3c) 边缘流光：一条光沿胶囊描边绕行（SVG 路径 + stroke-dashoffset，匀速）
+  function stadiumD(w, h) {
+    var r = Math.min(h / 2, w / 2) - 0.5, t = 0.5;
+    var p = [[t + r, t], [w - t - r, t], [w - t, t + r], [w - t, h - t - r],
+             [w - t - r, h - t], [t + r, h - t], [t, h - t - r], [t, t + r]];
+    var a = ' A' + r + ' ' + r + ' 0 0 1 ';
+    return 'M' + p[0] + ' L' + p[1] + a + p[2] + ' L' + p[3] + a + p[4]
+         + ' L' + p[5] + a + p[6] + ' L' + p[7] + a + p[0];
+  }
+  // 线速度：与屏幕宽度无关的"匀速"基准（px/秒）。一圈时长由胶囊周长算出来。
+  // 但纯匀速有个副作用：手机竖屏周长只有 744px，一圈 4s 就跑完，虽然线速度一样，
+  // 观感上"绕得太勤"显得快。所以再给一圈时长加下限 MIN_DUR，把短胶囊压慢一点；
+  // 大小屏的圈时差距也从 2.4 倍收到 1.8 倍以内。
+  var BEAM_SPEED = 160;
+  var MIN_DUR = 6200;
+  function buildBeam() {
+    var btn = document.querySelector('.cbtn');
+    if (!btn || !document.createElementNS) return;
+    var old = btn.querySelector('svg.kiki-beam');
+    if (old) old.remove();                       // 旋转屏幕/换布局后要按新尺寸重画
+    var w = btn.offsetWidth, h = btn.offsetHeight;
+    if (!w || !h) return;
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'kiki-beam');
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    svg.setAttribute('width', w); svg.setAttribute('height', h);
+    var d = stadiumD(w, h);
+    function layer(dash, behind, color, width, blur, cls) {
+      var p = document.createElementNS(ns, 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', color);
+      p.setAttribute('stroke-width', width);
+      p.setAttribute('stroke-linecap', 'round');
+      p.setAttribute('stroke-dasharray', dash + ' 9999'); // 占位，len 算出来后再按"整圈"改
+      p.__dash = dash;
+      if (blur) p.style.filter = 'blur(' + blur + 'px)';
+      p.setAttribute('class', cls);
+      svg.appendChild(p);
+      return p;
+    }
+    // 尺寸随胶囊宽度缩放：竖屏（约 380px 宽）按 1 倍，横屏/平板按比例拉长，
+    // 否则固定 138px 的尾巴在大宽屏上会显得像个小点。粗细只按 s^0.55 放大，避免又变笨。
+    var s = Math.min(2.6, Math.max(1, w / 380));
+    var ws = Math.pow(s, 0.55);
+    var LAYERS = [
+      [138, 104, 'rgba(70,140,255,.08)', 0.60, 0, 'b8'],
+      [116,  84, 'rgba(80,150,255,.14)', 0.70, 0, 'b7'],
+      [96,   66, 'rgba(95,165,255,.22)', 0.78, 0, 'b6'],
+      [78,   50, 'rgba(110,180,255,.31)', 0.88, 0, 'b5'],
+      [62,   36, 'rgba(125,190,255,.41)', 0.96, 0, 'b4'],
+      [48,   24, 'rgba(140,200,255,.52)', 1.05, 0, 'b3'],
+      [36,   14, 'rgba(160,210,255,.64)', 1.12, 0, 'b2'],
+      [22,    0, 'rgba(150,200,255,.30)', 2.40, 2.4, 'bg'],   // 头部外发光
+      [26,    6, 'rgba(185,220,255,.78)', 1.20, 0, 'b1'],
+      [16,    0, 'rgba(232,244,255,.95)', 1.30, 0, 'b0']      // 亮芯
+    ];
+    LAYERS.forEach(function (L) {
+      layer(Math.round(L[0] * s), Math.round(L[1] * s), L[2],
+            +(L[3] * ws).toFixed(2), L[4] ? +(L[4] * ws).toFixed(2) : 0, L[5]);
+    });
+    var head = svg.querySelector('.b0');
+    btn.appendChild(svg);
+    var len = head.getTotalLength();
+    var dur = Math.min(18000, Math.max(MIN_DUR, Math.round(len / BEAM_SPEED * 1000)));
+    svg.style.setProperty('--len', len + 'px');
+    var offs = { b0: 0, bg: 0, b1: 6, b2: 14, b3: 24, b4: 36, b5: 50, b6: 66, b7: 84, b8: 104 };
+    Object.keys(offs).forEach(function (cls) {
+      var el = svg.querySelector('.' + cls);
+      if (!el) return;
+      var behind = Math.min(offs[cls] * s, len / 2 - 10);
+      el.style.animationDuration = dur + 'ms';
+      el.style.animationDelay = (-dur * (len - behind) / len) + 'ms';
+      // 关键：虚线周期必须正好等于整圈周长（dash + gap = len）。
+      // 用 9999 这种超大 gap 时，光跑到起点(左上圆角)那一刻会被路径末端截断，
+      // 出现"断一下再冒出来"；周期=len 时末端被截掉的那段会同时从起点补回来，接缝是连着的。
+      var gap = Math.max(0.5, len - el.__dash);
+      el.setAttribute('stroke-dasharray', el.__dash.toFixed(2) + ' ' + gap.toFixed(2));
+    });
+  }
+
+  // 3b) 跳到某张卡（目录 / 跨页锚点）：等滚动真的停下来再发水波纹。
+  //     以前是 :target 一改 hash 就开播，等滚到位动画只剩最后一帧，等于白播。
+  var popped = {};
+  function popHash() {
+    var id = location.hash.slice(1);
+    try { id = decodeURIComponent(id); } catch (e) { /* 保持原样 */ }
+    if (!id || popped[id]) return;
+    var el = document.getElementById(id);
+    if (!el || !el.classList || !el.classList.contains('card')) return;
+    popped[id] = 1;
+    setTimeout(function () { delete popped[id]; }, 1600);
+    pop(el, 0);
+  }
+
+  function afterScroll(fn) {
+    var done = false;
+    var go = function () { if (done) return; done = true; fn(); };
+    if ('onscrollend' in window) window.addEventListener('scrollend', go, { once: true });
+    setTimeout(go, 720);
+  }
+  window.addEventListener('hashchange', function () { afterScroll(popHash); });
+
+  // 3a) 跨文档带锚点落地（主页点正文里的超纲词跳到词汇卡）：浏览器自己的锚点滚动会被吃掉。
+  //     实测：直接打开 vocab.html#w-x 能滚到位；但从另一页点链接进来，落到 scrollY=0 ——
+  //     新页面 URL 带着 #，位置却停在顶部。原因是锚点滚动与「平滑滚动 + 视图过渡」撞车：
+  //     平滑滚动的动画刚起跑就被快照/过渡打断，回到 0。
+  //     对策：落地时临时把 scroll-behavior 改成 auto 做一次硬跳（瞬间到位，不走平滑），
+  //     跳完立刻还原，页内的目录点击仍然是平滑滚动。
+  function hardLand() {
+    if (!location.hash) return;
+    var id = location.hash.slice(1);
+    try { id = decodeURIComponent(id); } catch (e) { /* 原样 */ }
+    var el = document.getElementById(id);
+    if (!el) return;
+    var root = document.documentElement, prev = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+    el.scrollIntoView({ block: 'start' });
+    root.style.scrollBehavior = prev;
+  }
+  // 图片/字体稍后加载会把落点顶偏，900ms 后再校一次（仍然是硬跳，看不出第二次跳）
+  if (location.hash) {
+    setTimeout(function () {
+      var el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (!el) return;
+      var top = el.getBoundingClientRect().top;
+      var want = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+      if (Math.abs(top - want) > 8) hardLand();
+    }, 900);
+  }
+  window.addEventListener('load', hardLand);
+
+  // 数字递增第 1 步：把数字折进 .kiki-num。必须尽早做（DOMContentLoaded，还没绘制），
+  // 否则页面已经画出来再插 span，宽度会"宽一下"——从词汇页返回时尤其明显。
+  // 宽度只按目标位数留位：原本 1 位的「双语 7 条」不会多占一格，右边内容不会被顶开。
+  function wrapNums() {
+    var nums = document.querySelectorAll('.pillrow span.pill,.cbtn .l,.cbtn .r,.summary > div,.bar .count');
+    Array.prototype.forEach.call(nums, function (el) {
+      if (el.getAttribute('data-kiki-wrapped')) return;
+      var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), n, t = null;
+      while ((n = w.nextNode())) { if (/[0-9]/.test(n.nodeValue)) { t = n; break; } }
+      if (!t) return;
+      var m = t.nodeValue.match(/[0-9]+/);
+      if (!m) return;
+      var target = parseInt(m[0], 10);
+      if (!target || target > 9999) return;
+      el.setAttribute('data-kiki-wrapped', '1');
+
+      var pad = String(target).length;
+      var before = t.nodeValue.slice(0, m.index), after = t.nodeValue.slice(m.index + m[0].length);
+      t.nodeValue = before;
+      var span = document.createElement('span');
+      span.className = 'kiki-num';
+      span.style.minWidth = pad + 'ch';
+      span.textContent = new Array(pad + 1).join('0');
+      var par = t.parentNode;
+      par.insertBefore(span, t.nextSibling);
+      par.insertBefore(document.createTextNode(after), span.nextSibling);
+      el.__kikiNum = { span: span, target: target, pad: pad };
+    });
+  }
+
+  var beamRz;
+  function scheduleBeam() { clearTimeout(beamRz); beamRz = setTimeout(buildBeam, 180); }
+
+  // 3d) 报头小人（葫芦娃 · 原画矢量化剪纸 v5）
+  //     造型直接来自用户给的原版葫芦娃参考图（opencv 分色矢量化 + 按解剖切件），不是重画。
+  //     切件各自绕自己的枢轴旋转：走路是真摆腿摆臂 + 躯干起伏，攀爬是手换手 + 双腿交替。
+  //     路线：踩字形上沿往右走 → 字间空隙跳过去 → 最右端吊着字边往下 →
+  //           正面朝外、手换手沿字底往左爬回（大空隙里抓从字底垂下来的线）→ 最左端爬上去。
+  //     线的用途只有一个：往回攀爬时的抓手。走的时候绝不当桥踩。
+  var walkerRz;
+  function scheduleWalker() { clearTimeout(walkerRz); walkerRz = setTimeout(buildWalker, 220); }
+
+  var ART_WALK = '<svg class="kw-art kw-art-walk" viewBox="0 0 52.8 100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="a-walk" transform="scale(0.209644)"><path fill="#0a0b06" fill-rule="evenodd" d="M78.0,17.0 70.0,31.0 73.0,46.0 65.0,46.0 75.0,50.0 84.0,65.0 59.0,69.0 88.0,69.0 73.0,94.0 59.0,104.0 43.0,108.0 42.0,95.0 17.0,89.0 35.0,66.0 28.0,56.0 37.0,51.0 26.0,56.0 33.0,67.0 13.0,89.0 39.0,95.0 42.0,109.0 73.0,99.0 72.0,131.0 81.0,156.0 97.0,180.0 96.0,183.0 80.0,181.0 86.0,192.0 107.0,192.0 108.0,195.0 104.0,197.0 113.0,199.0 110.0,204.0 113.0,207.0 124.0,204.0 120.0,189.0 142.0,203.0 131.0,193.0 135.0,190.0 154.0,196.0 166.0,209.0 157.0,200.0 158.0,197.0 166.0,197.0 137.0,190.0 138.0,187.0 173.0,181.0 143.0,89.0 226.0,74.0 240.0,74.0 245.0,81.0 238.0,69.0 228.0,61.0 199.0,49.0 143.0,46.0 142.0,43.0 139.0,47.0 122.0,50.0 119.0,39.0 111.0,33.0 109.0,24.0 101.0,16.0 109.0,25.0 109.0,34.0 118.0,41.0 120.0,51.0 90.0,67.0 71.0,39.0 71.0,30.0ZM128.0,132.0 145.0,138.0 152.0,165.0 144.0,165.0 137.0,160.0 128.0,140.0Z"/><path fill="#0a0b06" fill-rule="evenodd" d="M67.0,346.0 79.0,351.0 75.0,360.0 82.0,352.0 112.0,360.0 135.0,349.0 139.0,357.0 153.0,366.0 150.0,371.0 157.0,368.0 176.0,379.0 194.0,363.0 198.0,351.0 208.0,360.0 207.0,354.0 217.0,352.0 196.0,325.0 196.0,330.0 199.0,329.0 214.0,348.0 213.0,352.0 200.0,348.0 187.0,328.0 188.0,324.0 194.0,323.0 201.0,300.0 192.0,323.0 164.0,324.0 101.0,310.0 101.0,298.0 105.0,296.0 108.0,299.0 101.0,292.0 98.0,311.0 75.0,338.0 99.0,311.0 145.0,323.0 185.0,325.0 196.0,347.0 196.0,360.0 174.0,377.0 139.0,354.0 140.0,331.0 129.0,351.0 112.0,359.0Z"/><path fill="#0a0b06" fill-rule="evenodd" d="M191.0,125.0 198.0,132.0 199.0,129.0 214.0,128.0 216.0,143.0 217.0,140.0 226.0,143.0 230.0,135.0 231.0,146.0 229.0,128.0ZM216.0,134.0 220.0,133.0 221.0,137.0 218.0,138.0Z"/><path fill="#0a0b06" fill-rule="evenodd" d="M222.0,105.0 234.0,114.0 230.0,106.0Z"/><path fill="#0a0b06" fill-rule="evenodd" d="M144.0,378.0 131.0,392.0 142.0,383.0 161.0,403.0 160.0,414.0 162.0,404.0 142.0,383.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M239.0,76.0 145.0,90.0 176.0,182.0 141.0,190.0 163.0,195.0 200.0,196.0 220.0,191.0 235.0,180.0 241.0,169.0 236.0,162.0 244.0,159.0 246.0,147.0 242.0,140.0 246.0,95.0ZM204.0,147.0 222.0,153.0 223.0,172.0 207.0,180.0 191.0,169.0 194.0,153.0ZM187.0,122.0 196.0,121.0 197.0,116.0 202.0,122.0 205.0,116.0 208.0,122.0 231.0,126.0 234.0,132.0 233.0,148.0 209.0,148.0ZM219.0,104.0 231.0,103.0 237.0,116.0 226.0,114.0Z"/><path fill="#357a24" fill-rule="evenodd" d="M148.0,25.0 138.0,24.0 133.0,19.0 119.0,28.0 114.0,38.0 108.0,34.0 107.0,20.0 88.0,13.0 77.0,22.0 72.0,34.0 81.0,54.0 71.0,51.0 69.0,46.0 52.0,44.0 43.0,51.0 35.0,51.0 29.0,56.0 35.0,66.0 18.0,89.0 29.0,94.0 42.0,94.0 44.0,107.0 58.0,103.0 73.0,92.0 84.0,74.0 83.0,60.0 91.0,66.0 120.0,48.0 143.0,45.0 146.0,35.0 150.0,33.0ZM116.0,38.0 119.0,37.0 121.0,42.0 118.0,43.0Z"/><path fill="#771210" fill-rule="evenodd" d="M60.0,232.0 87.0,272.0 100.0,270.0 101.0,290.0 109.0,300.0 120.0,300.0 124.0,305.0 137.0,301.0 142.0,307.0 154.0,306.0 159.0,310.0 172.0,308.0 178.0,312.0 185.0,306.0 196.0,308.0 186.0,305.0 177.0,310.0 170.0,304.0 160.0,308.0 156.0,303.0 144.0,306.0 139.0,299.0 125.0,304.0 119.0,297.0 111.0,298.0 104.0,292.0 102.0,273.0 142.0,253.0 152.0,238.0 142.0,220.0 125.0,202.0 123.0,195.0 127.0,194.0 147.0,211.0 163.0,231.0 177.0,265.0 177.0,282.0 185.0,300.0 178.0,281.0 178.0,264.0 163.0,228.0 140.0,202.0 125.0,191.0 121.0,192.0 123.0,205.0 111.0,208.0 109.0,204.0 112.0,199.0 101.0,198.0 92.0,216.0ZM122.0,207.0 141.0,226.0 147.0,242.0 137.0,250.0 88.0,271.0 62.0,232.0 103.0,212.0ZM104.0,201.0 107.0,202.0 105.0,206.0 102.0,205.0Z"/><path fill="#d40a0f" fill-rule="evenodd" d="M122.0,193.0 153.0,238.0 142.0,254.0 103.0,273.0 104.0,290.0 111.0,297.0 119.0,296.0 125.0,303.0 139.0,298.0 144.0,305.0 156.0,302.0 160.0,307.0 172.0,304.0 179.0,309.0 185.0,305.0 177.0,286.0 177.0,269.0 168.0,243.0 146.0,211.0Z"/><path fill="#357a24" fill-rule="evenodd" d="M74.0,341.0 80.0,348.0 111.0,358.0 128.0,350.0 136.0,334.0 141.0,331.0 142.0,355.0 175.0,376.0 196.0,355.0 185.0,327.0 151.0,326.0 99.0,313.0 88.0,326.0 89.0,329.0 85.0,328.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M150.0,366.0 137.0,359.0 134.0,352.0 113.0,362.0 83.0,354.0 63.0,382.0 49.0,392.0 82.0,415.0 103.0,424.0 105.0,414.0Z"/><path fill="#d40a0f" fill-rule="evenodd" d="M121.0,207.0 62.0,233.0 88.0,270.0 146.0,242.0 140.0,226.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M59.0,236.0 29.0,274.0 5.0,290.0 12.0,295.0 8.0,300.0 9.0,306.0 15.0,308.0 22.0,305.0 17.0,312.0 21.0,319.0 38.0,306.0 42.0,306.0 51.0,316.0 55.0,306.0 54.0,295.0 83.0,271.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M201.0,354.0 196.0,364.0 178.0,381.0 156.0,370.0 146.0,379.0 148.0,386.0 165.0,403.0 161.0,421.0 225.0,406.0 217.0,398.0 216.0,375.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M51.0,400.0 28.0,426.0 30.0,434.0 56.0,469.0 73.0,469.0 73.0,462.0 78.0,469.0 83.0,464.0 86.0,468.0 92.0,468.0 94.0,462.0 86.0,456.0 79.0,440.0 90.0,425.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M246.0,454.0 239.0,456.0 238.0,450.0 216.0,436.0 216.0,417.0 169.0,427.0 172.0,465.0 242.0,464.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M210.0,258.0 205.0,290.0 194.0,310.0 184.0,308.0 181.0,312.0 174.0,312.0 170.0,308.0 161.0,313.0 154.0,306.0 142.0,308.0 136.0,301.0 130.0,306.0 123.0,306.0 119.0,300.0 110.0,302.0 100.0,294.0 99.0,278.0 102.0,304.0 81.0,332.0 86.0,334.0 83.0,333.0 85.0,327.0 98.0,314.0 128.0,320.0 132.0,318.0 135.0,322.0 142.0,319.0 142.0,323.0 147.0,320.0 151.0,325.0 154.0,322.0 161.0,326.0 172.0,323.0 176.0,328.0 187.0,326.0 190.0,337.0 193.0,335.0 194.0,338.0 199.0,330.0 212.0,347.0 211.0,351.0 206.0,350.0 210.0,354.0 217.0,353.0 195.0,323.0 210.0,274.0ZM192.0,326.0 195.0,325.0 196.0,329.0 193.0,330.0ZM164.0,317.0 170.0,315.0 172.0,319.0 165.0,320.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M173.0,212.0 183.0,225.0 190.0,243.0 191.0,273.0 187.0,303.0 198.0,303.0 206.0,280.0 208.0,238.0 205.0,232.0 196.0,237.0 191.0,228.0 193.0,220.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M134.0,192.0 165.0,227.0 182.0,267.0 180.0,280.0 184.0,290.0 186.0,250.0 182.0,233.0 153.0,199.0Z"/><path fill="#f0a09a" fill-rule="evenodd" d="M208.0,146.0 196.0,152.0 192.0,160.0 192.0,170.0 204.0,179.0 217.0,176.0 223.0,170.0 223.0,154.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M79.0,334.0 66.0,346.0 77.0,350.0 77.0,357.0 60.0,381.0 45.0,391.0 47.0,400.0 24.0,428.0 56.0,472.0 91.0,471.0 97.0,467.0 97.0,462.0 88.0,454.0 83.0,436.0 81.0,440.0 89.0,457.0 96.0,461.0 92.0,470.0 86.0,470.0 84.0,466.0 81.0,471.0 69.0,471.0 67.0,466.0 66.0,471.0 56.0,471.0 27.0,433.0 26.0,426.0 50.0,398.0 91.0,422.0 87.0,433.0 95.0,425.0 105.0,427.0 106.0,417.0 138.0,384.0 142.0,384.0 161.0,404.0 157.0,424.0 162.0,424.0 159.0,419.0 163.0,404.0 143.0,384.0 146.0,376.0 106.0,414.0 104.0,425.0 84.0,418.0 47.0,392.0 61.0,382.0 80.0,353.0 85.0,353.0 85.0,349.0 79.0,352.0 79.0,348.0 73.0,345.0Z"/><path fill="#717556" fill-rule="evenodd" d="M158.0,199.0 176.0,218.0 188.0,240.0 186.0,246.0 187.0,237.0 176.0,218.0 171.0,216.0 173.0,210.0 194.0,219.0 193.0,227.0 194.0,224.0 198.0,225.0 196.0,236.0 204.0,230.0 201.0,228.0 202.0,222.0 211.0,229.0 206.0,211.0 207.0,222.0 201.0,214.0 198.0,217.0 172.0,206.0 166.0,199.0 169.0,196.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M97.0,276.0 83.0,278.0 62.0,294.0 57.0,316.0 51.0,321.0 44.0,319.0 39.0,312.0 26.0,323.0 17.0,323.0 12.0,312.0 4.0,306.0 3.0,286.0 0.0,289.0 0.0,303.0 17.0,326.0 27.0,324.0 37.0,315.0 42.0,317.0 40.0,320.0 52.0,323.0 58.0,316.0 60.0,299.0 84.0,280.0 92.0,279.0 97.0,283.0 98.0,304.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M131.0,134.0 138.0,157.0 144.0,162.0 151.0,162.0 145.0,155.0 147.0,151.0 142.0,139.0ZM137.0,140.0 140.0,141.0 139.0,146.0 136.0,145.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M12.0,84.0 12.0,94.0 37.0,100.0 42.0,113.0 67.0,109.0 67.0,127.0 76.0,155.0 87.0,172.0 88.0,180.0 94.0,180.0 81.0,161.0 70.0,133.0 70.0,101.0 57.0,109.0 41.0,111.0 38.0,98.0 15.0,93.0 12.0,90.0 15.0,84.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M223.0,400.0 225.0,408.0 165.0,425.0 167.0,465.0 171.0,469.0 246.0,466.0 249.0,456.0 245.0,450.0 247.0,461.0 243.0,466.0 172.0,467.0 167.0,463.0 167.0,425.0 214.0,412.0 218.0,413.0 218.0,435.0 241.0,451.0 243.0,449.0 219.0,434.0 220.0,411.0 228.0,407.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M156.0,201.0 169.0,214.0 173.0,213.0 176.0,223.0 179.0,221.0 176.0,213.0 188.0,218.0 192.0,216.0 193.0,222.0 200.0,213.0 191.0,213.0 170.0,203.0 171.0,200.0 197.0,200.0 185.0,201.0 186.0,197.0 181.0,200.0 159.0,199.0 168.0,206.0 167.0,210.0ZM180.0,210.0 183.0,209.0 185.0,214.0 181.0,215.0ZM169.0,205.0 172.0,204.0 173.0,208.0 170.0,209.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M22.0,431.0 21.0,434.0 48.0,474.0 86.0,476.0 101.0,471.0 99.0,463.0 93.0,473.0 53.0,473.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M247.0,81.0 250.0,117.0 246.0,135.0 248.0,145.0 244.0,145.0 245.0,149.0 251.0,146.0 247.0,164.0 233.0,189.0 203.0,201.0 201.0,207.0 206.0,210.0 205.0,204.0 226.0,196.0 240.0,186.0 248.0,167.0 251.0,144.0 246.0,135.0 251.0,119.0 251.0,89.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M135.0,191.0 151.0,196.0 164.0,205.0 185.0,237.0 177.0,220.0 159.0,199.0 166.0,198.0 171.0,205.0 169.0,199.0 198.0,199.0 198.0,208.0 204.0,217.0 205.0,211.0 200.0,208.0 199.0,198.0 173.0,199.0 148.0,194.0 139.0,188.0Z"/><path fill="#357a24" fill-rule="evenodd" d="M193.0,325.0 195.0,340.0 203.0,348.0 211.0,350.0 212.0,347.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M155.0,423.0 155.0,427.0 162.0,429.0 165.0,435.0 162.0,459.0 166.0,469.0 172.0,473.0 248.0,470.0 251.0,464.0 251.0,453.0 248.0,451.0 251.0,461.0 242.0,470.0 169.0,470.0 165.0,465.0 164.0,429.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M142.0,387.0 109.0,418.0 106.0,429.0 96.0,427.0 84.0,439.0 92.0,456.0 86.0,445.0 88.0,437.0 94.0,431.0 107.0,429.0 110.0,420.0 137.0,391.0 142.0,390.0 149.0,395.0 159.0,410.0 160.0,406.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M171.0,201.0 182.0,209.0 200.0,214.0 196.0,201.0 192.0,204.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M214.0,135.0 216.0,148.0 231.0,148.0 232.0,133.0 226.0,144.0 218.0,140.0 219.0,133.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M202.0,130.0 204.0,138.0 214.0,145.0 213.0,130.0Z"/><path fill="#357a24" fill-rule="evenodd" d="M206.0,212.0 203.0,216.0 195.0,215.0 198.0,216.0 196.0,221.0 202.0,223.0 199.0,232.0 209.0,227.0Z"/><path fill="#717556" fill-rule="evenodd" d="M180.0,466.0 192.0,466.0 193.0,469.0 227.0,469.0 230.0,466.0Z"/><path fill="#717556" fill-rule="evenodd" d="M245.0,136.0 243.0,139.0 248.0,148.0 245.0,160.0 238.0,163.0 242.0,167.0 241.0,173.0 223.0,193.0 238.0,181.0 243.0,172.0 245.0,154.0 251.0,148.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M6.0,306.0 15.0,312.0 18.0,321.0 25.0,321.0 39.0,309.0 46.0,318.0 51.0,319.0 56.0,314.0 57.0,296.0 71.0,284.0 56.0,295.0 56.0,311.0 51.0,319.0 45.0,316.0 41.0,308.0 23.0,321.0 17.0,319.0 17.0,308.0 12.0,310.0 7.0,307.0 9.0,296.0 3.0,292.0 13.0,282.0 4.0,288.0Z"/><path fill="#717556" fill-rule="evenodd" d="M71.0,409.0 48.0,396.0 24.0,427.0 51.0,398.0 71.0,412.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M78.0,179.0 77.0,186.0 91.0,202.0 89.0,214.0 85.0,216.0 92.0,212.0 91.0,205.0 98.0,196.0 84.0,194.0 78.0,183.0 82.0,179.0Z"/><path fill="#717556" fill-rule="evenodd" d="M24.0,431.0 47.0,464.0 40.0,449.0Z"/><path fill="#717556" fill-rule="evenodd" d="M84.0,417.0 91.0,424.0 90.0,431.0 80.0,439.0 88.0,456.0 83.0,437.0 98.0,426.0 97.0,423.0 93.0,426.0 92.0,421.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M38.0,410.0 40.0,413.0 53.0,400.0 76.0,416.0 73.0,414.0 75.0,411.0 66.0,405.0 63.0,408.0 64.0,404.0 60.0,401.0 57.0,403.0 56.0,398.0 44.0,402.0 41.0,406.0 43.0,409.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M199.0,351.0 196.0,351.0 196.0,359.0 177.0,376.0 169.0,372.0 166.0,374.0 178.0,379.0 197.0,360.0Z"/><path fill="#717556" fill-rule="evenodd" d="M190.0,342.0 169.0,326.0 153.0,335.0 158.0,334.0 159.0,337.0 145.0,351.0 170.0,327.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M246.0,125.0 244.0,140.0 248.0,149.0 240.0,176.0 224.0,191.0 203.0,199.0 221.0,194.0 239.0,179.0 249.0,149.0 244.0,139.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M34.0,52.0 25.0,55.0 33.0,68.0 14.0,90.0 18.0,91.0 19.0,83.0 34.0,67.0 29.0,58.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M215.0,254.0 203.0,306.0 208.0,301.0 206.0,297.0Z"/><path fill="#717556" fill-rule="evenodd" d="M56.0,315.0 47.0,317.0 40.0,307.0 19.0,322.0 26.0,321.0 38.0,310.0 43.0,310.0 47.0,319.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M228.0,443.0 239.0,450.0 233.0,453.0 241.0,453.0 251.0,461.0 251.0,455.0 245.0,454.0 247.0,450.0 240.0,452.0 239.0,449.0 243.0,448.0 230.0,441.0Z"/><path fill="#717556" fill-rule="evenodd" d="M217.0,413.0 215.0,410.0 190.0,417.0 189.0,420.0 186.0,418.0 185.0,421.0 165.0,422.0 168.0,423.0 165.0,427.0 168.0,436.0 168.0,425.0 173.0,421.0 176.0,423.0 193.0,416.0 197.0,418.0Z"/><path fill="#717556" fill-rule="evenodd" d="M46.0,248.0 41.0,250.0 36.0,261.0 20.0,278.0 26.0,275.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M51.0,320.0 47.0,320.0 44.0,309.0 38.0,307.0 33.0,315.0 29.0,314.0 31.0,317.0 20.0,323.0 26.0,322.0 36.0,312.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M129.0,353.0 126.0,351.0 112.0,358.0 102.0,355.0 101.0,358.0 113.0,360.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M72.0,94.0 66.0,101.0 46.0,108.0 41.0,102.0 43.0,96.0 41.0,110.0 69.0,99.0 72.0,106.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M118.0,29.0 122.0,30.0 122.0,26.0 131.0,19.0 146.0,25.0 149.0,34.0 153.0,28.0 131.0,16.0Z"/><path fill="#717556" fill-rule="evenodd" d="M244.0,449.0 237.0,454.0 245.0,456.0 244.0,468.0 249.0,462.0 246.0,459.0 249.0,454.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M85.0,444.0 83.0,447.0 88.0,457.0 98.0,467.0 98.0,462.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M106.0,428.0 96.0,426.0 91.0,431.0 88.0,429.0 80.0,437.0 81.0,442.0 94.0,428.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M204.0,354.0 217.0,374.0 221.0,399.0 218.0,373.0Z"/><path fill="#717556" fill-rule="evenodd" d="M208.0,283.0 199.0,304.0 187.0,305.0 192.0,309.0 197.0,305.0 201.0,307.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M72.0,38.0 71.0,47.0 55.0,43.0 41.0,49.0 59.0,44.0 73.0,50.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M123.0,398.0 110.0,411.0 112.0,414.0 109.0,417.0 123.0,403.0Z"/><path fill="#717556" fill-rule="evenodd" d="M151.0,368.0 152.0,371.0 139.0,381.0 143.0,383.0 135.0,386.0 148.0,387.0 151.0,395.0 154.0,394.0 144.0,383.0 144.0,378.0 156.0,369.0Z"/><path fill="#717556" fill-rule="evenodd" d="M110.0,331.0 104.0,355.0 109.0,350.0 111.0,357.0Z"/><path fill="#717556" fill-rule="evenodd" d="M81.0,278.0 79.0,276.0 76.0,282.0 73.0,281.0 55.0,296.0Z"/><path fill="#717556" fill-rule="evenodd" d="M219.0,192.0 210.0,198.0 187.0,197.0 185.0,200.0 197.0,197.0 201.0,202.0 198.0,201.0 199.0,197.0 202.0,200.0 217.0,196.0Z"/><path fill="#d40a0f" fill-rule="evenodd" d="M76.0,4.0 73.0,8.0 81.0,15.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M76.0,0.0 70.0,6.0 77.0,16.0 70.0,30.0 72.0,33.0 74.0,24.0 85.0,13.0 79.0,17.0 70.0,9.0 74.0,2.0 78.0,2.0Z"/><path fill="#717556" fill-rule="evenodd" d="M18.0,279.0 3.0,288.0 7.0,300.0 16.0,292.0 7.0,296.0 5.0,288.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M140.0,343.0 140.0,354.0 137.0,356.0 148.0,363.0 150.0,360.0 140.0,354.0Z"/><path fill="#717556" fill-rule="evenodd" d="M5.0,301.0 17.0,321.0 14.0,310.0 23.0,303.0 17.0,309.0 11.0,309.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M59.0,291.0 55.0,295.0 58.0,306.0 54.0,312.0 58.0,310.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M65.0,470.0 68.0,474.0 87.0,473.0 73.0,473.0 67.0,464.0ZM65.0,470.0 69.0,469.0 70.0,472.0 66.0,473.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M67.0,392.0 58.0,381.0 45.0,393.0 47.0,397.0 49.0,390.0 57.0,385.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M100.0,273.0 85.0,271.0 73.0,283.0 84.0,275.0 97.0,272.0 98.0,276.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M53.0,236.0 53.0,241.0 48.0,242.0 43.0,247.0 45.0,250.0 39.0,252.0 41.0,255.0 33.0,260.0 37.0,260.0 55.0,239.0Z"/><path fill="#f0a09a" fill-rule="evenodd" d="M187.0,295.0 185.0,303.0 197.0,304.0Z"/><path fill="#717556" fill-rule="evenodd" d="M133.0,388.0 124.0,397.0 125.0,400.0 112.0,413.0 108.0,413.0 108.0,418.0 132.0,393.0Z"/><path fill="#717556" fill-rule="evenodd" d="M138.0,20.0 130.0,16.0 125.0,21.0 124.0,30.0 129.0,17.0 132.0,18.0 132.0,25.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M246.0,140.0 243.0,140.0 250.0,150.0 245.0,151.0 244.0,160.0 239.0,162.0 241.0,167.0 244.0,157.0 251.0,150.0Z"/><path fill="#f0a09a" fill-rule="evenodd" d="M181.0,201.0 186.0,207.0 197.0,202.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M224.0,399.0 230.0,406.0 221.0,413.0 221.0,434.0 225.0,437.0 221.0,433.0 221.0,422.0 224.0,414.0 231.0,410.0Z"/><path fill="#717556" fill-rule="evenodd" d="M188.0,364.0 174.0,352.0 160.0,366.0 172.0,354.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M207.0,335.0 219.0,351.0 209.0,356.0 215.0,365.0 212.0,360.0 220.0,353.0Z"/><path fill="#771210" fill-rule="evenodd" d="M74.0,3.0 72.0,9.0 81.0,17.0 73.0,6.0 78.0,4.0 84.0,12.0 79.0,3.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M39.0,254.0 24.0,275.0 15.0,281.0 26.0,274.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M203.0,228.0 210.0,237.0 212.0,256.0 211.0,230.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M138.0,141.0 139.0,149.0 150.0,158.0 147.0,150.0 139.0,147.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M61.0,229.0 41.0,252.0 60.0,235.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M65.0,347.0 65.0,351.0 73.0,353.0 74.0,357.0 76.0,352.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M197.0,117.0 197.0,122.0 193.0,120.0 189.0,123.0 193.0,128.0 194.0,124.0 200.0,123.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M220.0,399.0 218.0,391.0 216.0,399.0 164.0,412.0 157.0,402.0 163.0,409.0 162.0,414.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M72.0,281.0 65.0,287.0 66.0,291.0 61.0,290.0 63.0,293.0 73.0,285.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M180.0,223.0 184.0,237.0 187.0,236.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M84.0,192.0 97.0,198.0 106.0,194.0Z"/><path fill="#717556" fill-rule="evenodd" d="M207.0,354.0 205.0,358.0 213.0,369.0 215.0,367.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M145.0,44.0 175.0,44.0 150.0,44.0 155.0,28.0Z"/><path fill="#717556" fill-rule="evenodd" d="M220.0,415.0 220.0,434.0 217.0,435.0 237.0,447.0 220.0,435.0Z"/><path fill="#717556" fill-rule="evenodd" d="M142.0,188.0 132.0,192.0 138.0,198.0 135.0,193.0 141.0,194.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M202.0,308.0 197.0,320.0 202.0,329.0 199.0,324.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M245.0,119.0 243.0,135.0 246.0,134.0 244.0,127.0 248.0,122.0Z"/></g><clipPath id="c-walk-head" clipPathUnits="userSpaceOnUse"><polygon points="0.00,0.00 52.83,0.00 52.83,43.19 0.00,43.19"/></clipPath><clipPath id="c-walk-body" clipPathUnits="userSpaceOnUse"><polygon points="0.00,41.09 52.83,41.09 52.83,80.08 0.00,80.08"/></clipPath><clipPath id="c-walk-armB" clipPathUnits="userSpaceOnUse"><polygon points="0.00,47.38 20.55,47.38 20.55,77.99 0.00,77.99"/></clipPath><clipPath id="c-walk-shorts" clipPathUnits="userSpaceOnUse"><polygon points="0.00,14.88 52.83,14.88 52.83,18.87 0.00,18.87"/></clipPath><clipPath id="c-walk-legB" clipPathUnits="userSpaceOnUse"><polygon points="0.00,77.15 28.09,77.15 28.09,100.00 0.00,100.00"/></clipPath><clipPath id="c-walk-legF" clipPathUnits="userSpaceOnUse"><polygon points="28.09,77.15 52.83,77.15 52.83,100.00 28.09,100.00"/></clipPath></defs><g class="p-walk-shorts" style="transform-origin:29.35px 16.77px;transform-box:view-box"><g clip-path="url(#c-walk-shorts)"><use xlink:href="#a-walk" href="#a-walk"/></g></g><g class="p-walk-legB" style="transform-origin:13.84px 80.92px;transform-box:view-box"><g clip-path="url(#c-walk-legB)"><use xlink:href="#a-walk" href="#a-walk"/></g></g><g class="p-walk-legF" style="transform-origin:39.41px 81.76px;transform-box:view-box"><g clip-path="url(#c-walk-legF)"><use xlink:href="#a-walk" href="#a-walk"/></g></g><g class="p-walk-body" style="transform-origin:29.35px 62.05px;transform-box:view-box"><g clip-path="url(#c-walk-body)"><use xlink:href="#a-walk" href="#a-walk"/></g></g><g class="p-walk-armB" style="transform-origin:20.13px 49.48px;transform-box:view-box"><g clip-path="url(#c-walk-armB)"><use xlink:href="#a-walk" href="#a-walk"/></g></g><g class="p-walk-head" style="transform-origin:28.51px 41.93px;transform-box:view-box"><g clip-path="url(#c-walk-head)"><use xlink:href="#a-walk" href="#a-walk"/></g></g></svg>';
+  var ART_HANG = '<svg class="kw-art kw-art-hang" viewBox="0 0 85.7 100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="a-hang" transform="scale(0.185874)"><path fill="#0a0b06" fill-rule="evenodd" d="M134.0,80.0 130.0,95.0 135.0,104.0 128.0,104.0 135.0,106.0 146.0,122.0 121.0,123.0 146.0,123.0 141.0,138.0 124.0,156.0 104.0,163.0 99.0,162.0 100.0,151.0 79.0,146.0 97.0,150.0 99.0,164.0 106.0,165.0 109.0,161.0 122.0,158.0 140.0,143.0 146.0,174.0 171.0,229.0 182.0,239.0 185.0,235.0 202.0,243.0 203.0,240.0 210.0,242.0 192.0,237.0 195.0,233.0 217.0,229.0 181.0,144.0 258.0,121.0 267.0,123.0 271.0,117.0 284.0,112.0 294.0,120.0 299.0,135.0 297.0,125.0 286.0,107.0 242.0,94.0 199.0,97.0 202.0,85.0 195.0,98.0 178.0,103.0 171.0,85.0 168.0,86.0 163.0,77.0 167.0,88.0 176.0,97.0 176.0,105.0 150.0,121.0 138.0,109.0 139.0,103.0 131.0,95.0ZM171.0,187.0 185.0,191.0 196.0,211.0 195.0,216.0 187.0,216.0 179.0,209.0Z"/><path fill="#0a0b06" fill-rule="evenodd" d="M104.0,433.0 133.0,388.0 166.0,395.0 181.0,390.0 190.0,382.0 193.0,392.0 208.0,402.0 199.0,415.0 208.0,405.0 226.0,413.0 236.0,406.0 263.0,405.0 264.0,410.0 273.0,403.0 241.0,405.0 240.0,402.0 257.0,384.0 259.0,376.0 274.0,376.0 276.0,373.0 261.0,374.0 247.0,352.0 266.0,344.0 294.0,347.0 294.0,352.0 278.0,372.0 292.0,355.0 301.0,355.0 296.0,353.0 299.0,347.0 267.0,343.0 270.0,328.0 265.0,343.0 249.0,350.0 232.0,353.0 190.0,352.0 156.0,343.0 154.0,322.0 154.0,340.0 140.0,358.0 153.0,344.0 197.0,354.0 243.0,352.0 256.0,372.0 257.0,381.0 226.0,411.0 194.0,390.0 196.0,366.0 181.0,388.0 166.0,393.0 122.0,383.0 121.0,380.0 138.0,360.0 120.0,381.0 129.0,385.0 131.0,390.0Z"/><path fill="#0a0b06" fill-rule="evenodd" d="M224.0,176.0 231.0,183.0 231.0,178.0 246.0,176.0 247.0,186.0 247.0,180.0 252.0,179.0 255.0,189.0 259.0,189.0 264.0,181.0 264.0,188.0 268.0,185.0 270.0,189.0 265.0,176.0 259.0,172.0 237.0,174.0 234.0,171.0 234.0,175.0Z"/><path fill="#0a0b06" fill-rule="evenodd" d="M301.0,154.0 289.0,165.0 286.0,175.0 291.0,173.0 292.0,178.0 296.0,177.0 297.0,165.0 302.0,170.0ZM288.0,169.0 292.0,168.0 293.0,172.0 290.0,173.0Z"/><path fill="#0a0b06" fill-rule="evenodd" d="M252.0,154.0 258.0,159.0 267.0,160.0 261.0,153.0Z"/><path fill="#0a0b06" fill-rule="evenodd" d="M290.0,263.0 288.0,280.0 293.0,266.0Z"/><path fill="#0a0b06" fill-rule="evenodd" d="M289.0,224.0 265.0,235.0 272.0,235.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M287.0,115.0 272.0,119.0 269.0,125.0 256.0,124.0 184.0,145.0 219.0,227.0 217.0,232.0 196.0,236.0 238.0,238.0 262.0,234.0 280.0,227.0 298.0,212.0 303.0,202.0 299.0,204.0 295.0,201.0 294.0,185.0 304.0,181.0 303.0,177.0 287.0,185.0 286.0,189.0 282.0,182.0 286.0,165.0 299.0,154.0 295.0,128.0ZM289.0,196.0 285.0,204.0 275.0,202.0 285.0,195.0ZM231.0,165.0 238.0,172.0 264.0,171.0 272.0,187.0 270.0,192.0 254.0,196.0 261.0,200.0 263.0,209.0 260.0,218.0 250.0,224.0 236.0,222.0 229.0,213.0 231.0,200.0 242.0,195.0 219.0,174.0 220.0,171.0 225.0,173.0 226.0,168.0 233.0,173.0ZM249.0,153.0 262.0,150.0 270.0,162.0 258.0,162.0ZM293.0,138.0 292.0,148.0 283.0,155.0 285.0,142.0Z"/><path fill="#d40a0f" fill-rule="evenodd" d="M111.0,167.0 109.0,176.0 115.0,193.0 119.0,195.0 120.0,210.0 143.0,268.0 153.0,281.0 163.0,285.0 174.0,253.0 170.0,239.0 175.0,238.0 178.0,242.0 172.0,280.0 164.0,291.0 150.0,287.0 159.0,326.0 169.0,326.0 175.0,333.0 183.0,329.0 194.0,334.0 202.0,332.0 208.0,337.0 217.0,333.0 222.0,338.0 221.0,330.0 206.0,307.0 204.0,287.0 184.0,246.0 173.0,234.0 168.0,237.0 161.0,226.0 164.0,221.0 143.0,179.0 137.0,155.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M205.0,403.0 191.0,393.0 189.0,385.0 182.0,392.0 167.0,397.0 135.0,390.0 108.0,433.0 103.0,435.0 103.0,431.0 96.0,436.0 93.0,444.0 125.0,465.0 151.0,474.0 151.0,463.0ZM97.0,436.0 101.0,435.0 102.0,438.0 98.0,439.0Z"/><path fill="#357a24" fill-rule="evenodd" d="M122.0,382.0 165.0,392.0 181.0,386.0 196.0,366.0 195.0,389.0 228.0,409.0 256.0,381.0 248.0,359.0 242.0,354.0 229.0,358.0 183.0,353.0 175.0,356.0 175.0,352.0 155.0,346.0 127.0,376.0 124.0,375.0ZM162.0,372.0 165.0,373.0 164.0,380.0 161.0,379.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M300.0,31.0 296.0,37.0 308.0,51.0 289.0,109.0 301.0,128.0 330.0,138.0 341.0,54.0 350.0,37.0 330.0,36.0 325.0,39.0 309.0,31.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M271.0,247.0 263.0,255.0 266.0,265.0 260.0,272.0 248.0,267.0 238.0,275.0 235.0,274.0 234.0,264.0 237.0,259.0 212.0,251.0 223.0,273.0 223.0,329.0 226.0,334.0 235.0,332.0 240.0,337.0 246.0,331.0 252.0,335.0 260.0,331.0 270.0,298.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M95.0,454.0 84.0,479.0 72.0,490.0 85.0,527.0 94.0,530.0 95.0,522.0 100.0,530.0 106.0,529.0 107.0,522.0 111.0,530.0 118.0,530.0 119.0,521.0 124.0,529.0 131.0,529.0 132.0,523.0 126.0,516.0 121.0,497.0 137.0,477.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M322.0,364.0 294.0,357.0 275.0,378.0 260.0,378.0 260.0,384.0 243.0,403.0 274.0,401.0 275.0,405.0 265.0,412.0 268.0,415.0 329.0,398.0 324.0,389.0ZM285.0,401.0 288.0,400.0 289.0,404.0 286.0,405.0ZM318.0,388.0 321.0,387.0 322.0,391.0 319.0,392.0Z"/><path fill="#771210" fill-rule="evenodd" d="M300.0,131.0 302.0,166.0 309.0,193.0 307.0,202.0 288.0,229.0 293.0,261.0 306.0,236.0 338.0,151.0 338.0,143.0ZM308.0,134.0 335.0,143.0 337.0,150.0 332.0,156.0 302.0,242.0 293.0,256.0 289.0,229.0 305.0,211.0 310.0,197.0 302.0,142.0 303.0,135.0Z"/><path fill="#357a24" fill-rule="evenodd" d="M133.0,104.0 107.0,102.0 105.0,106.0 90.0,111.0 95.0,122.0 79.0,143.0 82.0,148.0 87.0,146.0 95.0,151.0 101.0,150.0 102.0,161.0 123.0,155.0 139.0,139.0 145.0,127.0 141.0,124.0 145.0,121.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M336.0,445.0 311.0,427.0 318.0,406.0 296.0,415.0 270.0,420.0 263.0,454.0 332.0,455.0ZM328.0,445.0 333.0,444.0 334.0,447.0 329.0,448.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M326.0,365.0 318.0,359.0 298.0,354.0 298.0,346.0 269.0,343.0 267.0,339.0 275.0,319.0 271.0,329.0 265.0,333.0 257.0,333.0 253.0,337.0 247.0,333.0 241.0,339.0 232.0,334.0 224.0,343.0 216.0,337.0 207.0,342.0 201.0,336.0 192.0,339.0 185.0,333.0 172.0,335.0 168.0,330.0 156.0,328.0 156.0,339.0 119.0,383.0 129.0,386.0 131.0,384.0 122.0,383.0 130.0,371.0 133.0,372.0 132.0,368.0 152.0,346.0 160.0,347.0 161.0,344.0 166.0,345.0 166.0,349.0 170.0,346.0 171.0,350.0 185.0,354.0 199.0,351.0 204.0,355.0 220.0,355.0 221.0,358.0 224.0,355.0 244.0,354.0 243.0,351.0 247.0,349.0 246.0,357.0 249.0,351.0 252.0,354.0 255.0,349.0 268.0,343.0 279.0,345.0 280.0,349.0 293.0,347.0 294.0,351.0 277.0,372.0 269.0,375.0 261.0,371.0 264.0,376.0 256.0,376.0 257.0,381.0 246.0,396.0 257.0,385.0 259.0,377.0 277.0,374.0 293.0,352.0 320.0,361.0 326.0,368.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M157.0,31.0 134.0,38.0 106.0,36.0 113.0,52.0 106.0,100.0 129.0,100.0 126.0,89.0 131.0,78.0 125.0,74.0 126.0,67.0 136.0,61.0 142.0,69.0 150.0,69.0 147.0,48.0 158.0,39.0Z"/><path fill="#357a24" fill-rule="evenodd" d="M201.0,78.0 192.0,77.0 188.0,72.0 181.0,74.0 173.0,83.0 176.0,88.0 172.0,88.0 175.0,90.0 172.0,93.0 166.0,89.0 160.0,76.0 149.0,73.0 137.0,79.0 132.0,92.0 136.0,101.0 141.0,103.0 140.0,110.0 150.0,119.0 174.0,105.0 176.0,99.0 182.0,101.0 194.0,97.0Z"/><path fill="#d40a0f" fill-rule="evenodd" d="M308.0,135.0 303.0,137.0 303.0,161.0 310.0,179.0 311.0,197.0 306.0,211.0 290.0,229.0 294.0,257.0 337.0,146.0Z"/><path fill="#771210" fill-rule="evenodd" d="M108.0,168.0 107.0,179.0 118.0,212.0 147.0,279.0 150.0,308.0 157.0,328.0 168.0,329.0 172.0,334.0 201.0,335.0 207.0,339.0 217.0,337.0 224.0,341.0 226.0,339.0 217.0,334.0 206.0,337.0 202.0,333.0 191.0,334.0 186.0,329.0 175.0,334.0 167.0,326.0 158.0,326.0 149.0,287.0 164.0,290.0 171.0,280.0 177.0,255.0 176.0,239.0 179.0,238.0 203.0,282.0 211.0,316.0 221.0,329.0 209.0,309.0 208.0,291.0 196.0,263.0 181.0,238.0 168.0,227.0 166.0,217.0 153.0,195.0 139.0,151.0 135.0,157.0 140.0,159.0 144.0,179.0 164.0,219.0 162.0,226.0 175.0,249.0 172.0,267.0 163.0,286.0 153.0,282.0 142.0,268.0 118.0,207.0 118.0,195.0 114.0,193.0 108.0,176.0 114.0,166.0ZM170.0,235.0 174.0,234.0 175.0,237.0 171.0,238.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M184.0,238.0 213.0,295.0 210.0,303.0 219.0,321.0 219.0,279.0 214.0,262.0 199.0,242.0Z"/><path fill="#357a24" fill-rule="evenodd" d="M294.0,348.0 268.0,345.0 249.0,355.0 264.0,373.0 272.0,374.0Z"/><path fill="#f0a09a" fill-rule="evenodd" d="M237.0,195.0 229.0,205.0 232.0,217.0 245.0,224.0 259.0,218.0 262.0,209.0 260.0,200.0 253.0,196.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M285.0,230.0 275.0,235.0 276.0,293.0 272.0,308.0 287.0,269.0 289.0,247.0Z"/><path fill="#717556" fill-rule="evenodd" d="M274.0,246.0 266.0,234.0 255.0,236.0 259.0,238.0 263.0,235.0 267.0,242.0 255.0,255.0 233.0,254.0 215.0,245.0 216.0,242.0 225.0,242.0 213.0,242.0 212.0,239.0 211.0,243.0 203.0,242.0 207.0,242.0 206.0,249.0 211.0,247.0 238.0,260.0 242.0,256.0 240.0,264.0 235.0,263.0 240.0,270.0 236.0,273.0 246.0,266.0 260.0,271.0 257.0,263.0 265.0,263.0 259.0,254.0ZM247.0,262.0 251.0,261.0 253.0,265.0 248.0,266.0ZM246.0,257.0 249.0,256.0 250.0,260.0 247.0,261.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M322.0,6.0 325.0,24.0 331.0,21.0 335.0,24.0 341.0,21.0 347.0,23.0 351.0,12.0 345.0,6.0 336.0,9.0 329.0,3.0ZM333.0,10.0 336.0,11.0 334.0,21.0 331.0,20.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M266.0,241.0 263.0,238.0 214.0,243.0 238.0,253.0 251.0,254.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M119.0,407.0 104.0,433.0 89.0,443.0 94.0,448.0 81.0,476.0 69.0,489.0 81.0,479.0 93.0,454.0 98.0,451.0 139.0,475.0 123.0,498.0 135.0,526.0 126.0,532.0 121.0,530.0 120.0,523.0 119.0,532.0 113.0,533.0 108.0,529.0 108.0,524.0 106.0,532.0 101.0,533.0 96.0,524.0 94.0,532.0 86.0,531.0 70.0,492.0 80.0,525.0 90.0,533.0 132.0,532.0 136.0,524.0 130.0,518.0 124.0,497.0 143.0,476.0 153.0,476.0 148.0,477.0 127.0,468.0 91.0,445.0 106.0,433.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M261.0,408.0 242.0,408.0 226.0,416.0 210.0,407.0 157.0,464.0 155.0,477.0 143.0,479.0 126.0,499.0 127.0,505.0 129.0,497.0 142.0,483.0 155.0,479.0 157.0,467.0 207.0,412.0 214.0,411.0 229.0,417.0 238.0,411.0 258.0,410.0 262.0,431.0 263.0,420.0 259.0,418.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M327.0,371.0 325.0,389.0 332.0,398.0 268.0,418.0 263.0,416.0 266.0,407.0 263.0,403.0 257.0,406.0 240.0,403.0 236.0,407.0 262.0,406.0 260.0,416.0 265.0,419.0 265.0,424.0 269.0,417.0 319.0,404.0 313.0,426.0 338.0,445.0 336.0,454.0 330.0,458.0 265.0,457.0 259.0,452.0 261.0,457.0 332.0,459.0 337.0,455.0 337.0,442.0 315.0,427.0 323.0,403.0 334.0,398.0 327.0,389.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M341.0,147.0 269.0,341.0 285.0,343.0 272.0,342.0 271.0,334.0 281.0,310.0 289.0,301.0 290.0,283.0 320.0,214.0 343.0,150.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M96.0,161.0 122.0,237.0 144.0,288.0 152.0,330.0 151.0,341.0 130.0,366.0 151.0,341.0 152.0,323.0 143.0,281.0 109.0,197.0 103.0,167.0 98.0,167.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M141.0,4.0 136.0,21.0 144.0,24.0 151.0,8.0Z"/><path fill="#771210" fill-rule="evenodd" d="M285.0,283.0 263.0,332.0 275.0,317.0 285.0,292.0Z"/><path fill="#f0a09a" fill-rule="evenodd" d="M303.0,176.0 301.0,184.0 293.0,185.0 296.0,201.0 302.0,206.0 306.0,196.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M221.0,173.0 242.0,193.0 257.0,194.0 270.0,190.0 267.0,179.0 260.0,182.0 259.0,190.0 255.0,190.0 248.0,183.0 252.0,180.0 236.0,178.0 246.0,178.0 248.0,192.0 242.0,193.0 233.0,186.0 232.0,179.0 226.0,178.0 234.0,174.0 226.0,169.0 227.0,175.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M126.0,3.0 121.0,10.0 123.0,22.0 129.0,24.0 132.0,22.0 133.0,5.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M204.0,242.0 208.0,245.0 208.0,253.0 211.0,251.0 213.0,255.0 215.0,252.0 230.0,257.0 235.0,254.0 236.0,266.0 237.0,253.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M312.0,4.0 306.0,13.0 316.0,25.0 319.0,23.0 317.0,6.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M67.0,490.0 79.0,533.0 85.0,537.0 131.0,537.0 137.0,534.0 137.0,528.0 129.0,535.0 83.0,533.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M110.0,7.0 106.0,14.0 110.0,23.0 115.0,24.0 118.0,21.0 117.0,10.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M278.0,229.0 253.0,237.0 267.0,236.0 273.0,246.0 275.0,275.0 267.0,317.0 272.0,311.0 270.0,306.0 275.0,277.0 273.0,235.0 280.0,231.0Z"/><path fill="#eccaa7" fill-rule="evenodd" d="M173.0,190.0 183.0,210.0 194.0,214.0 179.0,199.0 183.0,195.0 187.0,202.0 184.0,194.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M203.0,395.0 202.0,399.0 207.0,402.0 205.0,408.0 168.0,451.0 153.0,463.0 154.0,473.0 154.0,465.0 210.0,405.0 207.0,404.0 210.0,400.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M257.0,451.0 261.0,435.0 257.0,451.0 259.0,461.0 331.0,463.0 340.0,458.0 340.0,445.0 339.0,455.0 333.0,461.0 264.0,461.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M198.0,238.0 214.0,259.0 221.0,275.0 216.0,260.0 203.0,240.0 216.0,247.0 213.0,241.0 250.0,239.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M139.0,143.0 135.0,143.0 121.0,157.0 108.0,161.0 98.0,159.0 99.0,165.0 106.0,165.0 108.0,183.0 105.0,175.0 107.0,164.0 122.0,159.0 137.0,144.0 140.0,145.0 140.0,153.0Z"/><path fill="#357a24" fill-rule="evenodd" d="M265.0,247.0 252.0,257.0 240.0,254.0 239.0,267.0 240.0,261.0 244.0,263.0 244.0,257.0 248.0,261.0 246.0,265.0 249.0,262.0 252.0,266.0 261.0,265.0 256.0,261.0 258.0,265.0 255.0,266.0 251.0,258.0 254.0,255.0 261.0,257.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M233.0,180.0 238.0,188.0 246.0,192.0 245.0,179.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M299.0,162.0 296.0,178.0 292.0,177.0 292.0,169.0 288.0,166.0 286.0,170.0 292.0,181.0 304.0,174.0Z"/><path fill="#771210" fill-rule="evenodd" d="M130.0,65.0 131.0,73.0 140.0,76.0 137.0,64.0ZM133.0,65.0 138.0,68.0 137.0,73.0 131.0,70.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M300.0,67.0 286.0,106.0 282.0,106.0 283.0,109.0 287.0,108.0 284.0,113.0 293.0,120.0 299.0,138.0 301.0,130.0 287.0,110.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M275.0,252.0 270.0,240.0 266.0,242.0 266.0,237.0 263.0,242.0 265.0,249.0 252.0,254.0 258.0,252.0 263.0,257.0 271.0,249.0 272.0,258.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M332.0,393.0 335.0,399.0 324.0,405.0 317.0,424.0 321.0,429.0 319.0,420.0 323.0,409.0 337.0,403.0Z"/><path fill="#717556" fill-rule="evenodd" d="M242.0,365.0 225.0,356.0 195.0,387.0 226.0,357.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M183.0,70.0 177.0,77.0 186.0,72.0 200.0,79.0 199.0,92.0 194.0,93.0 195.0,97.0 204.0,96.0 198.0,93.0 205.0,80.0Z"/><path fill="#f0a09a" fill-rule="evenodd" d="M137.0,147.0 123.0,161.0 109.0,167.0 137.0,154.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M160.0,38.0 149.0,51.0 151.0,70.0 148.0,73.0 157.0,72.0 167.0,81.0 151.0,67.0 150.0,52.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M140.0,105.0 133.0,99.0 132.0,93.0 131.0,103.0 110.0,101.0 120.0,101.0 137.0,110.0 139.0,107.0 136.0,108.0 134.0,103.0Z"/><path fill="#717556" fill-rule="evenodd" d="M247.0,388.0 225.0,375.0 206.0,395.0 225.0,376.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M103.0,37.0 110.0,57.0 104.0,89.0 111.0,52.0Z"/><path fill="#717556" fill-rule="evenodd" d="M163.0,366.0 159.0,387.0 162.0,385.0 163.0,389.0 160.0,390.0 164.0,392.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M288.0,175.0 282.0,181.0 282.0,188.0 291.0,183.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M105.0,92.0 104.0,103.0 85.0,112.0 92.0,120.0 89.0,111.0 108.0,104.0 104.0,102.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M330.0,0.0 334.0,8.0 345.0,5.0 355.0,11.0 349.0,4.0 346.0,6.0 342.0,2.0 334.0,6.0Z"/><path fill="#f0a09a" fill-rule="evenodd" d="M179.0,195.0 183.0,203.0 191.0,208.0 182.0,194.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M74.0,147.0 97.0,158.0 93.0,152.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M303.0,12.0 310.0,3.0 316.0,3.0 320.0,12.0 320.0,5.0 325.0,1.0 335.0,6.0 334.0,12.0 338.0,4.0 346.0,4.0 354.0,11.0 345.0,3.0 334.0,4.0 325.0,0.0 320.0,4.0 308.0,4.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M325.0,432.0 323.0,434.0 329.0,438.0 328.0,445.0 338.0,446.0 339.0,451.0 339.0,443.0 336.0,440.0 334.0,445.0 329.0,445.0 328.0,441.0 333.0,438.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M93.0,124.0 74.0,145.0 84.0,148.0 79.0,146.0 79.0,142.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M290.0,248.0 288.0,271.0 291.0,274.0 297.0,258.0 295.0,262.0 290.0,259.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M323.0,390.0 276.0,403.0 266.0,409.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M103.0,12.0 109.0,5.0 117.0,5.0 120.0,12.0 119.0,7.0 124.0,2.0 131.0,2.0 135.0,12.0 141.0,2.0 148.0,3.0 153.0,8.0 152.0,12.0 154.0,10.0 147.0,2.0 134.0,4.0 126.0,0.0 121.0,5.0 109.0,5.0Z"/><path fill="#717556" fill-rule="evenodd" d="M176.0,352.0 174.0,355.0 181.0,355.0 185.0,372.0 183.0,354.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M220.0,280.0 221.0,317.0 219.0,321.0 216.0,320.0 220.0,325.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M290.0,276.0 287.0,274.0 281.0,286.0 285.0,284.0 287.0,287.0Z"/><path fill="#717556" fill-rule="evenodd" d="M293.0,116.0 291.0,119.0 297.0,132.0 300.0,129.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M132.0,0.0 123.0,0.0 112.0,6.0 109.0,4.0 102.0,11.0Z"/><path fill="#eae8e6" fill-rule="evenodd" d="M121.0,377.0 116.0,386.0 124.0,389.0 126.0,394.0 119.0,404.0 128.0,390.0 118.0,384.0Z"/><path fill="#f0a09a" fill-rule="evenodd" d="M265.0,239.0 257.0,239.0 261.0,239.0 261.0,243.0 253.0,240.0 255.0,244.0 248.0,246.0 259.0,245.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M299.0,213.0 282.0,227.0 282.0,230.0 287.0,230.0 288.0,236.0 288.0,224.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M124.0,495.0 125.0,499.0 122.0,500.0 126.0,512.0 129.0,511.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M138.0,65.0 141.0,76.0 135.0,77.0 130.0,86.0 132.0,89.0 136.0,79.0 144.0,74.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M226.0,180.0 240.0,193.0 261.0,194.0 248.0,195.0 236.0,190.0 235.0,185.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M353.0,40.0 350.0,39.0 346.0,49.0 348.0,52.0 343.0,53.0 346.0,55.0Z"/><path fill="#d40a0f" fill-rule="evenodd" d="M133.0,66.0 131.0,69.0 138.0,73.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M139.0,386.0 133.0,385.0 136.0,388.0 131.0,388.0 120.0,405.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M295.0,37.0 295.0,42.0 304.0,50.0 301.0,65.0 305.0,48.0 296.0,42.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M308.0,3.0 322.0,5.0 325.0,0.0Z"/><path fill="#4a3520" fill-rule="evenodd" d="M234.0,408.0 220.0,410.0 229.0,413.0 228.0,410.0Z"/><path fill="#717556" fill-rule="evenodd" d="M159.0,41.0 148.0,53.0 151.0,55.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M184.0,193.0 180.0,198.0 191.0,207.0 187.0,199.0 182.0,199.0Z"/><path fill="#f0a09a" fill-rule="evenodd" d="M220.0,333.0 226.0,337.0 230.0,334.0 225.0,333.0 224.0,329.0Z"/><path fill="#717556" fill-rule="evenodd" d="M330.0,438.0 329.0,445.0 338.0,452.0 337.0,445.0 330.0,445.0 335.0,440.0Z"/><path fill="#717556" fill-rule="evenodd" d="M174.0,80.0 169.0,85.0 178.0,94.0 180.0,90.0 175.0,88.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M319.0,402.0 315.0,403.0 315.0,407.0 305.0,410.0 301.0,407.0 296.0,412.0 312.0,407.0 318.0,410.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M274.0,291.0 271.0,291.0 273.0,298.0 267.0,312.0 270.0,313.0 268.0,308.0 273.0,308.0 275.0,304.0 269.0,306.0 273.0,295.0 276.0,294.0 277.0,298.0Z"/><path fill="#a39788" fill-rule="evenodd" d="M137.0,3.0 152.0,5.0 147.0,4.0 146.0,0.0Z"/></g><clipPath id="c-hang-head" clipPathUnits="userSpaceOnUse"><polygon points="29.18,18.03 61.71,18.03 61.71,55.02 29.18,55.02"/></clipPath><clipPath id="c-hang-body" clipPathUnits="userSpaceOnUse"><polygon points="27.51,44.05 65.06,44.05 65.06,70.07 27.51,70.07"/></clipPath><clipPath id="c-hang-armL" clipPathUnits="userSpaceOnUse"><polygon points="0.00,0.00 39.41,0.00 39.41,44.05 0.00,44.05"/></clipPath><clipPath id="c-hang-armR" clipPathUnits="userSpaceOnUse"><polygon points="46.28,0.00 85.69,0.00 85.69,44.05 46.28,44.05"/></clipPath><clipPath id="c-hang-legL" clipPathUnits="userSpaceOnUse"><polygon points="0.00,60.97 44.61,60.97 44.61,100.00 0.00,100.00"/></clipPath><clipPath id="c-hang-legR" clipPathUnits="userSpaceOnUse"><polygon points="41.08,60.97 85.69,60.97 85.69,100.00 41.08,100.00"/></clipPath></defs><g class="p-hang-legL" style="transform-origin:36.06px 63.01px;transform-box:view-box"><g clip-path="url(#c-hang-legL)"><use xlink:href="#a-hang" href="#a-hang"/></g></g><g class="p-hang-legR" style="transform-origin:49.63px 63.01px;transform-box:view-box"><g clip-path="url(#c-hang-legR)"><use xlink:href="#a-hang" href="#a-hang"/></g></g><g class="p-hang-body" style="transform-origin:42.75px 62.08px;transform-box:view-box"><g clip-path="url(#c-hang-body)"><use xlink:href="#a-hang" href="#a-hang"/></g></g><g class="p-hang-armL" style="transform-origin:32.53px 44.05px;transform-box:view-box"><g clip-path="url(#c-hang-armL)"><use xlink:href="#a-hang" href="#a-hang"/></g></g><g class="p-hang-armR" style="transform-origin:53.16px 44.05px;transform-box:view-box"><g clip-path="url(#c-hang-armR)"><use xlink:href="#a-hang" href="#a-hang"/></g></g><g class="p-hang-head" style="transform-origin:42.75px 50.00px;transform-box:view-box"><g clip-path="url(#c-hang-head)"><use xlink:href="#a-hang" href="#a-hang"/></g></g></svg>';
+  var ART_W = 52.8, ART_H = 85.7;
+
+  function buildWalker() {
+    var h1 = document.querySelector('.hero h1');
+    if (!h1 || !KIKI_G || !KIKI_G.d || !window.Path2D) return;
+
+    // (1) 逐字拆 span
+    if (!h1.__kch) {
+      var raw = h1.textContent, arr = [], i0;
+      h1.textContent = '';
+      for (i0 = 0; i0 < raw.length; i0++) {
+        var sp0 = document.createElement('span');
+        sp0.className = 'kch';
+        sp0.textContent = raw.charAt(i0);
+        h1.appendChild(sp0);
+        arr.push(sp0);
+      }
+      h1.__kch = arr;
+    }
+    var chars = h1.__kch, cs = getComputedStyle(h1);
+    var F = parseFloat(cs.fontSize) || 23;
+    var LH = parseFloat(cs.lineHeight) || F * 1.3;
+    var hr = h1.getBoundingClientRect();
+    var W = Math.max(40, Math.ceil(hr.width)), H = Math.ceil(F * 2.6);
+    // 字迹真实水平中点：h1 是块级元素，横屏时块宽远大于文字长度，
+    // 用块宽一半判朝向，最右端贴边往下就会误判成左侧（人背对字）。
+    var TXMID = hr.width * 0.5;
+    try {
+      var rFirst = chars[0].getBoundingClientRect();
+      var rLast = chars[chars.length - 1].getBoundingClientRect();
+      TXMID = (rFirst.left + rLast.right) / 2 - hr.left;
+    } catch (e) {}
+
+    var k = F / (KIKI_G.upm || 1000);
+    // 字体没加载完时 measureText 拿到的是回退字体的 asc/desc，算出来的基线是错的，
+    // 于是 ts[] 整条地形偏高/偏低，脚就会埋进字里（安卓 WebView 上尤其明显）。
+    // 把字体就绪状态塞进签名里：字体一到位就强制重建一次地形。
+    var fOK = (document.fonts && document.fonts.check) ? (document.fonts.check('700 ' + F + 'px KikiHead') ? 1 : 0) : 1;
+    var sig = W + '|' + F.toFixed(2) + '|' + LH.toFixed(2) + '|' + chars.length + '|' + fOK;
+    if (h1.__kwSig === sig && document.querySelector('.kiki-walker')) return;
+    h1.__kwSig = sig;
+    // 真的需要重建时，把旧的那套连同它的动画循环一起作废，避免两个 loop 抢着写 transform
+    window.__kwGen = (window.__kwGen || 0) + 1;
+    var myGen = window.__kwGen;
+    Array.prototype.forEach.call(document.querySelectorAll('.kiki-walker'), function (el) { el.remove(); });
+
+    // (2) 栅格化取上沿 / 下沿
+    var cvs = document.createElement('canvas');
+    cvs.width = W * 2; cvs.height = H * 2;
+    var ctx = cvs.getContext('2d');
+    if (!ctx) return;
+    // 基线一律用字体文件自己的 asc/desc（KIKI_G 里就有），绝不用 ctx.measureText：
+    // 安卓 WebView 上字体没就绪时 measureText 返回回退字体的度量，基线整体偏几像素，
+    // 地形线跟着错位，脚就陷进字里（膝盖以下看不见的真凶）。
+    // 每个字直接用自己 span 的盒子上沿/高度反算基线，顺带免疫标题换行、padding。
+    var upm = KIKI_G.upm || 1000;
+    var AS = (KIKI_G.ascent != null ? KIKI_G.ascent : 1160) / upm * F;
+    var DE = Math.abs((KIKI_G.descent != null ? KIKI_G.descent : -288) / upm) * F;
+    ctx.scale(2, 2);
+    ctx.fillStyle = '#fff';
+    chars.forEach(function (sp) {
+      var d = KIKI_G.d[sp.textContent];
+      if (!d) return;
+      var r = sp.getBoundingClientRect();
+      var byy = r.top - hr.top + (r.height - (AS + DE)) / 2 + AS;
+      ctx.save();
+      ctx.translate(r.left - hr.left, byy);
+      ctx.scale(k, -k);
+      try { ctx.fill(new Path2D(d)); } catch (e) {}
+      ctx.restore();
+    });
+    var img;
+    try { img = ctx.getImageData(0, 0, cvs.width, cvs.height).data; } catch (e) { return; }
+    function alpha(x, y) { return img[(y * cvs.width + x) * 4 + 3]; }
+    var top = [], bot = [], x, y;
+    for (x = 0; x < W; x++) {
+      top[x] = -1; bot[x] = -1;
+      for (y = 0; y < cvs.height; y++) {
+        if (alpha(Math.min(cvs.width - 1, x * 2), y) > 28) { top[x] = y / 2; break; }
+      }
+      for (y = cvs.height - 1; y >= 0; y--) {
+        if (alpha(Math.min(cvs.width - 1, x * 2), y) > 28) { bot[x] = y / 2; break; }
+      }
+    }
+    var env = [], ts = [], bs = [], d3;
+    for (x = 0; x < W; x++) {
+      var hi = -1, lo = -1;
+      for (d3 = -1; d3 <= 1; d3++) {
+        var xa = x + d3;
+        if (xa < 0 || xa >= W) continue;
+        if (top[xa] >= 0 && (hi < 0 || top[xa] < hi)) hi = top[xa];
+        if (bot[xa] > lo) lo = bot[xa];
+      }
+      env[x] = hi;
+      bs[x] = lo;
+    }
+    for (x = 0; x < W; x++) {
+      var s1 = 0, n1 = 0, s2 = 0, n2 = 0;
+      for (d3 = -2; d3 <= 2; d3++) {
+        var xb = x + d3;
+        if (xb < 0 || xb >= W) continue;
+        if (env[xb] >= 0 && env[x] >= 0) { s1 += env[xb]; n1++; }
+        if (bs[xb] >= 0 && bs[x] >= 0) { s2 += bs[xb]; n2++; }
+      }
+      ts[x] = n1 ? s1 / n1 : env[x];
+      bot[x] = n2 ? s2 / n2 : bs[x];
+    }
+
+    // (3) 尺寸：间隔点墨迹直径 × 2.5
+    var dots = [], dot = null;
+    chars.forEach(function (sp) {
+      if (sp.textContent !== '·') return;
+      var r = sp.getBoundingClientRect();
+      var cx = Math.max(0, Math.min(cvs.width - 1, Math.round((r.left - hr.left + r.width / 2) * 2)));
+      var t = -1, b = -1;
+      for (var yy = 0; yy < cvs.height; yy++) {
+        if (alpha(cx, yy) > 28) { if (t < 0) t = yy; b = yy; }
+      }
+      if (t >= 0) dots.push({ x0: r.left - hr.left, x1: r.left - hr.left + r.width, t: t / 2, b: b / 2, span: sp });
+    });
+    dot = dots[0] || null;
+    var dH = dot ? Math.max(2, dot.b - dot.t) : F * 0.26;
+    var SH = Math.max(11, dH * 2.5);
+    var PH = SH * 1.48;                 // 小人总高（比上一版小 1/6）
+    var PW = PH * ART_W / 100;
+
+    // (4) 可走段
+    var runs = [], cur = null;
+    for (x = 0; x < W; x++) {
+      if (ts[x] >= 0) {
+        if (!cur) { cur = { x0: x, x1: x }; runs.push(cur); }
+        cur.x1 = x;
+      } else cur = null;
+    }
+    var merged = [];
+    runs.forEach(function (r) {
+      var last = merged[merged.length - 1];
+      if (last && r.x0 - last.x1 <= 4) last.x1 = r.x1;
+      else merged.push({ x0: r.x0, x1: r.x1 });
+    });
+    if (merged.length < 2) return;
+
+    // (5) 舞台 + 两套剪纸
+    var ns = 'http://www.w3.org/2000/svg';
+    var ropes = document.createElementNS(ns, 'svg');
+    ropes.setAttribute('class', 'kw-ropes');
+    ropes.setAttribute('width', W);
+    ropes.setAttribute('height', H);
+    ropes.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    var walker = document.createElement('div');
+    walker.className = 'kiki-walker';
+    walker.innerHTML = ART_WALK + ART_HANG;
+    var artW = walker.querySelector('.kw-art-walk');
+    var artH = walker.querySelector('.kw-art-hang');
+    [artW, artH].forEach(function (a) {
+      if (!a) return;
+      var vb = (a.getAttribute('viewBox') || '0 0 52.8 100').split(' ');
+      var ar = parseFloat(vb[2]) / parseFloat(vb[3]);
+      a.setAttribute('height', PH.toFixed(1));
+      a.setAttribute('width', (PH * ar).toFixed(1));
+    });
+    var prevWalker = document.querySelector('.kiki-walker');
+    if (prevWalker) prevWalker.remove();
+    var prevRopes = h1.querySelector('.kw-ropes');
+    if (prevRopes) prevRopes.remove();
+    h1.appendChild(ropes);
+    // 关键：挂到 body 上做 fixed 铺满页的层，不再放进 h1。
+    // 放进 h1 时，祖先的 overflow/transform/背景/伪元素任意一个都能把小腿裁掉或盖住 ——
+    // 而且这些在各家 WebView 上行为不一致，桌面看不出来。搬到顶层就一律盖不住了。
+    walker.style.position = 'fixed';
+    document.body.appendChild(walker);
+
+    // 一开始只显示走姿那套，别两张叠着
+    artW.style.display = 'block';
+    artH.style.display = 'none';
+
+    // 部件表（左键=走姿侧身图，右键=攀爬正面图）；走姿的腿是两段骨：大腿 + 小腿
+    var PWp = {}, PHp = {};
+    ['legB', 'legF', 'body', 'armB', 'head'].forEach(function (n) {
+      PWp[n] = walker.querySelector('.p-walk-' + n);
+    });
+    ['legL', 'legR', 'body', 'armL', 'armR', 'head'].forEach(function (n) {
+      PHp[n] = walker.querySelector('.p-hang-' + n);
+    });
+
+    function put(tbl, name, deg, dy, tx) {
+      var el = tbl[name];
+      if (!el) return;
+      var t = deg ? 'rotate(' + deg.toFixed(2) + 'deg)' : '';
+      if (dy) t += (t ? ' ' : '') + 'translateY(' + dy.toFixed(2) + 'px)';
+      if (tx) t += (t ? ' ' : '') + 'translateX(' + tx.toFixed(2) + 'px)';
+      el.style.transform = t;
+    }
+    var useHang = false;
+    function setArt(hang) {
+      if (useHang === hang) return;
+      useHang = hang;
+      artW.style.display = hang ? 'none' : 'block';
+      artH.style.display = hang ? 'block' : 'none';
+      if (!hang) artH.style.transform = '';
+    }
+
+    // (5a) 走路逐帧：AI 按 4 关键姿势出的 7 张迈步图拼成一条横向雪碧图（docs/walk-sheet.png），
+    //      用 img + translateX 切帧。不用 SVG image + data URI —— 那套在安卓 WebView 上整块不出图（只剩几个点）。
+    var WF = { w: 150, h: 180, n: 7, url: 'walk-sheet.png?v=4', box: null, im: null, cellW: 0, cellH: 0, bad: false };
+
+    // (5b) 走路用的腿：切片的腿只有 23 unit 高（页面上≈6px）、两只脚本来就岔开 29 unit，
+    //      绕髋怎么转都跨不过去，所以走路这一段改成"画出来的两段腿"：
+    //      脚可以真的落到任意位置、抬起来、绕到另一只脚前面；裤子/肤色/黑边跟原图同一套色。
+    var LEGS = { g: null, inkB: null, whtB: null, ftB: null, inkF: null, whtF: null, ftF: null };
+    (function buildLegs() {
+      var NS = 'http://www.w3.org/2000/svg';
+      var g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'kw-legs');
+      function mk(tag, attrs) {
+        var el = document.createElementNS(NS, tag);
+        for (var k in attrs) el.setAttribute(k, attrs[k]);
+        g.appendChild(el);
+        return el;
+      }
+      function leg(k, col) {
+        var o = mk('path', { fill: 'none', stroke: '#0a0b06', 'stroke-width': 14.6,
+                             'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'class': 'kw-lk-' + k });
+        var w = mk('path', { fill: 'none', stroke: col, 'stroke-width': 12.4,
+                             'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'class': 'kw-lw-' + k });
+        var f = mk('ellipse', { rx: 4.9, ry: 2.3, fill: '#eccaa7', stroke: '#0a0b06', 'stroke-width': 0.7, 'class': 'kw-lf-' + k });
+        return [o, w, f];
+      }
+      var a = leg('B', '#dfdcd8'), b = leg('F', '#eae8e6');
+      LEGS.g = g; LEGS.inkB = a[0]; LEGS.whtB = a[1]; LEGS.ftB = a[2];
+      LEGS.inkF = b[0]; LEGS.whtF = b[1]; LEGS.ftF = b[2];
+      var shp = artW.querySelector('.p-walk-shorts');
+      if (shp && shp.nextSibling) artW.insertBefore(g, shp.nextSibling);
+      else artW.appendChild(g);
+      g.style.display = 'none';   // 逐帧版接管后，这套画的腿不再用
+    })();
+
+    // (5c) 逐帧播放器：一个 overflow:hidden 的框 + 一条横向雪碧图，切帧靠 translateX
+    (function buildFrames() {
+      var wrap = document.createElement('div');
+      wrap.className = 'kiki-spr';
+      // 雪碧图在脚本解析阶段就开始下载（首开第一圈就能走动，而不是先看一段剪纸静帧）
+      if (!window.__kwSheet) {
+        var pre = new Image();
+        pre.alt = '';
+        pre.src = WF.url;
+        window.__kwSheet = pre;
+      }
+      // 位置和大小不再拍脑袋：直接量剪纸那套图的实际包围盒（getBBox），让雪碧图的
+      // 脚底、头顶、身体中线跟剪纸一模一样。否则一旦估算比例错，人就像沉进字里。
+      // 雪碧图的框一律与 walker 自己等高：没人再问 getBBox 要高度。
+      // 上一版用 bb.y+bb.height 当脚底线，只要某个 WebView 的 getBBox 多算了一点
+      // （比如把 clipPath 之外的内容也算进去），脚底线就整体下移 —— 人就陷进字里。
+      // 现在脚底 = walker 底边 = 地形线，只有一条路，不存在第二套数。
+      var U = PH / 100;
+      var bb = null;
+      try { bb = artW.getBBox(); } catch (e) { bb = null; }
+      var cellH = PH;
+      var cellW = cellH * WF.w / WF.h;
+      WF.cellW = cellW; WF.cellH = cellH;
+      WF.footY = PH;                          // 脚底线就是 walker 底边
+      WF.midX = (bb && bb.width > 0) ? (bb.x + bb.width / 2) * U : PW / 2;
+      wrap.style.width = cellW.toFixed(2) + 'px';
+      wrap.style.height = cellH.toFixed(2) + 'px';
+      wrap.style.left = (WF.midX - cellW / 2).toFixed(2) + 'px';
+      wrap.style.top = (WF.footY - cellH).toFixed(2) + 'px';
+      var im = window.__kwSheet || document.createElement('img');
+      im.alt = '';
+      im.style.width = (cellW * WF.n).toFixed(1) + 'px';
+      im.style.height = cellH.toFixed(1) + 'px';
+      // 图脚必须钉在框底：inline 图会按基线留出下行空隙，各家 WebView 的行高/字号默认值
+      // 不一样，脚就会被顶下去几像素，又正好被 overflow:hidden 从下面裁掉 ——
+      // 看起来就是"站着没事、一走腿就陷进字里"。绝对定位 + bottom:0，脚永远是框底，裁不到。
+      im.style.position = 'absolute';
+      im.style.left = '0';
+      im.style.bottom = '0';
+      im.style.top = 'auto';
+      im.style.display = 'block';
+      im.style.verticalAlign = 'top';
+      im.style.transform = 'translateX(0px)';
+      im.onerror = function () {     // 图没下来就先退回剪纸版，别让人凭空消失
+        WF.bad = true; wrap.style.display = 'none';
+        artW.style.display = 'block';
+      };
+      im.src = WF.url;
+      wrap.appendChild(im);
+      wrap.style.display = 'none';
+      walker.appendChild(wrap);
+      WF.box = wrap; WF.im = im;
+    })();
+
+    // (5d) 垂直段逐帧：手在身前胸前、背弓、面朝字（参照 FC《忍者龙剑传》爬墙），4 帧循环。
+    //      素材 docs/climb-sheet.png = 4 帧 × 150×220，角色身高压到 180 图像像素（与 walk-sheet 同尺度，
+    //      换图时人不会忽大忽小）。框高 = PH × 220/180，框底钉在脚底（= 地形线），
+    //      所以从雪碧图换到攀爬图，脚还在同一条线上 —— 这是"不许沉进字里"的第二道保险。
+    var CF = { w: 150, h: 220, charH: 180, n: 4, url: 'climb-sheet.png?v=1', vertFps: 10,
+               box: null, im: null, cellW: 0, cellH: 0, bad: false, flip: null };
+    (function buildClimb() {
+      var wrap = document.createElement('div');
+      wrap.className = 'kiki-spr';
+      if (!window.__kwClimb) {
+        var pre2 = new Image(); pre2.alt = ''; pre2.src = CF.url; window.__kwClimb = pre2;
+      }
+      var cellH = PH * CF.h / CF.charH;
+      var cellW = cellH * CF.w / CF.h;
+      CF.cellH = cellH; CF.cellW = cellW;
+      wrap.style.width = cellW.toFixed(2) + 'px';
+      wrap.style.height = cellH.toFixed(2) + 'px';
+      wrap.style.left = (PW / 2 - cellW / 2).toFixed(2) + 'px';
+      wrap.style.top = (PH - cellH).toFixed(2) + 'px';         // 框底 = walker 底边 = 脚底
+      wrap.style.transformOrigin = '50% 50%';
+      var im = window.__kwClimb || document.createElement('img');
+      im.alt = '';
+      im.style.width = (cellW * CF.n).toFixed(1) + 'px';
+      im.style.height = cellH.toFixed(1) + 'px';
+      im.style.position = 'absolute';
+      im.style.left = '0'; im.style.bottom = '0'; im.style.top = 'auto';
+      im.style.display = 'block'; im.style.verticalAlign = 'top';
+      im.style.transform = 'translateX(0px)';
+      im.onerror = function () { CF.bad = true; wrap.style.display = 'none'; };
+      im.src = CF.url;
+      wrap.appendChild(im);
+      wrap.style.display = 'none';
+      walker.appendChild(wrap);
+      CF.box = wrap; CF.im = im;
+    })();
+    function cfReady() {
+      return !!(CF.im && CF.im.complete && (CF.im.naturalWidth || 0) > 0);
+    }
+    function cfShow(on) {
+      if (!CF.box) return;
+      if (CF.bad || (on && !cfReady())) on = false;
+      CF.box.style.display = on ? 'block' : 'none';
+      if (on) {
+        artW.style.display = 'none'; artH.style.display = 'none';
+        if (WF.box) WF.box.style.display = 'none';
+      }
+    }
+    // 镜像换朝向：翻转整框（不是翻图），帧的 translateX 一起翻，帧序不会错位
+    function cfFrame(i, flip) {
+      if (!CF.im) return;
+      if (CF.box && CF.flip !== flip) {
+        CF.flip = flip;
+        CF.box.style.transform = flip ? 'scaleX(-1)' : '';
+      }
+      CF.im.style.transform = 'translateX(' + (-(i * CF.cellW)).toFixed(1) + 'px)';
+    }
+
+    var WFw = [1.12, 1.0, 0.9, 1.06, 1.12, 1.0, 0.9];   // 每帧占时（接触/下沉/过渡/抬起...）
+    function sprReady() {
+      return !!(WF.im && WF.im.complete && (WF.im.naturalWidth || 0) > 0);
+    }
+    // 自校准：图真到了以后，量一次"图实际画在哪、框底在哪"，差多少就补多少。
+    // 脚位不允许依赖任何浏览器默认行为（inline 基线、行高、overflow 裁切各家都不一样），
+    // 量到偏差就当场改回来 —— 这是最后一道保险。
+    function sprCalibrate() {
+      if (!WF.box || !WF.im || WF.cal) return;
+      var br = WF.box.getBoundingClientRect(), ir = WF.im.getBoundingClientRect();
+      if (br.height < 2 || ir.height < 2) return;
+      var dy = ir.bottom - br.bottom;          // 正 = 图比框低（腿会陷）
+      if (Math.abs(dy) > 0.4) WF.im.style.bottom = dy.toFixed(2) + 'px';
+      var dh = ir.height - WF.cellH;
+      if (Math.abs(dh) > 0.4) WF.im.style.height = WF.cellH.toFixed(1) + 'px';
+      var dx = (ir.width / WF.n) - WF.cellW;   // 帧宽被 max-width 之类压过就还原
+      if (Math.abs(dx) > 0.4) WF.im.style.width = (WF.cellW * WF.n).toFixed(1) + 'px';
+      WF.cal = 1;
+    }
+    function sprShow(on) {
+      if (CF.box && CF.box.style.display !== 'none') CF.box.style.display = 'none';
+      if (!WF.box) return;
+      if (WF.bad || (on && !sprReady())) on = false;   // 图没解码完就先用剪纸版，绝不出现整个人消失
+      WF.box.style.display = on ? 'block' : 'none';
+      if (on) sprCalibrate();
+      if (on) { artW.style.display = 'none'; artH.style.display = 'none'; }
+      else { artW.style.display = useHang ? 'none' : 'block'; artH.style.display = useHang ? 'block' : 'none'; }
+    }
+    function setSprFrame(i) {
+      if (!WF.im) return;
+      WF.im.style.transform = 'translateX(' + (-(i * WF.cellW)).toFixed(1) + 'px)';
+    }
+    function artPartsShow(on) {
+      ['legB', 'legF', 'body', 'armB', 'head'].forEach(function (n) {
+        var el = PWp[n]; if (el) el.style.display = on ? '' : 'none';
+      });
+    }
+    var wfT0 = 0;
+    function frameIdx() {
+      var tot = 0, i;
+      for (i = 0; i < WFw.length; i++) tot += WFw[i];
+      var now = (window.performance && performance.now) ? performance.now() : Date.now();
+      if (!wfT0) wfT0 = now;
+      var el = (now - wfT0) / 1000;
+      var cyc = 2 * (PH * 0.54) / SPEED;    // 一个完整步态(左右各一步)的时长，跟位移对齐→不滑步
+      var t = (el % cyc) / cyc * tot, acc = 0;
+      for (i = 0; i < WFw.length; i++) { acc += WFw[i]; if (t < acc) return i; }
+      return WFw.length - 1;
+    }
+
+    function legsShow(on) {              // 走路用画的腿；贴边/攀爬用回剪纸腿
+      if (!LEGS.g) return;
+      LEGS.g.style.display = on ? '' : 'none';
+      ['legB', 'legF'].forEach(function (n) {
+        var el = PWp[n];
+        if (el) el.style.display = on ? 'none' : '';
+      });
+    }
+
+    // (6) 攀爬用的线：挂在"字底 ↔ 字底"，只跨过间隔点那种大空隙
+    var bridges = [], i5;
+    dots.forEach(function (dt) {
+      var A = null, B = null, i6;
+      for (i6 = 0; i6 < merged.length; i6++) {
+        if (merged[i6].x1 <= dt.x0 + 1) A = merged[i6];
+        if (!B && merged[i6].x0 >= dt.x1 - 1) B = merged[i6];
+      }
+      if (!A || !B) return;
+      var ax = A.x1 - 1, bx = B.x0 + 1, j5, ay = -1, by = -1;
+      for (j5 = 0; j5 < 6; j5++) {
+        var qa = Math.round(ax - j5);
+        if (qa >= A.x0 && bot[qa] >= 0) { ay = bot[qa]; ax = qa - 0.2; break; }
+      }
+      for (j5 = 0; j5 < 6; j5++) {
+        var qb = Math.round(bx + j5);
+        if (qb <= B.x1 && bot[qb] >= 0) { by = bot[qb]; bx = qb + 0.2; break; }
+      }
+      if (ay < 0 || by < 0) return;
+      var sag = Math.min(PH * 0.34, PH * 0.14 + (bx - ax) * 0.1);
+      bridges.push({ ax: ax, ay: ay, bx: bx, by: by, my: Math.max(ay, by) + sag });
+    });
+    bridges.forEach(function (r6) {
+      var pth = document.createElementNS(ns, 'path');
+      pth.setAttribute('class', 'kw-rope-gap');
+      pth.setAttribute('d', 'M' + r6.ax.toFixed(1) + ' ' + r6.ay.toFixed(1) +
+        ' Q' + ((r6.ax + r6.bx) / 2).toFixed(1) + ' ' + r6.my.toFixed(1) +
+        ' ' + r6.bx.toFixed(1) + ' ' + r6.by.toFixed(1));
+      ropes.appendChild(pth);
+    });
+
+    // (7) 位移
+    var SPEED = F * 0.82, HOPX = F * 1.45, CRAWL = F * 0.95, LOWER = F * 0.9;
+    var st = { mode: 'walk', i: 0, x: merged[0].x0 + 1, y: ts[merged[0].x0 + 1] || 0,
+               ph: 0, dist: 0, t: 0, rot: 0,
+               hp: 0, hd: 0, hx0: 0, hx1: 0, hy0: 0, hy1: 0, hh: 0,
+               vp: 0, vd: 0, vy0: 0, vy1: 0, vx: 0, vafter: 'walk' };
+    // 字体晚到会触发一次重建（fOK 由 0 变 1）。重建时把位置/进度接上，
+    // 否则人会从开头重新站一次 —— 看起来就是"闪一下、然后从左边重来"。
+    var prevSt = window.__kwSt;
+    if (prevSt) {
+      ['x', 'y', 'dist', 'ph', 'i', 'mode', 'hp', 'vp'].forEach(function (kk) {
+        if (prevSt[kk] !== undefined) st[kk] = prevSt[kk];
+      });
+    }
+    window.__kwSt = st;
+    // 调试钩子：URL 带 kwdbg 时才挂出来，方便把小人直接丢进垂直段/跳跃段验帧，不动正式逻辑。
+    if (/kwdbg/.test(location.search)) {
+      window.__kwdbg = { st: st, ts: ts, W: W, PH: PH, vertTo: vertTo, hopTo: hopTo, CF: CF, cfShow: cfShow, cfFrame: cfFrame, poseVert: poseVert,
+        bot: bot, merged: merged, bridges: bridges, lineY: lineY, bottomAt: bottomAt, groundAt: groundAt, TXMID: TXMID, dots: dots };
+    }
+    var alive = true, lastT = 0, land = -9, acc = 0, FIX = 1 / 120;
+    var H1R = null, h1rT = 0;
+    function refreshH1R() { H1R = h1.getBoundingClientRect(); h1rT = st.t; }
+    // 首帧就摆到位：不能等第一个 rAF，否则打开页面时人在 (0,0)，然后"闪"一下跳过去
+    refreshH1R(); h1rT = 0;
+    walker.style.transform = 'translate(' + (H1R.left + st.x - PW / 2).toFixed(2) + 'px,' +
+      (H1R.top + st.y - PH - PH * 0.05).toFixed(2) + 'px)';
+    window.addEventListener('scroll', function () { refreshH1R(); }, { passive: true });
+    window.addEventListener('resize', function () { refreshH1R(); }, { passive: true });
+
+    // 空列（该列没有墨迹，值是 -1）绝不能直接参与插值：
+    // 以前 bottomAt 把 "两列都 -1" 兜成 0，等于说"这儿的字底在行顶"——
+    // 横屏字距被拉开、字符之间出现空列时，横爬经过那里就会**瞬间闪到字的最上方再闪下来**。
+    // 现在一律向左/右找最近的有效列；实在找不到才用全行第一个有效值当兜底。
+    function tsRefOf(arr) {
+      for (var i8 = 0; i8 < W; i8++) if (arr[i8] >= 0) return arr[i8];
+      return -1;
+    }
+    var TSREF = tsRefOf(ts), BOTREF = tsRefOf(bot);
+    function neib(arr, x, dir) {
+      for (var k8 = 0; k8 < 30; k8++) {
+        var q8 = x + dir * k8;
+        if (q8 < 0 || q8 >= W) return -1;
+        if (arr[q8] >= 0) return arr[q8];
+      }
+      return -1;
+    }
+    function colAt(arr, px, dflt) {
+      var i0 = Math.floor(px);
+      if (i0 < 0) i0 = 0;
+      if (i0 > W - 1) i0 = W - 1;
+      var i1 = (i0 + 1 > W - 1) ? i0 : i0 + 1;
+      var u = px - i0, a0 = arr[i0], a1 = arr[i1];
+      if (a0 < 0) a0 = neib(arr, i0, -1);
+      if (a1 < 0) a1 = neib(arr, i1, 1);
+      if (a0 < 0 && a1 < 0) return dflt;
+      if (a0 < 0) return a1;
+      if (a1 < 0) return a0;
+      return a0 * (1 - u) + a1 * u;
+    }
+    function groundAt(px) {
+      return colAt(ts, px, TSREF >= 0 ? TSREF : F * 0.95);
+    }
+    function bottomAt(px) {
+      return colAt(bot, px, BOTREF >= 0 ? BOTREF : F * 1.15);
+    }
+    function bridgeAt(px) {
+      for (var i7 = 0; i7 < bridges.length; i7++) {
+        var r7 = bridges[i7];
+        if (px < r7.ax || px > r7.bx) continue;
+        var u = (px - r7.ax) / Math.max(1, r7.bx - r7.ax), v = 1 - u;
+        return v * v * r7.ay + 2 * v * u * r7.my + u * u * r7.by;
+      }
+      return -1;
+    }
+    // 回程手抓的那条线：有大空隙走绳，其他走字底
+    function lineY(px) {
+      var br = bridgeAt(px);
+      if (br >= 0) return br;
+      return bottomAt(px);
+    }
+    function shakeDot() {
+      for (var i2 = 0; i2 < dots.length; i2++) {
+        if (st.x < dots[i2].x0 - SH * 0.6 || st.x > dots[i2].x1 + SH * 0.6) continue;
+        var sp2 = dots[i2].span;
+        if (!sp2) continue;
+        sp2.classList.remove('kiki-dot-hit');
+        void sp2.offsetWidth;
+        sp2.classList.add('kiki-dot-hit');
+      }
+    }
+    function hopTo(x0, y0, x1, y1, lift) {
+      st.mode = 'hop'; st.hp = 0;
+      st.hd = Math.min(0.66, Math.max(0.28, Math.abs(x1 - x0) / HOPX));
+      st.hx0 = x0; st.hx1 = x1; st.hy0 = y0; st.hy1 = y1; st.hh = lift;
+    }
+    function vertTo(x0, y0, y1, after) {
+      if (window.__kwdbg) window.__kwdbg.vertTo = vertTo;
+      st.mode = 'vert'; st.vp = 0; st.vx = x0;
+      st.vy0 = y0; st.vy1 = y1;
+      st.vd = Math.min(1.4, Math.max(0.34, Math.abs(y1 - y0) / LOWER));
+      st.vafter = after;
+    }
+
+    // (8) 动作：全部靠转切件，参数小、频率稳，像人不像木偶
+    // 走：脚落点驱动。每条腿是一段"髋→膝→脚"的两段线，脚按相位在 +S ↔ -S 之间移动：
+    //     摆动期脚离地、smoothstep 从后划到前（膝往前顶，看得出屈膝）；支撑期脚踩地匀速后退
+    //     （相对地面=脚钉在原地）。前脚会真的越过另一只脚跑到前面，再被它超过。
+    var HIP_B = [24.0, 75.5], HIP_F = [25.5, 75.5], GROUND = 99.4;   // 胯点在身体中线，两条腿才会真的交叉
+    var STRIDE = 13, SWING = 0.46;
+    var _sin = Math.sin, _pi = Math.PI;
+    function footPhase(u) {
+      u = u - Math.floor(u);
+      if (u < SWING) {
+        var t = u / SWING;
+        var e = t * t * (3 - 2 * t);
+        return { dx: -STRIDE + 2 * STRIDE * e, lift: _sin(_pi * t) * 4.2, bend: 4.2 * _sin(_pi * t) };
+      }
+      var w = (u - SWING) / (1 - SWING);
+      return { dx: STRIDE - 2 * STRIDE * w, lift: 0, bend: 0 };
+    }
+    function drawLeg(pair, hip, f) {
+      var fx = hip[0] + f.dx, fy = GROUND - f.lift;
+      var kx = (hip[0] + fx) / 2 + f.bend, ky = (hip[1] + fy) / 2 - f.bend * 0.25;
+      var d = 'M' + hip[0].toFixed(2) + ',' + hip[1].toFixed(2) +
+              'L' + kx.toFixed(2) + ',' + ky.toFixed(2) +
+              'L' + fx.toFixed(2) + ',' + fy.toFixed(2);
+      pair.ink.setAttribute('d', d);
+      pair.wht.setAttribute('d', d);
+      pair.foot.setAttribute('cx', fx.toFixed(2));
+      pair.foot.setAttribute('cy', (fy + 0.4).toFixed(2));
+    }
+    function poseWalk(ph) {
+      sprShow(true);                // 走路=逐帧雪碧图；剪纸件整块收起
+      setSprFrame(frameIdx());
+    }
+    // 贴字边上下（从"递"往下、从下面爬回"科"）：改成"手脚攀着字边走"。
+    // 用双手抓握的攀爬图：两只手交替往上够、两条腿交替蹬，身体随抓握轻微起伏。
+    // 关键是相位跟着"垂直位移"走（step 里传的 ph 由 q*vd 推出），所以手一动、人就挪一截，
+    // 不会再出现"人整体平移、四肢是静帧"的观感。
+    function poseVert(q, t) {
+      if (cfReady() && !CF.bad) {          // 逐帧攀爬：4 帧循环，10 帧/秒，帧序跟时间走但不跟位移解耦
+        cfShow(true);
+        cfFrame(Math.floor(Math.max(0, t) * CF.vertFps) % CF.n, st.x > TXMID);
+        st.rot = 0;
+        return;
+      }
+      // 兜底（攀爬图还没下到）：先用剪纸版撑住，绝不让整个人消失
+      setArt(true);
+      sprShow(false);
+      var a = Math.sin(q * 11), b = Math.sin(q * 11 + Math.PI);
+      var lg = Math.sin(q * 11 + 0.8);
+      put(PHp, 'armL', -9 - 7 * a, Math.max(0, a) * 2.2, 0);
+      put(PHp, 'armR', 9 - 7 * b, Math.max(0, b) * 2.2, 0);
+      put(PHp, 'legL', 13 * lg, Math.max(0, lg) * 1.5);
+      put(PHp, 'legR', -13 * lg, Math.max(0, -lg) * 1.5);
+      put(PHp, 'body', 2.0 * a, -Math.abs(a) * 1.1);
+      put(PHp, 'head', -1.3 * a, 0);
+    }
+    function poseHop(s) {
+      setArt(false);
+      sprShow(false);
+      var lift = Math.sin(Math.PI * s);
+      put(PWp, 'legF', -18 - 6 * lift, 0);
+      put(PWp, 'legB', 13, 0);
+      put(PWp, 'body', -3 * lift, -1.4 * lift);
+      put(PWp, 'armB', -22 * lift, 0);
+      put(PWp, 'head', 2 * lift, 0);
+    }
+    // 攀爬：一只手抓牢、另一只手往上摸；腿交替蹬；躯干小幅摆动
+    function poseClimb(ph) {
+      setArt(true);
+      sprShow(false);
+      var a = Math.sin(ph), b = Math.sin(ph + Math.PI);
+      put(PHp, 'armL', -13 * a, Math.max(0, -a) * 1.6);
+      put(PHp, 'armR', 13 * b, Math.max(0, -b) * 1.6);
+      put(PHp, 'legL', 9 * Math.sin(ph + 1.4), 0);
+      put(PHp, 'legR', -9 * Math.sin(ph + 1.4), 0);
+      put(PHp, 'body', 2.2 * a, 0);
+      put(PHp, 'head', -1.4 * a, 0);
+    }
+    // 吊着往下 / 往上：两手交替倒手，腿轻蹬
+    function poseHang(ph) {
+      setArt(true);
+      sprShow(false);
+      var a = Math.sin(ph), b = Math.sin(ph + Math.PI);
+      put(PHp, 'armL', -9 * a, Math.max(0, a) * 1.2);
+      put(PHp, 'armR', 9 * b, Math.max(0, b) * 1.2);
+      put(PHp, 'legL', 7 * Math.sin(ph + 2), 0);
+      put(PHp, 'legR', -7 * Math.sin(ph + 2), 0);
+      put(PHp, 'body', 1.6 * a, 0);
+    }
+
+    function step(dt) {
+      st.t += dt;
+      if (st.mode === 'walk') {
+        var r = merged[st.i];
+        var dx = SPEED * dt;
+        st.x += dx; st.dist += dx;
+        st.ph = st.dist / (SH * 0.78) * Math.PI;
+        poseWalk(st.ph);
+        st.rot = 0;
+        if (st.x >= r.x1) { st.x = r.x1; arrive(); }
+        else {
+          var gy = groundAt(st.x);
+          if (gy >= 0) st.y += (gy - st.y) * Math.min(1, dt * 10);
+        }
+      } else if (st.mode === 'hop') {
+        st.hp += dt;
+        var s = Math.min(1, st.hp / st.hd);
+        poseHop(s);
+        st.x = st.hx0 + (st.hx1 - st.hx0) * s;
+        st.y = st.hy0 + (st.hy1 - st.hy0) * s - st.hh * 4 * s * (1 - s);
+        if (s >= 1) {
+          st.y = st.hy1;
+          st.mode = 'walk';
+          // 落地时接着"前脚刚踩出去"的相位继续走，别把腿瞬间甩回原位（那就是冲一下又拉回）
+          st.dist = SH * 0.655; st.ph = 0;
+          st.i = Math.min(merged.length - 1, st.i + 1);
+          var rr = merged[st.i];
+          var onDot = rr && rr.x1 - rr.x0 < SH * 0.85;
+          if (onDot) {
+            // 落在间隔点：就这一帧让点弹一下，然后顺势再跳，不做别的反馈
+            shakeDot();
+            if (st.i < merged.length - 1) arrive();
+          }
+        }
+      } else if (st.mode === 'vert') {
+        st.vp += dt;
+        var q = Math.min(1, st.vp / st.vd);
+        st.x = st.vx;
+        st.y = st.vy0 + (st.vy1 - st.vy0) * q;
+        poseVert(q, q * st.vd);
+        st.rot = 0;
+        if (q >= 1) {
+          st.y = st.vy1;
+          if (st.vafter === 'crawl') { st.mode = 'crawl'; st.dist = 0; }
+          else {
+            st.mode = 'walk'; st.ph = 0; st.dist = SH * 0.655; st.i = 0;
+            var ty = ts[Math.round(st.x)];
+            if (ty >= 0) st.y = ty;
+            land = st.t; shakeDot();
+          }
+        }
+      } else if (st.mode === 'crawl') {
+        var mv = CRAWL * dt;
+        st.x -= mv; st.dist += mv;
+        st.ph = st.dist / (SH * 0.6) * Math.PI;
+        // 平滑跟地形：单帧大跳在视觉上就是"闪现"。这里用一阶滤波，约 80ms 内收敛，
+        // 既不会被残存的坏数据甩到行顶，也不会在真地形起伏时卡住。
+        var yC = lineY(st.x) + PH * 0.94;
+        st.y += (yC - st.y) * Math.min(1, dt * 12);
+        poseClimb(st.ph);
+        st.rot = 0;
+        if (st.x <= merged[0].x0 + 1) {
+          st.x = merged[0].x0 + 1;
+          var gy2 = ts[Math.round(st.x)];
+          vertTo(st.x, st.y, gy2 >= 0 ? gy2 : st.y, 'walk');
+        }
+      }
+    }
+
+    function arrive() {
+      var r = merged[st.i], next = merged[st.i + 1];
+      if (!next) {                     // 最右端：吊着字边往下（不转身、不倒着走）
+        vertTo(st.x, st.y, lineY(st.x) + PH * 0.94, 'crawl');
+        return;
+      }
+      var curY = groundAt(r.x1), nextY = groundAt(next.x0);
+      var gap = Math.max(2, next.x0 - r.x1);
+      var lift = gap <= 7 ? Math.max(SH * 0.16, gap * 0.45) : Math.max(SH * 0.32, gap * 0.5);
+      var tx = next.x0 + 1;
+      if (next.x1 - next.x0 < SH * 0.85) tx = (next.x0 + next.x1) / 2;  // 间隔点：落在点心，别落在边上
+      hopTo(st.x, st.y, tx, nextY, lift);   // 空隙一律跳，不踩线
+    }
+
+    function frame(now) {
+      if (myGen !== window.__kwGen) return;      // 已被新一代替换：安静退出，不再 rAF
+      requestAnimationFrame(frame);
+      var dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0.016;
+      lastT = now;
+      if (!alive) return;
+      // 雪碧图还没解码完就"站住等图"，一步都不走。
+      // 否则就是用户说的那个"腿是死的、人却在平移"的静帧滑行 —— 走路这个动作必须有帧才能动。
+      var sheetReady = sprReady() || WF.bad;
+      if (!sheetReady && (st.mode === 'walk' || st.mode === 'idle')) {
+        sprShow(false);            // 这一小段先显示剪纸版（静止站立），不推进位移
+      } else {
+        // 固定步长推进：动作快慢只跟设计值有关，不受帧率抖动影响
+        acc += dt;
+        var guard = 0;
+        while (acc >= FIX && guard++ < 6) { step(FIX); acc -= FIX; }
+      }
+      // 攀爬图朝向：贴字边上下时脸朝字，横爬时脸朝行进方向
+      if (useHang) {
+        var ft = (st.mode === 'crawl' || (st.mode === 'vert' && st.x > TXMID)) ? 'scaleX(-1)' : '';
+        if (artH.style.transform !== ft) artH.style.transform = ft;
+      } else {
+        // 侧身图朝右：在右边贴边往下时翻过来，脸朝字（往左）
+        var wt = (st.mode === 'vert' && st.x > TXMID) ? 'scaleX(-1)' : '';
+        if (artW.style.transform !== wt) artW.style.transform = wt;
+      }
+      var LIFT = PH * 0.05;   // 脚比墨迹上沿再抬 5%：视觉上就是站在字上，物理上永不与字重叠
+      // fixed 层用的是视口坐标：h1 的矩形 + 局部坐标。h1 滚走了就同步跟过去。
+      if (!H1R || (st.t - h1rT) > 0.3 || !h1.isConnected) { refreshH1R(); }
+      walker.style.transform = 'translate(' + (H1R.left + st.x - PW / 2).toFixed(2) + 'px,' +
+        (H1R.top + st.y - PH - LIFT).toFixed(2) + 'px)';
+    }
+    requestAnimationFrame(frame);
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) { alive = es[0].isIntersecting; }, { threshold: 0.15 }).observe(h1);
+    }
+  }
+
+  function start() {
+    buildBeam();
+    // 屏幕旋转 / 折叠屏切换 / 窗口变化：胶囊长度变了就得按新轮廓重画，
+    // 否则光还在照着旧的（竖屏那条短）路径跑。
+    var beamBtn = document.querySelector('.cbtn');
+    if (beamBtn && window.ResizeObserver) {
+      new ResizeObserver(scheduleBeam).observe(beamBtn);
+    }
+    window.addEventListener('resize', scheduleBeam);
+    window.addEventListener('orientationchange', function () { setTimeout(buildBeam, 320); setTimeout(buildWalker, 360); });
+    // 报头小人：字体是外链 woff2，等它真正到了再量（否则量到的是回退字体的行高）
+    buildWalker();
+    buildVine();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleWalker);
+    window.addEventListener('resize', scheduleWalker);
+    hardLand();          // 跨文档带 #锚点进来时，见下方 hardLand 注释
+    // 顶部阅读进度光条（滚动时间线驱动，不支持就什么都不显示）
+    var bar = document.createElement('div');
+    bar.className = 'kiki-progress';
+    document.body.appendChild(bar);
+
+    var cards = document.querySelectorAll('.cards > .card');
+
+    // 首屏已经在画面里的卡不参与：一进来就"依次闪下去"很别扭。只有后面滚进来的才发。
+    var initial = [];
+    var h = window.innerHeight;
+    Array.prototype.forEach.call(cards, function (c) {
+      var r = c.getBoundingClientRect();
+      if (r.top < h - 40 && r.bottom > 0) initial.push(c);
+    });
+
+    // 卡片滚进视野：发水波纹（淡入已去掉，见 CSS 5d 注释）
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          io.unobserve(en.target);
+          if (initial.indexOf(en.target) >= 0) return;  // 进来时就在画面里，跳过
+          pop(en.target, 0);
+        });
+      }, { threshold: 0.3, rootMargin: '0px 0px -8% 0px' });
+      Array.prototype.forEach.call(cards, function (c) { io.observe(c); });
+    }
+
+    // 数字递增：报头/候选条/摘要里的数字从 0 数上去，滚进视野触发一次。
+    // wrapNums() 已在 DOMContentLoaded 提前折好，这里只负责触发。
+    function countUp(el) {
+      var d = el.__kikiNum;
+      if (!d || el.getAttribute('data-kiki-counted')) return;
+      el.setAttribute('data-kiki-counted', '1');
+      var span = d.span, target = d.target, pad = d.pad;
+      var t0 = null, dur = 1800;              // 1.8s：太快会"一进页面就数完了"，看不出效果
+      function frame(ts) {
+        if (t0 === null) t0 = ts;
+        var p = Math.min(1, (ts - t0) / dur);
+        var e = 1 - Math.pow(1 - p, 3);          // ease out cubic
+        var v = String(Math.round(target * e));
+        while (v.length < pad) v = '0' + v;
+        span.textContent = v;
+        if (p < 1) requestAnimationFrame(frame);
+      }
+      setTimeout(function () { requestAnimationFrame(frame); }, 180);
+      // 兜底：标签页被切走时 rAF 会暂停，恢复不了就会一直停在 0，这里保证最终值一定落地
+      setTimeout(function () {
+        var fin = String(target);
+        while (fin.length < pad) fin = '0' + fin;
+        span.textContent = fin;
+      }, 180 + dur + 400);
+    }
+    var nums = document.querySelectorAll('.pillrow span.pill,.cbtn .l,.cbtn .r,.summary > div,.bar .count');
+    if ('IntersectionObserver' in window) {
+      var cio = new IntersectionObserver(function (es) {
+        es.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          cio.unobserve(en.target); countUp(en.target);
+        });
+      }, { threshold: 0.4 });
+      Array.prototype.forEach.call(nums, function (n) { cio.observe(n); });
+    } else {
+      Array.prototype.forEach.call(nums, countUp);
+    }
+
+    // 带锚点进来的（比如从主页点超纲词跳到某张卡）：滚到位后再发
+    if (location.hash) setTimeout(popHash, 120);
+  }
+  var wait = 640;
+  // 数字容器要尽早折进去：DOMContentLoaded 立刻 wrap（此时还没绘制，宽度一定），
+  // 免得像之前那样等 640ms 才插 span，页面已经画出来又"宽一下"，每回一次页面都跳。
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { wrapNums(); setTimeout(start, wait); });
+  } else {
+    wrapNums();
+    setTimeout(start, wait);
+  }
+})();
+</script>
+<!-- kiki-polish:end -->
 </head>
 <body>
 <div class="wrap">
-  <div class="hero">
+  <div class="hero" id="kiki-head">
     <div class="brand">KIKI DAILY · 每日速递</div>
     <div class="day">2026-11-26<span class="upd">北京时间 06:06 · 自动生成</span></div>
     <h1>科技 · 财经 · 国际速递</h1>
