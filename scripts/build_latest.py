@@ -447,7 +447,10 @@ window.addEventListener('scroll',function(){{
         c.setAttribute('aria-hidden','true');
         a.appendChild(c);
         a.classList.add('sc');
-        var dist=tw+28;                   // 副本与首份之间的空隙，正好补齐循环
+        // 位移按两份文本起点的真实距离算（含 CSS 里 1.6em 的空隙）。
+        // 写死 tw+28 与 20.8px 的实际空隙差 7px，循环接缝处文字会向右弹一下。
+        var dist=Math.round(c.offsetLeft-t.offsetLeft);
+        if(!(dist>4)) dist=tw+20;
         a.style.setProperty('--dist', (-dist)+'px');
         a.style.setProperty('--dur', Math.max(8, Math.round(dist/25))+'s');
       }}
