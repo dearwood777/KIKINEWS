@@ -1,102 +1,102 @@
 {
- "date": "2026-11-18",
+ "date": "2026-11-26",
  "updated": "06:06",
  "total": 16,
  "items": [
   {
-   "t": "Jensen Huang Expresses Willingness to Return as Nvidia CEO",
+   "t": "FCC approves SpaceX plan to put AI data centers in space",
    "s": "9.0",
    "a": "item-tech-news-1",
    "sec": "TECH"
   },
   {
-   "t": "Ukrainian Forces Destroy Key Section of Crimean Bridge",
+   "t": "Russia Reports Nearly 500,000 Soldiers Killed in Ukraine War",
    "s": "9.0",
    "a": "item-world-news-1",
    "sec": "WORLD"
   },
   {
-   "t": "GPT‑6.2 Astra and Sol",
+   "t": "1Password Security Incident Exposes Customer Data via Malicious Code Push",
    "s": "8.0",
    "a": "item-tech-news-2",
    "sec": "TECH"
   },
   {
-   "t": "Highly classified US national security communications network goes down",
+   "t": "I checked Clojure&\\#x27;s core with Lean and found unreported bugs",
    "s": "8.0",
    "a": "item-tech-news-3",
    "sec": "TECH"
   },
   {
-   "t": "Waymo suspends freeway robotaxi rides nationwide after California DMV order",
+   "t": "Nvidia Faces Questions Over Alleged GPU Smuggling to China",
    "s": "8.0",
    "a": "item-tech-news-4",
    "sec": "TECH"
   },
   {
-   "t": "AI models can be tricked into identifying civilians as military targets by telling them it’s a game",
+   "t": "Minecraft 曝高危 RCE 漏洞，Java 版 1.20.5 起全版本受影响",
    "s": "8.0",
    "a": "item-tech-news-5",
    "sec": "TECH"
   },
   {
-   "t": "Ukraine attack collapses part of Crimean Bridge",
+   "t": "US Announces New Tariffs on China and Other Trading Partners",
    "s": "8.0",
    "a": "item-world-news-2",
    "sec": "WORLD"
   },
   {
-   "t": "US Loses Measles-Free Status After 26 Years",
+   "t": "Israeli judges recommend dropping most serious charges against Netanyahu",
    "s": "8.0",
    "a": "item-world-news-3",
    "sec": "WORLD"
   },
   {
-   "t": "US Army Officer Arrested in UK on Spying Allegations",
+   "t": "Huawei found guilty of stealing US trade secrets but acquitted of racketeering",
    "s": "8.0",
    "a": "item-world-news-4",
    "sec": "WORLD"
   },
   {
-   "t": "Nvidia partner Megaspeed being investigated by US government over chip exports",
+   "t": "China misusing Interpol to target dissidents, says leading UK lawyer",
    "s": "8.0",
    "a": "item-world-news-5",
    "sec": "WORLD"
   },
   {
-   "t": "BBC reports from Kyiv bridge hit by Russian attack",
+   "t": "Germany’s Chancellor Warns Russia Wants More Than Ukraine",
    "s": "8.0",
    "a": "item-world-news-6",
    "sec": "WORLD"
   },
   {
-   "t": "Will President Trump meet Kim Jong Un?",
+   "t": "World records six consecutive days 2°C above preindustrial levels",
    "s": "8.0",
    "a": "item-world-news-7",
    "sec": "WORLD"
   },
   {
-   "t": "Spain&\\#x27;s Snap Election: Key Candidates to Watch",
+   "t": "China Secures Nvidia AI Chips Despite U.S. Export Controls",
    "s": "8.0",
    "a": "item-world-news-8",
    "sec": "WORLD"
   },
   {
-   "t": "Huang to testify on alleged national security breach",
-   "s": "8.0",
+   "t": "DOJ accuses former cyber executive of defrauding ransomware victims by secretly paying hackers",
+   "s": "7.0",
+   "a": "item-tech-news-6",
+   "sec": "TECH"
+  },
+  {
+   "t": "Character.AI’s plan to auction off users’ private chats challenged by state AGs",
+   "s": "7.0",
+   "a": "item-tech-news-7",
+   "sec": "TECH"
+  },
+  {
+   "t": "Images of asteroid targeted to test Earth&\\#x27;s defences reveal stadium-sized crater",
+   "s": "7.0",
    "a": "item-world-news-9",
-   "sec": "WORLD"
-  },
-  {
-   "t": "Hi-tech Shenzhen takes centre stage as Xi sends ‘Chinamaxxing’ message at Apec summit",
-   "s": "8.0",
-   "a": "item-world-news-10",
-   "sec": "WORLD"
-  },
-  {
-   "t": "How Ukraine struck the Kerch bridge, a symbol of Putin’s rule",
-   "s": "8.0",
-   "a": "item-world-news-11",
    "sec": "WORLD"
   }
  ]
