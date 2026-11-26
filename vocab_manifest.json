@@ -1,74 +1,86 @@
 {
- "source": "2026-11-25-summary-en.md",
- "date": "2026-11-26",
+ "source": "2026-11-26-summary-en.md",
+ "date": "2026-11-27",
  "terms": [
   {
-   "id": "w-encyclopedism",
-   "term": "encyclopedism"
+   "id": "w-institutionalised",
+   "term": "institutionalised"
   },
   {
-   "id": "w-fraudulently",
-   "term": "fraudulently"
+   "id": "w-antiretroviral",
+   "term": "antiretroviral"
   },
   {
-   "id": "w-radiofrequency",
-   "term": "radiofrequency"
+   "id": "w-extraterritorial",
+   "term": "extraterritorial"
   },
   {
-   "id": "w-encrypt",
-   "term": "encrypt"
+   "id": "w-airstrike",
+   "term": "airstrike"
   },
   {
-   "id": "w-intermittently",
-   "term": "intermittently"
+   "id": "w-interrogator",
+   "term": "interrogator"
   },
   {
-   "id": "w-mitigation",
-   "term": "mitigation"
+   "id": "w-capsid",
+   "term": "capsid"
   },
   {
-   "id": "w-workflow",
-   "term": "workflow"
+   "id": "w-computational",
+   "term": "computational"
   },
   {
-   "id": "w-racketeer",
-   "term": "racketeer"
+   "id": "w-eurozone",
+   "term": "eurozone"
   },
   {
-   "id": "w-bribery",
-   "term": "bribery"
+   "id": "w-headquarter",
+   "term": "headquarter"
   },
   {
-   "id": "w-escalation",
-   "term": "escalation"
+   "id": "w-specie",
+   "term": "specie"
   },
   {
-   "id": "w-importer",
-   "term": "importer"
+   "id": "w-schoolchildren",
+   "term": "schoolchildren"
   },
   {
-   "id": "w-repository",
-   "term": "repository"
+   "id": "w-dredge",
+   "term": "dredge"
   },
   {
-   "id": "w-orbital",
-   "term": "orbital"
+   "id": "w-irreversible",
+   "term": "irreversible"
   },
   {
-   "id": "w-milestone",
-   "term": "milestone"
+   "id": "w-payload",
+   "term": "payload"
   },
   {
-   "id": "w-misuse",
-   "term": "misuse"
+   "id": "w-ratepayer",
+   "term": "ratepayer"
   },
   {
-   "id": "w-theorem",
-   "term": "theorem"
+   "id": "w-shackle",
+   "term": "shackle"
   },
   {
-   "id": "w-acquit",
-   "term": "acquit"
+   "id": "w-unilateral",
+   "term": "unilateral"
+  },
+  {
+   "id": "w-repel",
+   "term": "repel"
+  },
+  {
+   "id": "w-waive",
+   "term": "waive"
+  },
+  {
+   "id": "w-endangered-species",
+   "term": "endangered species"
   }
  ]
 }

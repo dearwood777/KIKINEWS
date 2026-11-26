@@ -1,102 +1,102 @@
 {
- "date": "2026-11-26",
- "updated": "06:06",
+ "date": "2026-11-27",
+ "updated": "06:03",
  "total": 16,
  "items": [
   {
-   "t": "FCC approves SpaceX plan to put AI data centers in space",
-   "s": "9.0",
-   "a": "item-tech-news-1",
-   "sec": "TECH"
-  },
-  {
-   "t": "Russia Reports Nearly 500,000 Soldiers Killed in Ukraine War",
+   "t": "Myanmar refuses to comply with parts of ICJ genocide ruling",
    "s": "9.0",
    "a": "item-world-news-1",
    "sec": "WORLD"
   },
   {
-   "t": "1Password Security Incident Exposes Customer Data via Malicious Code Push",
-   "s": "8.0",
-   "a": "item-tech-news-2",
-   "sec": "TECH"
-  },
-  {
-   "t": "I checked Clojure&\\#x27;s core with Lean and found unreported bugs",
-   "s": "8.0",
-   "a": "item-tech-news-3",
-   "sec": "TECH"
-  },
-  {
-   "t": "Nvidia Faces Questions Over Alleged GPU Smuggling to China",
-   "s": "8.0",
-   "a": "item-tech-news-4",
-   "sec": "TECH"
-  },
-  {
-   "t": "Minecraft 曝高危 RCE 漏洞，Java 版 1.20.5 起全版本受影响",
-   "s": "8.0",
-   "a": "item-tech-news-5",
-   "sec": "TECH"
-  },
-  {
-   "t": "US Announces New Tariffs on China and Other Trading Partners",
-   "s": "8.0",
+   "t": "Russia Assembles Nuclear-Enabled Satellite, Possible Launch in 60 Days",
+   "s": "9.0",
    "a": "item-world-news-2",
    "sec": "WORLD"
   },
   {
-   "t": "Israeli judges recommend dropping most serious charges against Netanyahu",
-   "s": "8.0",
+   "t": "Spain’s Hernández de Cos chosen as next ECB president",
+   "s": "9.0",
    "a": "item-world-news-3",
    "sec": "WORLD"
   },
   {
-   "t": "Huawei found guilty of stealing US trade secrets but acquitted of racketeering",
+   "t": "Netherlands Rejects US Export‑Control Proposal on ASML Sales to China",
+   "s": "8.0",
+   "a": "item-tech-news-1",
+   "sec": "TECH"
+  },
+  {
+   "t": "Two Italians Killed in Kuwait Strike, Iran Denies",
    "s": "8.0",
    "a": "item-world-news-4",
    "sec": "WORLD"
   },
   {
-   "t": "China misusing Interpol to target dissidents, says leading UK lawyer",
+   "t": "China warns of counter‑measures after Trump tariff proposals",
    "s": "8.0",
    "a": "item-world-news-5",
    "sec": "WORLD"
   },
   {
-   "t": "Germany’s Chancellor Warns Russia Wants More Than Ukraine",
+   "t": "EU Leaders Clash Over €45bn Ukraine Loan Amid French Far‑Right Threat",
    "s": "8.0",
    "a": "item-world-news-6",
    "sec": "WORLD"
   },
   {
-   "t": "World records six consecutive days 2°C above preindustrial levels",
+   "t": "UK bill grants ministers power to deepen EU ties, excludes single market re‑entry",
    "s": "8.0",
    "a": "item-world-news-7",
    "sec": "WORLD"
   },
   {
-   "t": "China Secures Nvidia AI Chips Despite U.S. Export Controls",
+   "t": "Israel Sanctions Torture of Palestinian Prisoners, Report Finds",
    "s": "8.0",
    "a": "item-world-news-8",
    "sec": "WORLD"
   },
   {
-   "t": "DOJ accuses former cyber executive of defrauding ransomware victims by secretly paying hackers",
-   "s": "7.0",
-   "a": "item-tech-news-6",
-   "sec": "TECH"
-  },
-  {
-   "t": "Character.AI’s plan to auction off users’ private chats challenged by state AGs",
-   "s": "7.0",
-   "a": "item-tech-news-7",
-   "sec": "TECH"
-  },
-  {
-   "t": "Images of asteroid targeted to test Earth&\\#x27;s defences reveal stadium-sized crater",
-   "s": "7.0",
+   "t": "Altria Eyes Takeover of Imperial Brands",
+   "s": "8.0",
    "a": "item-world-news-9",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Senate Passes Bill Threatening Clean Water Protections",
+   "s": "8.0",
+   "a": "item-world-news-10",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Depardieu to Stand Trial for Alleged 2018 Rape",
+   "s": "7.0",
+   "a": "item-world-news-11",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Generic HIV Prevention Drug Arrives in Zambia, Uganda Next",
+   "s": "7.0",
+   "a": "item-world-news-12",
+   "sec": "WORLD"
+  },
+  {
+   "t": "New UK-EU treaty has 10-year termination clause",
+   "s": "7.0",
+   "a": "item-world-news-13",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Nusseibeh campaigns for UN Secretary General in Britain",
+   "s": "7.0",
+   "a": "item-world-news-14",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Israeli strikes kill 16 schoolchildren in Gaza this month",
+   "s": "7.0",
+   "a": "item-world-news-15",
    "sec": "WORLD"
   }
  ]
