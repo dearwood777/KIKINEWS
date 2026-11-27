@@ -1,103 +1,103 @@
 {
- "date": "2026-11-27",
- "updated": "06:03",
+ "date": "2026-11-28",
+ "updated": "06:02",
  "total": 16,
  "items": [
   {
-   "t": "Myanmar refuses to comply with parts of ICJ genocide ruling",
+   "t": "US Air Force Cloud One Breach Reported",
    "s": "9.0",
    "a": "item-world-news-1",
    "sec": "WORLD"
   },
   {
-   "t": "Russia Assembles Nuclear-Enabled Satellite, Possible Launch in 60 Days",
+   "t": "The S&amp;P 500 is in a correction. Bear markets and recessions don&\\#x27;t always follow",
    "s": "9.0",
-   "a": "item-world-news-2",
-   "sec": "WORLD"
+   "a": "item-finance-news-1",
+   "sec": "FIN"
   },
   {
-   "t": "Spain’s Hernández de Cos chosen as next ECB president",
-   "s": "9.0",
-   "a": "item-world-news-3",
-   "sec": "WORLD"
-  },
-  {
-   "t": "Netherlands Rejects US Export‑Control Proposal on ASML Sales to China",
+   "t": "Credit card skimming scripts using WebRTC found on popular shopping sites",
    "s": "8.0",
    "a": "item-tech-news-1",
    "sec": "TECH"
   },
   {
-   "t": "Two Italians Killed in Kuwait Strike, Iran Denies",
+   "t": "Minecraft Bedrock Resource Pack Vulnerability Fixed in v26.65",
+   "s": "8.0",
+   "a": "item-tech-news-2",
+   "sec": "TECH"
+  },
+  {
+   "t": "Supreme Court Upholds Quebec&\\#x27;s Religious Symbol Ban",
+   "s": "8.0",
+   "a": "item-world-news-2",
+   "sec": "WORLD"
+  },
+  {
+   "t": "NSW coroner calls Aboriginal man&\\#x27;s death preventable, urges reforms",
+   "s": "8.0",
+   "a": "item-world-news-3",
+   "sec": "WORLD"
+  },
+  {
+   "t": "Judges Urge Drop of Charges Against Netanyahu",
    "s": "8.0",
    "a": "item-world-news-4",
    "sec": "WORLD"
   },
   {
-   "t": "China warns of counter‑measures after Trump tariff proposals",
+   "t": "The Com: global cybercrime network targeting children",
    "s": "8.0",
    "a": "item-world-news-5",
    "sec": "WORLD"
   },
   {
-   "t": "EU Leaders Clash Over €45bn Ukraine Loan Amid French Far‑Right Threat",
+   "t": "NIH Releases Three Glyphosate Cancer Studies, Contradicting Trump EPA",
    "s": "8.0",
    "a": "item-world-news-6",
    "sec": "WORLD"
   },
   {
-   "t": "UK bill grants ministers power to deepen EU ties, excludes single market re‑entry",
+   "t": "US disables Iranian vessel, Tehran vows confrontation",
    "s": "8.0",
    "a": "item-world-news-7",
    "sec": "WORLD"
   },
   {
-   "t": "Israel Sanctions Torture of Palestinian Prisoners, Report Finds",
-   "s": "8.0",
+   "t": "Convex skills send the user&\\#x27;s app idea to a remote server without telling them",
+   "s": "7.0",
+   "a": "item-tech-news-3",
+   "sec": "TECH"
+  },
+  {
+   "t": "Canadian Petition Calls for Removal of US Ambassador",
+   "s": "7.0",
    "a": "item-world-news-8",
    "sec": "WORLD"
   },
   {
-   "t": "Altria Eyes Takeover of Imperial Brands",
-   "s": "8.0",
+   "t": "Newly released documents suggest CIA did more post-9/11 waterboarding than previously acknowledged",
+   "s": "7.0",
    "a": "item-world-news-9",
    "sec": "WORLD"
   },
   {
-   "t": "Senate Passes Bill Threatening Clean Water Protections",
-   "s": "8.0",
+   "t": "Iran&\\#x27;s Ambassador Signals Willingness to Negotiate with US",
+   "s": "7.0",
    "a": "item-world-news-10",
    "sec": "WORLD"
   },
   {
-   "t": "Depardieu to Stand Trial for Alleged 2018 Rape",
-   "s": "7.0",
+   "t": "Kenyan doomsday cult leader convicted over further 123 deaths",
+   "s": "6.0",
    "a": "item-world-news-11",
    "sec": "WORLD"
   },
   {
-   "t": "Generic HIV Prevention Drug Arrives in Zambia, Uganda Next",
-   "s": "7.0",
-   "a": "item-world-news-12",
-   "sec": "WORLD"
-  },
-  {
-   "t": "New UK-EU treaty has 10-year termination clause",
-   "s": "7.0",
-   "a": "item-world-news-13",
-   "sec": "WORLD"
-  },
-  {
-   "t": "Nusseibeh campaigns for UN Secretary General in Britain",
-   "s": "7.0",
-   "a": "item-world-news-14",
-   "sec": "WORLD"
-  },
-  {
-   "t": "Israeli strikes kill 16 schoolchildren in Gaza this month",
-   "s": "7.0",
-   "a": "item-world-news-15",
-   "sec": "WORLD"
+   "t": "Liesman: Nvidia whiplash tests Kevin Warsh’s push to read market signals",
+   "s": "6.0",
+   "a": "item-finance-news-2",
+   "sec": "FIN"
   }
  ]
 }

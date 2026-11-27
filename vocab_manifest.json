@@ -1,86 +1,146 @@
 {
- "source": "2026-11-26-summary-en.md",
- "date": "2026-11-27",
+ "source": "2026-11-27-summary-en.md",
+ "date": "2026-11-28",
  "terms": [
   {
-   "id": "w-institutionalised",
-   "term": "institutionalised"
+   "id": "w-waterboard",
+   "term": "waterboard"
   },
   {
-   "id": "w-antiretroviral",
-   "term": "antiretroviral"
+   "id": "w-carcinogenic",
+   "term": "carcinogenic"
   },
   {
-   "id": "w-extraterritorial",
-   "term": "extraterritorial"
+   "id": "w-exfiltrate",
+   "term": "exfiltrate"
   },
   {
-   "id": "w-airstrike",
-   "term": "airstrike"
+   "id": "w-extortionist",
+   "term": "extortionist"
   },
   {
-   "id": "w-interrogator",
-   "term": "interrogator"
+   "id": "w-doomsday",
+   "term": "doomsday"
   },
   {
-   "id": "w-capsid",
-   "term": "capsid"
+   "id": "w-addon",
+   "term": "addon"
   },
   {
-   "id": "w-computational",
-   "term": "computational"
+   "id": "w-alway",
+   "term": "alway"
   },
   {
-   "id": "w-eurozone",
-   "term": "eurozone"
+   "id": "w-morn",
+   "term": "morn"
   },
   {
-   "id": "w-headquarter",
-   "term": "headquarter"
+   "id": "w-pend",
+   "term": "pend"
   },
   {
-   "id": "w-specie",
-   "term": "specie"
+   "id": "w-serie",
+   "term": "serie"
   },
   {
-   "id": "w-schoolchildren",
-   "term": "schoolchildren"
+   "id": "w-whiplash",
+   "term": "whiplash"
   },
   {
-   "id": "w-dredge",
-   "term": "dredge"
+   "id": "w-logistic",
+   "term": "logistic"
   },
   {
-   "id": "w-irreversible",
-   "term": "irreversible"
+   "id": "w-bribery",
+   "term": "bribery"
   },
   {
-   "id": "w-payload",
-   "term": "payload"
+   "id": "w-carcinogen",
+   "term": "carcinogen"
   },
   {
-   "id": "w-ratepayer",
-   "term": "ratepayer"
+   "id": "w-manslaughter",
+   "term": "manslaughter"
   },
   {
-   "id": "w-shackle",
-   "term": "shackle"
+   "id": "w-blackmail",
+   "term": "blackmail"
   },
   {
-   "id": "w-unilateral",
-   "term": "unilateral"
+   "id": "w-egregious",
+   "term": "egregious"
   },
   {
-   "id": "w-repel",
-   "term": "repel"
+   "id": "w-overhaul",
+   "term": "overhaul"
   },
   {
-   "id": "w-waive",
-   "term": "waive"
+   "id": "w-predatory",
+   "term": "predatory"
   },
   {
-   "id": "w-endangered-species",
-   "term": "endangered species"
+   "id": "w-vigilant",
+   "term": "vigilant"
+  },
+  {
+   "id": "w-solidify",
+   "term": "solidify"
+  },
+  {
+   "id": "w-blockade",
+   "term": "blockade"
+  },
+  {
+   "id": "w-flagship",
+   "term": "flagship"
+  },
+  {
+   "id": "w-glyphosate",
+   "term": "glyphosate"
+  },
+  {
+   "id": "w-epa",
+   "term": "epa"
+  },
+  {
+   "id": "w-sanction",
+   "term": "sanction"
+  },
+  {
+   "id": "w-skimming-scripts",
+   "term": "skimming scripts"
+  },
+  {
+   "id": "w-resource-pack-vulnerability",
+   "term": "resource‑pack vulnerability"
+  },
+  {
+   "id": "w-ai-gateway-flaw",
+   "term": "ai gateway flaw"
+  },
+  {
+   "id": "w-cloud-computing-platform",
+   "term": "cloud‑computing platform"
+  },
+  {
+   "id": "w-tactical-data",
+   "term": "tactical data"
+  },
+  {
+   "id": "w-logistics-data",
+   "term": "logistics data"
+  },
+  {
+   "id": "w-bill-21",
+   "term": "bill 21"
+  },
+  {
+   "id": "w-conspicuous-religious-symbols",
+   "term": "conspicuous religious symbols"
+  },
+  {
+   "id": "w-non-grata",
+   "term": "non grata"
   }
  ]
 }
